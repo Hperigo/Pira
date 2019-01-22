@@ -1,0 +1,11 @@
+[package]
+name = "piralib"
+version = "0.1.0"
+authors = ["hperigo <hperigo@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+gl = {path = "../gl" }
+gl_helper = {path = "../gl_helper"}
+nalgebra-glm = "0.1"
+sdl2 = "0.31.0"

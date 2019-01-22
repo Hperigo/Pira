@@ -1,0 +1,14 @@
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/rls/debug/deps/png-5e027d4fce239fdd.rmeta: /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/lib.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/chunk.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/crc.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/decoder/mod.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/decoder/stream.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/encoder.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/filter.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/traits.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/common.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/utils.rs
+
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/rls/debug/deps/png-5e027d4fce239fdd.d: /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/lib.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/chunk.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/crc.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/decoder/mod.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/decoder/stream.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/encoder.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/filter.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/traits.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/common.rs /Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/utils.rs
+
+/Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/lib.rs:
+/Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/chunk.rs:
+/Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/crc.rs:
+/Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/decoder/mod.rs:
+/Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/decoder/stream.rs:
+/Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/encoder.rs:
+/Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/filter.rs:
+/Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/traits.rs:
+/Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/common.rs:
+/Users/henrique/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.12.0/src/utils.rs:

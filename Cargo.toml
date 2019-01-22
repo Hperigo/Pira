@@ -1,0 +1,14 @@
+[package]
+name = "pira"
+version = "0.1.0"
+authors = ["hperigo <hperigo@gmail.com>"]
+edition = "2018"
+
+
+[dependencies]
+piralib = { path = "lib/piralib" }
+image = "*"
+rand = "*"
+
+[build-dependencies]
+gl_generator = "0.5.0"
