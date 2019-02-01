@@ -16,12 +16,16 @@ pub struct Particle {
 }
 
 fn main() {
-    let a  = piralib::App::init_with_options( &piralib::app::Options{
+
+//    println!("{}", longest("yeah", "huia"));
+
+
+   let mut app  = piralib::App::init_with_options( &piralib::app::Options{
         window_width: 300,
         window_height: 400,
         title: "pira!!!".to_string()
     });
-    let mut app  = a.try_borrow_mut().unwrap();
+    
 
     let mut attrib = glh::VertexAttrib::new_position_attr();
     let mut color_attrib = glh::VertexAttrib::new_color_attr();
@@ -63,8 +67,6 @@ fn main() {
     while app.run() {
 
         glh::clear(0.2, 0.1, 0.1, 1.0);
-
-//        tex.bind();
 
         shader.bind();
         shader.set_uniform_mat4("perspectiveMatrix",
@@ -112,8 +114,9 @@ fn main() {
 
         let r : f32 = rng.gen_range(-3.14, 3.14);
 
+        let p = app.mousePos;
          mParticles.push(Particle{
-            position: glm::vec3(300.0, 600.0, 0.0),
+            position: glm::vec3(p.x * 2.0, p.y * 2.0, 0.0),
             speed : glm::vec3(sx, sy, 0.0),
             scale : 0.1,
             rotation : r,
@@ -126,7 +129,6 @@ fn main() {
          });
 
         shader.unbind();
-//        tex.unbind();
 
     }
 }
