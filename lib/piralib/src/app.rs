@@ -13,9 +13,8 @@ pub struct App {
 
     gl_handle  : (),
     gl_context : sdl2::video::GLContext,
-    pub update_fn : Option<std::rc::Rc< Fn() >>,
 
-    pub mousePos : glm::Vec2
+    pub mouse_pos : glm::Vec2
 }
 
 pub struct Options {
@@ -50,18 +49,6 @@ impl<'a> App{
         // initialize some default gl values... 
         glh::set_window_matrices( 0, 0, window.drawable_size().0 as i32, window.drawable_size().1 as i32 );
 
-        /*RefCell::new(App{
-            sdl_handle : sdl_handle,
-            sdl_video_handle : sdl_video,
-            sdl_event_pump : event_pump,
-            window : window,
-            should_quit : false,
-            gl_handle : gll_handle,
-            gl_context  :  gl_context,
-            update_fn : None,
-            mousePos : glm::Vec2::new(0.0,0.0)
-        })*/
-
         App{
             sdl_handle : sdl_handle,
             sdl_video_handle : sdl_video,
@@ -70,8 +57,7 @@ impl<'a> App{
             should_quit : false,
             gl_handle : gll_handle,
             gl_context  :  gl_context,
-            update_fn : None,
-            mousePos : glm::Vec2::new(0.0,0.0)
+            mouse_pos : glm::Vec2::new(0.0,0.0)
         }
     }
 
@@ -99,19 +85,6 @@ impl<'a> App{
         // initialize some default gl values... 
         glh::set_window_matrices( 0, 0, window.drawable_size().0 as i32, window.drawable_size().1 as i32 );
 
-        /*
-        RefCell::new(App{
-            sdl_handle : sdl_handle,
-            sdl_video_handle : sdl_video,
-            sdl_event_pump : event_pump,
-            window : window,
-            should_quit : false,
-            gl_handle : gll_handle,
-            gl_context  :  gl_context,  
-            update_fn : None,
-            mousePos : glm::Vec2::new(0.0,0.0)
-        })
-        */
         App{
             sdl_handle : sdl_handle,
             sdl_video_handle : sdl_video,
@@ -120,31 +93,20 @@ impl<'a> App{
             should_quit : false,
             gl_handle : gll_handle,
             gl_context  :  gl_context,  
-            update_fn : None,
-            mousePos : glm::Vec2::new(0.0,0.0)
+            mouse_pos : glm::Vec2::new(0.0,0.0)
         }
 
-    }
-
-
-    pub fn set_update_fn(&mut self,  function : Rc<Fn()> ){
-        self.update_fn = Some( function );
     }
 
     pub fn update(&mut self){
         for event in self.sdl_event_pump.poll_iter(){
             match event{
                 sdl2::event::Event::Quit { .. } => self.should_quit = true,
-                sdl2::event::Event::MouseMotion {x,y, .. } => self.mousePos = glm::Vec2::new(x as f32, y as f32),
+                sdl2::event::Event::MouseMotion {x,y, .. } => self.mouse_pos = glm::Vec2::new(x as f32, y as f32),
                 _ => {},
             }
         }
 
-
-        match &self.update_fn{
-            Some( x ) =>{  x(); },
-            None => {},
-        }
         self.window.gl_swap_window();
     }
 

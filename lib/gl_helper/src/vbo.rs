@@ -43,7 +43,6 @@ impl Vbo{
 
 impl Drop for Vbo{
     fn drop(&mut self){
-        println!("VBO dropped {}", self.handle);
         unsafe{
             gl::DeleteBuffers(1, &mut self.handle);
         }

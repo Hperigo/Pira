@@ -60,7 +60,6 @@ impl StockShader{
             {}
             {}
 
-        
             void main()
             {{
                 gl_Position = perspectiveMatrix * viewMatrix * modelMatrix * vec4(Position, 1.0);
@@ -68,9 +67,6 @@ impl StockShader{
                 {}
             }}
             ", color_layout, texture_layout, color_main, texture_main );
-
-
-            println!("{}",vertex_shader);
 
             (self.clone(), vertex_shader )
     }

@@ -55,6 +55,7 @@ impl VertexAttrib{
 pub struct Vao{
     handle : gl::types::GLuint,
     vbo_handle : Vbo,
+    num_of_vertices : usize,
 }
 
 impl Vao{
@@ -66,6 +67,8 @@ impl Vao{
         for a in  attribs{
             data.append( &mut a.data.clone() );
         }
+
+        let num_of_vertices = attribs[0].data.len();
 
         let mut vao_handle : gl::types::GLuint = 0;
         let data_vbo = Vbo::new(&data, gl::ARRAY_BUFFER );
@@ -112,6 +115,7 @@ impl Vao{
         let vao = Vao{
             handle:vao_handle,
             vbo_handle : data_vbo,
+            num_of_vertices : num_of_vertices,
         };
 
         vao
@@ -153,7 +157,7 @@ impl Vao{
             gl::DrawArrays(
                 primitive,
                 0,
-                3
+                self.num_of_vertices as i32
             );
 
             gl::BindVertexArray( 0 );
