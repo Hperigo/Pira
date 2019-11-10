@@ -1,19 +1,14 @@
-extern crate sdl2;
-use std::rc::Rc;
-use std::cell::RefCell;
+use glfw::{Action, Context, Key, SwapInterval}; 
+use std::sync::mpsc::Receiver;
 
-use gl_helper as glh;
 
 pub struct App {
-    sdl_handle : sdl2::Sdl,
-    sdl_video_handle : sdl2::VideoSubsystem,
-    sdl_event_pump : sdl2::EventPump,
-    pub window : sdl2::video::Window,
+
+    pub window : glfw::Window,
+    pub events : Receiver<(f64, glfw::WindowEvent)>,
     pub should_quit : bool,
 
-    gl_handle  : (),
-    gl_context : sdl2::video::GLContext,
-
+    pub glfw_context : glfw::Glfw,
     pub mouse_pos : glm::Vec2
 }
 
@@ -27,93 +22,104 @@ impl<'a> App{
 
     pub fn init_with_options(opt : &Options) -> App {
 
-        let sdl_handle = sdl2::init().unwrap();
-        let sdl_video = sdl_handle.video().unwrap();
+        let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+        glfw.window_hint(glfw::WindowHint::ContextVersion(3, 3));
+        glfw.window_hint(glfw::WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core));
 
-        let gl_attr = sdl_video.gl_attr();
-        gl_attr.set_context_profile( sdl2::video::GLProfile::Core );
-        gl_attr.set_context_version(4, 1);
+        #[cfg(target_os = "macos")]
+        glfw.window_hint(glfw::WindowHint::OpenGlForwardCompat(true));
 
-        let window = sdl_video
-            .window(&opt.title, opt.window_width, opt.window_height)
-            .resizable()
-            .allow_highdpi()
-            .opengl()
-            .build()
-            .unwrap();
+        let (mut window, events) = glfw.create_window(opt.window_width, opt.window_height, &opt.title, glfw::WindowMode::Windowed).expect("Failed to create window");
 
-        let event_pump = sdl_handle.event_pump().unwrap();
-        let gl_context = window.gl_create_context().unwrap();
-        let gll_handle = gl::load_with( |s| sdl_video.gl_get_proc_address(s) as *const std::os::raw::c_void );
+        window.set_key_polling(true);
+        window.set_framebuffer_size_polling(true);
+        window.set_cursor_pos_polling(true);
 
-        // initialize some default gl values... 
-        glh::set_window_matrices( 0, 0, window.drawable_size().0 as i32, window.drawable_size().1 as i32 );
+        window.make_current();
+
+        gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+
+        glfw.set_swap_interval( SwapInterval::Sync(1) );
 
         App{
-            sdl_handle : sdl_handle,
-            sdl_video_handle : sdl_video,
-            sdl_event_pump : event_pump,
+            mouse_pos : glm::Vec2::new( (opt.window_width as f32 ) / 2.0 , (opt.window_height as f32) / 2.0),
             window : window,
             should_quit : false,
-            gl_handle : gll_handle,
-            gl_context  :  gl_context,
-            mouse_pos : glm::Vec2::new(0.0,0.0)
+            events : events,
+            glfw_context : glfw,
         }
+
     }
 
     pub fn init() -> App {
 
-        let sdl_handle = sdl2::init().unwrap();
-        let sdl_video = sdl_handle.video().unwrap();   
+        let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+        glfw.window_hint(glfw::WindowHint::ContextVersion(3, 3));
+        glfw.window_hint(glfw::WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core));
+        #[cfg(target_os = "macos")]
+        glfw.window_hint(glfw::WindowHint::OpenGlForwardCompat(true));
 
-        let gl_attr = sdl_video.gl_attr();
-        gl_attr.set_context_profile( sdl2::video::GLProfile::Core );
-        gl_attr.set_context_version(4, 1);
+        let (mut window, events) = glfw.create_window(800, 600, "", glfw::WindowMode::Windowed).expect("Failed to create window");
 
-        let window = sdl_video
-            .window("pira!", 1920, 1080)
-            .resizable()
-            .allow_highdpi()
-            .opengl()
-            .build()
-            .unwrap();
+        window.set_key_polling(true);
+        window.set_framebuffer_size_polling(true);
+        window.set_cursor_pos_polling(true);
 
-        let event_pump = sdl_handle.event_pump().unwrap();
-        let gl_context = window.gl_create_context().unwrap();
-        let gll_handle = gl::load_with( |s| sdl_video.gl_get_proc_address(s) as *const std::os::raw::c_void );
+        window.make_current();
 
-        // initialize some default gl values... 
-        glh::set_window_matrices( 0, 0, window.drawable_size().0 as i32, window.drawable_size().1 as i32 );
+        gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
+        glfw.set_swap_interval( SwapInterval::Sync(1) );
         App{
-            sdl_handle : sdl_handle,
-            sdl_video_handle : sdl_video,
-            sdl_event_pump : event_pump,
+            mouse_pos : glm::Vec2::new(0.0, 0.0),
             window : window,
             should_quit : false,
-            gl_handle : gll_handle,
-            gl_context  :  gl_context,  
-            mouse_pos : glm::Vec2::new(0.0,0.0)
+            events : events,
+            glfw_context : glfw,
         }
 
     }
 
     pub fn update(&mut self){
-        for event in self.sdl_event_pump.poll_iter(){
-            match event{
-                sdl2::event::Event::Quit { .. } => self.should_quit = true,
-                sdl2::event::Event::MouseMotion {x,y, .. } => self.mouse_pos = glm::Vec2::new(x as f32, y as f32),
-                _ => {},
+
+        self.glfw_context.poll_events();
+        for( _, event) in glfw::flush_messages(&self.events){
+            match event {
+
+                glfw::WindowEvent::CursorPos(x, y) => {
+                    self.mouse_pos = glm::Vec2::new( x as f32, y as f32 );
+                }
+
+                glfw::WindowEvent::Key( Key::Escape, _, Action::Press, _) => {
+                    self.window.set_should_close(true)
+                }
+
+                glfw::WindowEvent::Close => {
+                    self.window.set_should_close(true)
+                }
+                _ =>{}
             }
+
         }
 
-        self.window.gl_swap_window();
+
+
+        // for event in self.sdl_event_pump.poll_iter(){
+        //     match event{
+        //         sdl2::event::Event::Quit { .. } => self.should_quit = true,
+        //         sdl2::event::Event::MouseMotion {x,y, .. } => self.mouse_pos = glm::Vec2::new(x as f32, y as f32),
+        //         _ => {},
+        //     }
+        // }
+
+        // self.window.gl_swap_window();
+        self.window.swap_buffers();
+        self.should_quit = self.window.should_close();
     }
 
     pub fn run(&mut self) -> bool {
     
         self.update();
-
         !self.should_quit
     }
     

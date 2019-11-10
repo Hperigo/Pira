@@ -7,7 +7,7 @@ use rand::*;
 extern crate image;
 
 // create a simple particle object
-#[derive(Copy, Clone)]
+#[derive(Clone, Copy)]
 pub struct Particle {
     position : glm::Vec3,
     speed : glm::Vec3,
@@ -21,13 +21,13 @@ fn main() {
     let mut app  = piralib::App::init_with_options( &piralib::app::Options{
         window_width: 300,
         window_height: 400,
-        title: "!!!pira!!!".to_string()
+        title: "🔥".to_string()
     });
+
 
     let mut pos_attrib = glh::VertexAttrib::new_position_attr();
     let mut color_attrib = glh::VertexAttrib::new_color_attr();
     let mut texture_attrib = glh::VertexAttrib::new_texture_attr();
-
 
     // build vertex data ----
     {
@@ -37,7 +37,6 @@ fn main() {
         vertices.append( &mut vec![0.0,  350.0, 0.0,] );
         pos_attrib.data = vertices;
  
-
         let mut colors : Vec<f32> = Vec::new();
         colors.append( &mut vec![1.0, 1.0, 1.0, 1.0] );
         colors.append( &mut vec![0.9, 0.8, 0.9, 1.0] );
@@ -72,11 +71,11 @@ fn main() {
 
         shader.bind();
         shader.set_uniform_mat4("perspectiveMatrix",
-                                &glm::ortho(0.0,
-                                            app.window.drawable_size().0 as f32,
-                                            app.window.drawable_size().1 as f32,
-                                            0.0, -1.0,
-                                            1.0));
+                        &glm::ortho(0.0,
+                                    600.0,
+                                    800.0,
+                                    0.0, -1.0,
+                                    1.0));
 
         shader.set_uniform_mat4("viewMatrix", &glm::Mat4::identity() );
 
@@ -88,7 +87,6 @@ fn main() {
 
             p.position += p.speed;
             p.rotation += 0.01;
-
 
             let mut mat = glm::Mat4::identity();
             mat =  glm::translate(&mat, &p.position );
@@ -112,8 +110,6 @@ fn main() {
         let sy : f32 = rng.gen_range(-5.0, -1.0);
         let r : f32 = rng.gen_range(-std::f32::consts::PI, std::f32::consts::PI);
 
-        // let rv = rng.gen::<glm::Vec3>();
-
         let p = app.mouse_pos;
         particles.push(Particle{
             
@@ -122,9 +118,8 @@ fn main() {
             scale : 0.1,
             rotation : r,
             lifetime : 0.0,
-            
         });
-        
+    
         particles.retain(|&p|{
             p.scale > 0.0
         });
