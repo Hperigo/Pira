@@ -1,7 +1,6 @@
 use glfw::{Action, Context, Key, SwapInterval}; 
 use std::sync::mpsc::Receiver;
 
-
 pub struct App {
 
     pub window : glfw::Window,
@@ -83,6 +82,28 @@ impl<'a> App{
     pub fn update(&mut self){
 
         self.glfw_context.poll_events();
+        self.handle_events();
+
+        // self.window.gl_swap_window();
+        self.window.swap_buffers();
+        self.should_quit = self.window.should_close();
+    }
+
+    pub fn run(&mut self) -> bool {
+    
+        self.update();
+        !self.should_quit
+    }
+    
+    pub fn get_framebuffer_size(&self) -> (i32, i32){
+        self.window.get_framebuffer_size()
+    }
+
+    pub fn get_window_size(&self) -> (i32, i32){
+        self.window.get_size()
+    }
+
+    fn handle_events(&mut self){
         for( _, event) in glfw::flush_messages(&self.events){
             match event {
 
@@ -99,28 +120,7 @@ impl<'a> App{
                 }
                 _ =>{}
             }
-
         }
 
-
-
-        // for event in self.sdl_event_pump.poll_iter(){
-        //     match event{
-        //         sdl2::event::Event::Quit { .. } => self.should_quit = true,
-        //         sdl2::event::Event::MouseMotion {x,y, .. } => self.mouse_pos = glm::Vec2::new(x as f32, y as f32),
-        //         _ => {},
-        //     }
-        // }
-
-        // self.window.gl_swap_window();
-        self.window.swap_buffers();
-        self.should_quit = self.window.should_close();
     }
-
-    pub fn run(&mut self) -> bool {
-    
-        self.update();
-        !self.should_quit
-    }
-    
 }

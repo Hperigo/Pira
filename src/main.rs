@@ -4,7 +4,6 @@ use piralib::gl as gl;
 use piralib::glm;
 
 use rand::*;
-extern crate image;
 
 // create a simple particle object
 #[derive(Clone, Copy)]
@@ -23,7 +22,6 @@ fn main() {
         window_height: 400,
         title: "🔥".to_string()
     });
-
 
     let mut pos_attrib = glh::VertexAttrib::new_position_attr();
     let mut color_attrib = glh::VertexAttrib::new_color_attr();
@@ -72,8 +70,8 @@ fn main() {
         shader.bind();
         shader.set_uniform_mat4("perspectiveMatrix",
                         &glm::ortho(0.0,
-                                    600.0,
-                                    800.0,
+                                    app.get_framebuffer_size().0 as f32,
+                                    app.get_framebuffer_size().1 as f32,
                                     0.0, -1.0,
                                     1.0));
 
@@ -97,8 +95,8 @@ fn main() {
 
             let green : f32 = 0.5 * (p.scale * 10.0) ;
             let red : f32 = 0.8 * (p.scale * 10.0);
-
-            shader.set_uniform_4f("uColor", &glm::vec4(red, green, 0.2, 1.0));
+            let blue : f32 = 1.0 - ( app.mouse_pos.y / 400.0 );
+            shader.set_uniform_4f("uColor", &glm::vec4(red, green, blue, 1.0));
             vao.draw( gl::TRIANGLES );
 
         }

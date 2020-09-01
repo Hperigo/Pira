@@ -1,0 +1,13 @@
+prefix=/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out
+exec_prefix=${prefix}
+includedir=/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/include
+libdir=/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/lib
+
+Name: GLFW
+Description: A multi-platform library for OpenGL, window and input
+Version: 3.3.0
+URL: https://www.glfw.org/
+Requires.private: 
+Libs: -L${libdir} -lglfw3
+Libs.private:  -framework Cocoa -framework IOKit -framework CoreFoundation -framework CoreVideo
+Cflags: -I${includedir}

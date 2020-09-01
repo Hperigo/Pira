@@ -7,5 +7,5 @@ edition = "2018"
 [dependencies]
 gl = {path = "../gl" }
 gl_helper = {path = "../gl_helper"}
-nalgebra-glm = "0.1"
+nalgebra-glm = "*"
 glfw = "*"

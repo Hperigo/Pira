@@ -1,0 +1,14 @@
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/CMakeFiles/install/local.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/CMakeFiles/rebuild_cache.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/CMakeFiles/edit_cache.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/CMakeFiles/install/strip.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/CMakeFiles/uninstall.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/CMakeFiles/install.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/CMakeFiles/list_install_components.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/src/CMakeFiles/install/local.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/src/CMakeFiles/install/strip.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/src/CMakeFiles/install.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/src/CMakeFiles/list_install_components.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/src/CMakeFiles/rebuild_cache.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/src/CMakeFiles/edit_cache.dir
+/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/build/src/CMakeFiles/glfw.dir
