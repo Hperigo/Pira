@@ -1,27 +1,28 @@
 
-        mod __gl_imports {
-            pub use std::mem;
-            pub use std::os::raw;
-        }
-    
+mod __gl_imports {
+    pub use std::mem;
+    pub use std::os::raw;
+}
 
-        #[inline(never)]
-        fn metaloadfn( loadfn: &mut FnMut(&str) -> *const __gl_imports::raw::c_void,
-                      symbol: &str,
-                      fallbacks: &[&str]) -> *const __gl_imports::raw::c_void {
-            let mut ptr = loadfn(symbol);
-            if ptr.is_null() {
-                for &sym in fallbacks {
-                    ptr = loadfn(sym);
-                    if !ptr.is_null() { break; }
-                }
-            }
-            ptr
-        }
-    
 
-        pub mod types {
-            #![allow(non_camel_case_types, non_snake_case, dead_code, missing_copy_implementations)]
+#[inline(never)] 
+#[allow(bare_trait_objects)]
+fn metaloadfn( loadfn: &mut FnMut(&str) -> *const __gl_imports::raw::c_void,
+                symbol: &str,
+                fallbacks: &[&str]) -> *const __gl_imports::raw::c_void {
+    let mut ptr = loadfn(symbol);
+    if ptr.is_null() {
+        for &sym in fallbacks {
+            ptr = loadfn(sym);
+            if !ptr.is_null() { break; }
+        }
+    }
+    ptr
+}
+
+
+pub mod types {
+    #![allow(non_camel_case_types, non_snake_case, dead_code, missing_copy_implementations)]
     
 // Common types from OpenGL 1.1
 pub type GLenum = super::__gl_imports::raw::c_uint;

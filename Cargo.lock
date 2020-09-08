@@ -447,7 +447,6 @@ name = "particles"
 version = "0.1.0"
 dependencies = [
  "gl_generator",
- "image",
  "piralib",
  "rand",
 ]
@@ -661,6 +660,14 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-xid",
+]
+
+[[package]]
+name = "textured_quad"
+version = "0.1.0"
+dependencies = [
+ "image",
+ "piralib",
 ]
 
 [[package]]

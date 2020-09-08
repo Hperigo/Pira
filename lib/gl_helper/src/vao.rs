@@ -100,7 +100,7 @@ impl Vao{
                     gl::FLOAT,
                     gl::FALSE,
                     a.stride,
-                    cur_offset as (* const gl::types::GLvoid) 
+                    cur_offset as * const gl::types::GLvoid 
                 );
 
                 cur_offset += a.data.len() * std::mem::size_of::<f32>();

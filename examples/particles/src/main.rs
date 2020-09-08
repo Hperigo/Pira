@@ -95,7 +95,7 @@ fn main() {
 
             let green : f32 = 0.5 * (p.scale * 10.0) ;
             let red : f32 = 0.8 * (p.scale * 10.0);
-            let blue : f32 = (1.0 - ( app.mouse_pos.y / 400.0 ));
+            let blue : f32 = 1.0 - ( app.mouse_pos.y / 400.0 );
             shader.set_uniform_4f("uColor", &glm::vec4(red, green, blue, 1.0));
             vao.draw( gl::TRIANGLES );
 

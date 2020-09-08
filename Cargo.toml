@@ -2,4 +2,5 @@
 members = [
     "lib/piralib",
     "examples/particles",
+    "examples/textured_quad",
 ]
