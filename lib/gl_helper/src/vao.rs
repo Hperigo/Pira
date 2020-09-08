@@ -81,7 +81,7 @@ impl Vao{
 
             gl::BindBuffer(data_vbo.get_gl_type(), data_vbo.get_handle());
 
-            let mut cur_offset  : usize = 0;
+            let mut current_offset  : usize = 0;
             for a in attribs{
                 let name = &a.name;
                 let loc = gl::GetAttribLocation(
@@ -90,7 +90,7 @@ impl Vao{
                     );
 
                 if loc == -1{
-                    println!("Error! {} name: {}", loc, name);
+                    println!("Error attrib not found in shader!\n\t {} name: {}", loc, name);
                 }
                 
                 gl::EnableVertexAttribArray(loc as u32);
@@ -100,11 +100,10 @@ impl Vao{
                     gl::FLOAT,
                     gl::FALSE,
                     a.stride,
-                    cur_offset as * const gl::types::GLvoid 
+                    current_offset as * const gl::types::GLvoid 
                 );
 
-                cur_offset += a.data.len() * std::mem::size_of::<f32>();
-     
+                current_offset += a.data.len() * std::mem::size_of::<f32>();     
             }
 
             gl::BindBuffer(data_vbo.get_gl_type(), 0);
@@ -125,7 +124,7 @@ impl Vao{
         self.handle
     }
 
-    pub fn buffer_sub_data(&self, data : &Vec<f32>  ){
+    pub fn buffer_sub_data(&self, data : &Vec<f32>, size : i32 ){
         // gl::BufferSubData( glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(positions), &positions); )
         unsafe{
 
@@ -141,7 +140,7 @@ impl Vao{
                 );
 
             gl::EnableVertexAttribArray(0);
-            gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, (3 * std::mem::size_of::<f32>()) as i32, 0 as *const gl::types::GLvoid);  
+            gl::VertexAttribPointer(0, size, gl::FLOAT, gl::FALSE, (3 * std::mem::size_of::<f32>()) as i32, 0 as *const gl::types::GLvoid);  
 
             gl::BindBuffer( gl::ARRAY_BUFFER, 0 );
             gl::BindVertexArray( 0 );
