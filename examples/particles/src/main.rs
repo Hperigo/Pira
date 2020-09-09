@@ -52,7 +52,7 @@ fn main() {
     let shader = glh::StockShader::new().color().build();
 
     let attribs = vec![pos_attrib, color_attrib];
-    let vao = glh::Vao::new_from_attrib(&attribs, &shader);
+    let vao = glh::Vao::new_from_attrib(&attribs, &shader).unwrap();
 
     // Particles -------
     let mut particles : Vec<Particle> = Vec::new();
@@ -60,7 +60,6 @@ fn main() {
     unsafe{ 
        gl::Enable(gl::BLEND);
        gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA); 
-      //   gl::BlendFunc( gl::ONE, gl::ONE); 
     }
 
     while app.run() {
@@ -68,14 +67,14 @@ fn main() {
         glh::clear(0.2, 0.1, 0.1, 1.0);
 
         shader.bind();
-        shader.set_uniform_mat4("perspectiveMatrix",
+        shader.set_uniform_mat4(glh::StockShader::uniform_name_perspective_matrix(),
                         &glm::ortho(0.0,
                                     app.get_framebuffer_size().0 as f32,
                                     app.get_framebuffer_size().1 as f32,
                                     0.0, -1.0,
                                     1.0));
 
-        shader.set_uniform_mat4("viewMatrix", &glm::Mat4::identity() );
+        shader.set_uniform_mat4( glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
 
         // update particles ----
         for p in &mut particles{
@@ -91,12 +90,12 @@ fn main() {
             mat =  glm::rotate(&mat, p.rotation, &glm::vec3(0.0, 0.0, 1.0));
             mat =  glm::scale(&mat,  &glm::vec3(p.scale, p.scale, 1.0));
 
-            shader.set_uniform_mat4("modelMatrix", &mat);
+            shader.set_uniform_mat4( glh::StockShader::uniform_name_model_matrix(), &mat);
 
             let green : f32 = 0.5 * (p.scale * 10.0) ;
             let red : f32 = 0.8 * (p.scale * 10.0);
             let blue : f32 = 1.0 - ( app.mouse_pos.y / 400.0 );
-            shader.set_uniform_4f("uColor", &glm::vec4(red, green, blue, 1.0));
+            shader.set_uniform_4f( glh::StockShader::uniform_name_color(), &glm::vec4(red, green, blue, 1.0));
             vao.draw( gl::TRIANGLES );
 
         }

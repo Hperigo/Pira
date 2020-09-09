@@ -1,7 +1,7 @@
 use crate::glsl_prog::GlslProg as GlslProg;
 
 use std::ffi::CString;
-
+use std::string::String;
 
 #[derive(Debug, Clone)]
 pub struct StockShader{
@@ -18,7 +18,6 @@ impl StockShader{
         }
     }
 
-
     pub fn color(&mut self) -> StockShader {
         self.color = true;
         return self.clone();
@@ -29,89 +28,98 @@ impl StockShader{
         return self.clone();
     }
 
+    
+    fn build_vertex_string(&self) -> (StockShader, std::string::String ) {
 
-    pub fn build_vertex_string(&self) -> (StockShader, std::string::String ) {
+            let mut color_layout = String::from("");
+            let mut texture_layout = String::from("");
 
-            let mut color_layout : std::string::String = String::from("");
-            let mut texture_layout : std::string::String = String::from("");
-
-            let mut color_main : std::string::String = String::from("");
-            let mut texture_main : std::string::String = String::from("");
+            let mut color_main = String::from("");
+            let mut texture_main = String::from("");
 
             if self.color {
-                color_layout = std::string::String::from("layout (location = 1) in vec4 Color;\n            out vec4 vertexColor;");
-                color_main = std::string::String::from("vertexColor = Color;");
+                color_layout = format!("layout (location = 1) in vec4 {};\n            out vec4 vertexColor;", StockShader::attrib_name_color()).to_string();
+                color_main =   format!("vertexColor = {};", StockShader::attrib_name_color()).to_string();
             }
 
             if self.texture {
-                texture_layout = std::string::String::from("layout (location = 2) in vec2 TextureCoords;\n            out vec2 textureCoord;");
-                texture_main = std::string::String::from("textureCoord = TextureCoords;");
+                texture_layout = format!("layout (location = 2) in vec2 {};\n            out vec2 textureCoord;", StockShader::attrib_name_texture_coords()).to_string();
+                texture_main =   format!("textureCoord = {};", StockShader::attrib_name_texture_coords()).to_string();
             }
+            
+            let position_main = format!("gl_Position = {} * {} * {} * vec4({}, 1.0);", StockShader::uniform_name_perspective_matrix(),
+                                                                                      StockShader::uniform_name_view_matrix(),
+                                                                                      StockShader::uniform_name_model_matrix(),
+                                                                                      StockShader::attrib_name_position()  ).to_string();
 
             let vertex_shader = format!(
             "
             #version 330
 
-            uniform mat4 modelMatrix;
-            uniform mat4 perspectiveMatrix;
-            uniform mat4 viewMatrix;
+            uniform mat4 {};
+            uniform mat4 {};
+            uniform mat4 {};
 
-            layout (location = 0) in vec3 Position;
+            layout (location = 0) in vec3 {};
             {}
             {}
 
             void main()
             {{
-                gl_Position = perspectiveMatrix * viewMatrix * modelMatrix * vec4(Position, 1.0);
+                {}
                 {}
                 {}
             }}
-            ", color_layout, texture_layout, color_main, texture_main );
+            ", 
+            //uniforms
+            StockShader::uniform_name_model_matrix(),
+            StockShader::uniform_name_perspective_matrix(),
+            StockShader::uniform_name_view_matrix(),
+
+            StockShader::attrib_name_position(),
+            color_layout, 
+            texture_layout, 
+
+            // compute final values
+            position_main,
+            color_main, 
+            texture_main );
 
             (self.clone(), vertex_shader )
     }
 
-    pub fn build_frag_string(&self) -> (StockShader, std::string::String ) { 
+    fn build_frag_string(&self) -> (StockShader, std::string::String ) { 
 
-            let mut sampler_2d = "";
-            let mut in_texture_coord = "";
-            let mut main_texture_coord = "";
+        let mut sampler_2d = String::from("");
+        let mut main_texture_coord = String::from("");
+        let mut main_vertex_color = String::from("");
 
-            let mut in_vertex_color = "";
-            let mut main_vertex_color = "";
+        if self.texture {
+            sampler_2d = format!("uniform sampler2D {};", StockShader::uniform_name_texture_sampler0());
+            main_texture_coord = format!("texture( {}, textureCoord).rgba *", StockShader::uniform_name_texture_sampler0());
+        }
 
-
-            if self.texture {
-                sampler_2d = "uniform sampler2D tex0;";
-                in_texture_coord = "in vec2 textureCoord;";
-                main_texture_coord = "texture( tex0, textureCoord).rgba *";
-            }
-
-            if self.color {
-                in_vertex_color = "in vec4 vertexColor;";
-                main_vertex_color = "vertexColor * ";
-            }
+        if self.color {
+            main_vertex_color = format!("{} * ", "vertexColor");
+        }
 
 
-            let frag_shader = format!("
-            #version 330
+        let frag_shader = format!("
+        #version 330
+        uniform vec4 uColor;
 
-            uniform vec4 uColor;
-
-            {} // sampler
-            {} // in texture coords
-
-            {} //in vec4 vertexColor;
+        {} // sampler
+        in vec2 textureCoord; // in texture coords
+        in vec4 vertexColor; //in vec4 vertexColor;
 
 
-            out vec4 Color;
-            void main()
-            {{
-                //vec4(textureCoord.x, textureCoord.y, 0, 1.0); //
-                Color =   {} {} uColor;
-            }}", sampler_2d, in_texture_coord, in_vertex_color, main_vertex_color, main_texture_coord );
+        out vec4 Color;
+        void main()
+        {{
+            Color = {} {} uColor;
+        }}", sampler_2d, main_vertex_color, main_texture_coord );
 
-            (self.clone(), frag_shader )
+        (self.clone(), frag_shader )
     }
 
     pub fn build(&self) ->  GlslProg {
@@ -120,6 +128,33 @@ impl StockShader{
         let frag_string   = self.build_frag_string().1;
 
         GlslProg::new( &CString::new(vertex_string).unwrap(), &CString::new(frag_string).unwrap() )
+    }
+
+
+    // Default uniforms and attribute names ---
+    pub fn uniform_name_model_matrix() -> &'static str{
+        return "uModelMatrix";
+    }
+    pub fn uniform_name_perspective_matrix() -> &'static str{
+        return "uPerspectiveMatrix";
+    }
+    pub fn uniform_name_view_matrix() -> &'static str{
+        return "uViewMatrix";
+    }
+    pub fn uniform_name_texture_sampler0() -> &'static str{
+        return "tex0";
+    }
+    pub fn uniform_name_color() -> &'static str{
+        return "uColor";
+    }
+    pub fn attrib_name_position() -> &'static str{
+        return "inPosition";
+    }
+    pub fn attrib_name_color() -> &'static str{
+        return "inColor";
+    }
+    pub fn attrib_name_texture_coords() -> &'static str{
+        return "inTexture";
     }
 
 }

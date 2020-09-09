@@ -2,11 +2,13 @@ extern crate gl;
 use crate::Vbo;
 use crate::GlslProg;
 
+use crate::StockShader;
+
 use std::ffi::CString;
 
 #[derive(Debug)]
 pub struct VertexAttrib{
-    name : String,
+    name : &'static str,
     size : i32,
     stride : gl::types::GLint,
     pub data : Vec<f32>,
@@ -17,7 +19,7 @@ impl VertexAttrib{
     pub fn new_position_attr() -> VertexAttrib {
         
         let position_attr = VertexAttrib{
-            name : String::from("Position"),
+            name : StockShader::attrib_name_position(),
             size : 3,
             stride : 0, 
             data : Vec::<f32>::new(),
@@ -30,7 +32,7 @@ impl VertexAttrib{
     pub fn new_color_attr() -> VertexAttrib{
 
         let color_attrib = VertexAttrib{
-            name  : String::from("Color"),
+            name  : StockShader::attrib_name_color(), //String::from("Color"),
             size : 4,
             stride : 0,
             data : Vec::<f32>::new(),
@@ -42,7 +44,7 @@ impl VertexAttrib{
     pub fn new_texture_attr() -> VertexAttrib{
 
         let texture_attrib = VertexAttrib{
-            name  : String::from( "TextureCoords" ),
+            name  : StockShader::attrib_name_texture_coords(),
             size : 2,
             stride : 0,
             data : Vec::<f32>::new(),
@@ -60,7 +62,7 @@ pub struct Vao{
 
 impl Vao{
 
-    pub fn new_from_attrib( attribs : & Vec<VertexAttrib>, shader : &GlslProg ) -> Vao{
+    pub fn new_from_attrib( attribs : & Vec<VertexAttrib>, shader : &GlslProg ) -> Option<Vao>{
 
         let mut data = Vec::<f32>::new();
         // merge buffers
@@ -91,6 +93,7 @@ impl Vao{
 
                 if loc == -1{
                     println!("Error attrib not found in shader!\n\t {} name: {}", loc, name);
+                    return None;
                 }
                 
                 gl::EnableVertexAttribArray(loc as u32);
@@ -117,7 +120,7 @@ impl Vao{
             num_of_vertices : num_of_vertices,
         };
 
-        vao
+        Some(vao)
     }
 
     pub fn get_handle(&self) -> gl::types::GLuint {
