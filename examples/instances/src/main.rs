@@ -3,7 +3,7 @@ use piralib::gl_helper as glh;
 use piralib::gl as gl;
 use piralib::glm;
 
-use image;
+use std::ffi::CString;
 
 fn main() {
 
@@ -13,46 +13,80 @@ fn main() {
         title: "#️⃣".to_string()
     });
 
+    let vertex_shader_string = "#version 330
 
-    let img = image::open("../../assets/bellargus.jpg").unwrap().to_rgba();
-    println!("Image width: {:?} height: {:?}", img.width(), img.height());
-    let texture = glh::Texture::new_from_image(&img);
+    uniform mat4 uModelMatrix;
+    uniform mat4 uPerspectiveMatrix;
+    uniform mat4 uViewMatrix;
+
+    layout (location = 0) in vec3 inPosition;
+    layout (location = 1) in vec4 inColor;
+   
+    layout (location = 2) in vec3 instancePosition;
+
+    out vec4 vertexColor;
+
+    void main()
+    {
+        gl_Position = uPerspectiveMatrix * uViewMatrix * uModelMatrix * vec4(inPosition + instancePosition, 1.0);
+        vertexColor = inColor;
+    }
+    ";
+
+    let frag_shader_string = "#version 330
+    uniform vec4 uColor;
+    in vec4 vertexColor; //in vec4 vertexColor;
+
+    out vec4 Color;
+    void main()
+    {
+        Color = uColor * vertexColor;
+    }
+    ";
 
     let mut pos_attrib = glh::VertexAttrib::new_position_attr();
     let mut color_attrib = glh::VertexAttrib::new_color_attr();
-    let mut texture_attrib = glh::VertexAttrib::new_texture_attr();
 
     // build vertex data ----
     let mut vertices : Vec<f32> = Vec::new();
     vertices.append( &mut vec![0.0,   0.0, 0.0] );
-    vertices.append( &mut vec![1104.0, 736.0, 0.0] );
-    vertices.append( &mut vec![0.0,   736.0, 0.0,] );
+    vertices.append( &mut vec![100.0, 130.0, 0.0] );
+    vertices.append( &mut vec![0.0,   130.0, 0.0,] );
 
     vertices.append( &mut vec![0.0,   0.0, 0.0] );
-    vertices.append( &mut vec![1104.0,736.0, 0.0] );
-    vertices.append( &mut vec![1104.0, 0.0, 0.0] );
+    vertices.append( &mut vec![100.0, 130.0, 0.0] );
+    vertices.append( &mut vec![100.0, 0.0, 0.0] );
 
     let mut colors : Vec<f32> = Vec::new();
-    let mut texure_vertices : Vec<f32> = Vec::new();
     {   
         let num_of_vertices = vertices.len();
         let mut i = 0;
         while i < num_of_vertices {
-
-            colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
-            texure_vertices.append( &mut vec![ vertices[i] / 1104.0, vertices[i+1]/736.0 ] );
-            
+            let red : f32 = i as f32 / num_of_vertices as f32;
+            colors.append(&mut vec![red, 0.0, 0.0, 1.0]);
             i = i + 3;
         }
-    }   
+    } 
+
+    let instance_positions = vec![0.0, 0.0, 0.0, 
+                                  100.0, 100.0, 0.0,
+                                  300.0, 300.0, 0.0];
+
+
+    let instance_positions_attrib = glh::VertexAttrib{
+        name : "instancePosition",
+        size : 3,
+        stride : 0, 
+        data : instance_positions,
+        per_instance : true,
+    };
 
     pos_attrib.data = vertices;
     color_attrib.data = colors;
-    texture_attrib.data = texure_vertices;
-    let stock_shader = glh::StockShader::new().texture();
-    println!("{}", stock_shader.get_frag_string());
-    let shader = stock_shader.build();
-    let attribs = vec![pos_attrib, texture_attrib];
+
+    let shader = glh::GlslProg::new(&CString::new(vertex_shader_string).unwrap(), &CString::new(frag_shader_string).unwrap());
+    
+    let attribs = vec![pos_attrib, color_attrib, instance_positions_attrib];
     let vao = glh::Vao::new_from_attrib(&attribs, &shader).unwrap();
 
     unsafe{ 
@@ -65,7 +99,6 @@ fn main() {
         glh::clear(0.2, 0.1, 0.1, 1.0);
 
         shader.bind();
-        texture.bind();
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
                                 &glm::ortho(0.0,
                                     app.get_framebuffer_size().0 as f32 * 0.5,
@@ -82,9 +115,8 @@ fn main() {
         shader.set_uniform_mat4( glh::StockShader::uniform_name_model_matrix(), &model_view );
         shader.set_uniform_4f( glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
 
-        vao.draw( gl::TRIANGLES );
+        vao.draw_instanced( gl::TRIANGLES, 3 );
 
-        texture.unbind();
         shader.unbind();
     }
 }

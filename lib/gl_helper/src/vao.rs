@@ -8,10 +8,11 @@ use std::ffi::CString;
 
 #[derive(Debug)]
 pub struct VertexAttrib{
-    name : &'static str,
-    size : i32,
-    stride : gl::types::GLint,
+    pub name : &'static str,
+    pub size : i32,
+    pub stride : gl::types::GLint,
     pub data : Vec<f32>,
+    pub per_instance : bool, // alias to attrib divisor
 }
 
 impl VertexAttrib{
@@ -23,6 +24,7 @@ impl VertexAttrib{
             size : 3,
             stride : 0, 
             data : Vec::<f32>::new(),
+            per_instance : false,
         };
         
         position_attr
@@ -36,6 +38,7 @@ impl VertexAttrib{
             size : 4,
             stride : 0,
             data : Vec::<f32>::new(),
+            per_instance : false,
         };
 
         color_attrib
@@ -48,6 +51,7 @@ impl VertexAttrib{
             size : 2,
             stride : 0,
             data : Vec::<f32>::new(),
+            per_instance : false,
         };
 
         texture_attrib
@@ -105,7 +109,8 @@ impl Vao{
                     a.stride,
                     current_offset as * const gl::types::GLvoid 
                 );
-
+                let attrib_divisor : u32 = if a.per_instance { 1 } else { 0 };
+                gl::VertexAttribDivisor(loc as u32, attrib_divisor);
                 current_offset += a.data.len() * std::mem::size_of::<f32>();     
             }
 
@@ -128,7 +133,6 @@ impl Vao{
     }
 
     pub fn buffer_sub_data(&self, data : &Vec<f32>, size : i32 ){
-        // gl::BufferSubData( glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(positions), &positions); )
         unsafe{
 
             gl::BindVertexArray( self.get_handle() );
@@ -137,7 +141,7 @@ impl Vao{
 
             gl::BufferSubData(
                 gl::ARRAY_BUFFER, //type
-                0, //offset 
+                0, //offset
                 ( data.len() * std::mem::size_of::<f32>() ) as gl::types::GLsizeiptr, // size of data
                 data.as_ptr() as *const gl::types::GLvoid // data ptr
                 );
@@ -161,9 +165,16 @@ impl Vao{
                 0,
                 self.num_of_vertices as i32
             );
-
             gl::BindVertexArray( 0 );
         }
+    }
+
+    pub fn draw_instanced(&self, primitive : gl::types::GLuint, instance_count : i32 ){
+        unsafe{
+            gl::BindVertexArray( self.get_handle() );
+            gl::DrawArraysInstanced(primitive, 0, self.num_of_vertices as i32, instance_count);
+            gl::BindVertexArray( 0 );
+        }        
     }
 
 

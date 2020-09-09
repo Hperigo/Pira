@@ -29,7 +29,7 @@ impl StockShader{
     }
 
     
-    fn build_vertex_string(&self) -> (StockShader, std::string::String ) {
+    pub fn get_vertex_string(&self) -> std::string::String {
 
             let mut color_layout = String::from("");
             let mut texture_layout = String::from("");
@@ -85,10 +85,10 @@ impl StockShader{
             color_main, 
             texture_main );
 
-            (self.clone(), vertex_shader )
+            vertex_shader
     }
 
-    fn build_frag_string(&self) -> (StockShader, std::string::String ) { 
+    pub fn get_frag_string(&self) -> std::string::String { 
 
         let mut sampler_2d = String::from("");
         let mut main_texture_coord = String::from("");
@@ -119,19 +119,20 @@ impl StockShader{
             Color = {} {} uColor;
         }}", sampler_2d, main_vertex_color, main_texture_coord );
 
-        (self.clone(), frag_shader )
+        frag_shader
     }
 
     pub fn build(&self) ->  GlslProg {
 
-        let vertex_string = self.build_vertex_string().1;
-        let frag_string   = self.build_frag_string().1;
+        let vertex_string = self.get_vertex_string();
+        let frag_string   = self.get_frag_string();
 
         GlslProg::new( &CString::new(vertex_string).unwrap(), &CString::new(frag_string).unwrap() )
     }
 
 
     // Default uniforms and attribute names ---
+    // we can use this query the names of variables used on the stock shader
     pub fn uniform_name_model_matrix() -> &'static str{
         return "uModelMatrix";
     }

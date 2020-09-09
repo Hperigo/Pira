@@ -146,8 +146,16 @@ fn compile_shader( src : &CStr, shader_type : gl::types::GLuint ) -> gl::types::
                 error.as_ptr() as *mut gl::types::GLchar
                 );
             }
+            
+            let shader_type_string : &str;
+            
+            match shader_type {
+                gl::VERTEX_SHADER => shader_type_string = "VERTEX_SHADER",
+                gl::FRAGMENT_SHADER => shader_type_string = "FRAGMENT",
+                _ => shader_type_string = "unkwon shader type"
+            };
 
-            println!("{}", error.into_string().unwrap() );
+            println!("Failed to compile {} :: error {}", shader_type_string, error.into_string().unwrap() );
         }
 
         shader_id

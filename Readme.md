@@ -1,11 +1,10 @@
 ## Pira 🔥
 
-Small opengl wrapper
-
 ![picture](pira_d.gif)
 
+Small experimental exercise using opengl and rust, lot's of unsafe code =P
 
-
-### Missing: 
-2. add global uniform names ( uPerspectiveMatrix, uContextColor, etc.. )
-3. Impl instance drawing 
+#### Todo's
+1. impl draw using element buffer
+2. create buffer objects other with data types different then f32's 
+3. more shader modes.. 
