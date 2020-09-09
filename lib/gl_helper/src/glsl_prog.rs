@@ -74,6 +74,14 @@ impl GlslProg{
             gl::Uniform1i( loc, *value );
         };
     }
+    
+    pub fn set_uniform_1f(&self, name : &str, value : f32){
+        let cname = CString::new( name ).expect("ill formed string");
+        unsafe{
+            let loc = gl::GetUniformLocation(self.handle,  cname.as_bytes_with_nul().as_ptr() as *const i8 );
+            gl::Uniform1f( loc, value );
+        };
+    }
 
     pub fn set_uniform_mat4(&self, name : &str, value : &glm::Mat4){
         let cname = CString::new( name ).expect("ill formed string");

@@ -84,7 +84,6 @@ impl Vao{
             gl::GenVertexArrays(1, &mut vao_handle);
             gl::BindVertexArray(vao_handle);
 
-
             gl::BindBuffer(data_vbo.get_gl_type(), data_vbo.get_handle());
 
             let mut current_offset  : usize = 0;
@@ -111,7 +110,8 @@ impl Vao{
                 );
                 let attrib_divisor : u32 = if a.per_instance { 1 } else { 0 };
                 gl::VertexAttribDivisor(loc as u32, attrib_divisor);
-                current_offset += a.data.len() * std::mem::size_of::<f32>();     
+                
+                current_offset += a.data.len() * std::mem::size_of::<f32>();
             }
 
             gl::BindBuffer(data_vbo.get_gl_type(), 0);
