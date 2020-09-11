@@ -74,8 +74,7 @@ impl Vao{
             data.append( &mut a.data.clone() );
         }
 
-        let num_of_vertices = attribs[0].data.len();
-
+        let num_of_vertices = attribs[0].data.len() / attribs[0].size as usize;        
         let mut vao_handle : gl::types::GLuint = 0;
         let data_vbo = Vbo::new(&data, gl::ARRAY_BUFFER );
 
