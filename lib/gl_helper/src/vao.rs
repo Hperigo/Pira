@@ -68,14 +68,12 @@ impl Vao{
     pub fn new_from_attrib_indexed( attribs : &Vec<VertexAttrib>, indices : &Vec<u32>, shader : &GlslProg ) -> Option<Vao>{
 
         let mut vao = Vao::new_from_attrib(attribs, shader).unwrap();
-        let index_vbo = Vbo::new(&indices, gl::ARRAY_BUFFER );
+        let index_vbo = Vbo::new(&indices, gl::ELEMENT_ARRAY_BUFFER );
 
-        unsafe{ 
-            gl::BindVertexArray(vao.handle);
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_vbo.get_handle());
-            gl::BindVertexArray(0);
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
-        }
+        vao.bind();
+        index_vbo.bind();
+        vao.unbind();
+        index_vbo.unbind();
 
         vao.index_buffer = Some(index_vbo);
         Some(vao)
@@ -85,6 +83,7 @@ impl Vao{
 
         let mut data = Vec::<f32>::new();
         // merge buffers
+        // TODO: we dont need to flatten the data into a single array, a better aproach would be to just buffer with an offset
         for a in  attribs{
             data.append( &mut a.data.clone() );
         }
@@ -151,7 +150,6 @@ impl Vao{
         unsafe{
 
             gl::BindVertexArray( self.get_handle() );
-
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vbo_handle.get_handle() );
 
             gl::BufferSubData(
@@ -197,8 +195,19 @@ impl Vao{
                 }
             }
         }
+    }
 
+    pub fn bind(&self){
+        unsafe{
+            gl::BindVertexArray(self.handle);
+        }
+        
+    }
 
+    pub fn unbind(&self){
+        unsafe{
+            gl::BindVertexArray(0);
+        }        
     }
 
     pub fn draw_instanced(&self, primitive : gl::types::GLuint, instance_count : i32 ){
@@ -206,7 +215,7 @@ impl Vao{
             gl::BindVertexArray( self.get_handle() );
             gl::DrawArraysInstanced(primitive, 0, self.num_of_vertices as i32, instance_count);
             gl::BindVertexArray( 0 );
-        }        
+        }
     }
 
 

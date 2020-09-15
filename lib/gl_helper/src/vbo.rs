@@ -1,6 +1,5 @@
 extern crate gl;
 
-// #[derive(Copy)]
 pub struct Vbo{
     handle: gl::types::GLuint,
     gl_type :  gl::types::GLuint,
@@ -44,6 +43,18 @@ impl Vbo{
     pub fn len(&self) -> usize{
         self.number_of_items
     }
+
+    pub fn bind(&self){
+        unsafe{
+            gl::BindBuffer(self.gl_type, self.handle);
+        }
+        
+    }
+    pub fn unbind(&self){
+        unsafe{
+            gl::BindBuffer(self.gl_type, 0);
+        }
+    }    
 }
 
 impl Drop for Vbo{
