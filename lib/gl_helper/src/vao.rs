@@ -3,7 +3,6 @@ use crate::Vbo;
 use crate::GlslProg;
 
 use crate::StockShader;
-
 use std::ffi::CString;
 
 #[derive(Debug)]
@@ -62,9 +61,25 @@ pub struct Vao{
     handle : gl::types::GLuint,
     vbo_handle : Vbo,
     num_of_vertices : usize,
+    index_buffer : Option<Vbo>,
 }
 
 impl Vao{
+    pub fn new_from_attrib_indexed( attribs : &Vec<VertexAttrib>, indices : &Vec<u32>, shader : &GlslProg ) -> Option<Vao>{
+
+        let mut vao = Vao::new_from_attrib(attribs, shader).unwrap();
+        let index_vbo = Vbo::new(&indices, gl::ARRAY_BUFFER );
+
+        unsafe{ 
+            gl::BindVertexArray(vao.handle);
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_vbo.get_handle());
+            gl::BindVertexArray(0);
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+        }
+
+        vao.index_buffer = Some(index_vbo);
+        Some(vao)
+    }
 
     pub fn new_from_attrib( attribs : & Vec<VertexAttrib>, shader : &GlslProg ) -> Option<Vao>{
 
@@ -122,6 +137,7 @@ impl Vao{
             handle:vao_handle,
             vbo_handle : data_vbo,
             num_of_vertices : num_of_vertices,
+            index_buffer : None
         };
 
         Some(vao)
@@ -156,16 +172,33 @@ impl Vao{
 
     pub fn draw(&self, primitive : gl::types::GLuint ){
 
-        unsafe{
-
-            gl::BindVertexArray( self.get_handle() );
-            gl::DrawArrays(
-                primitive,
-                0,
-                self.num_of_vertices as i32
-            );
-            gl::BindVertexArray( 0 );
+        match &self.index_buffer {
+            Some(element_buffer) => {
+                unsafe{
+                    gl::BindVertexArray( self.get_handle() );
+                    gl::DrawElements(
+                        primitive,
+                        element_buffer.len() as i32,
+                        gl::UNSIGNED_INT,
+                        0 as *const gl::types::GLvoid,
+                    );
+                    gl::BindVertexArray( 0 );
+                }
+            }
+            None => {
+                unsafe{
+                    gl::BindVertexArray( self.get_handle() );
+                    gl::DrawArrays(
+                        primitive,
+                        0,
+                        self.num_of_vertices as i32
+                    );
+                    gl::BindVertexArray( 0 );
+                }
+            }
         }
+
+
     }
 
     pub fn draw_instanced(&self, primitive : gl::types::GLuint, instance_count : i32 ){

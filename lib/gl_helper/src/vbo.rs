@@ -1,14 +1,15 @@
 extern crate gl;
 
-#[derive(Clone)]
+// #[derive(Copy)]
 pub struct Vbo{
     handle: gl::types::GLuint,
-    gl_type :  gl::types::GLuint
+    gl_type :  gl::types::GLuint,
+    number_of_items : usize,
 }
 
 impl Vbo{
 
-    pub fn new( data : &Vec<f32>, gl_type : gl::types::GLuint ) ->  Vbo{
+    pub fn new<T>( data : &Vec<T>, gl_type : gl::types::GLuint ) ->  Vbo{
 
         let mut vbo : gl::types::GLuint = 0;
         unsafe {
@@ -17,7 +18,7 @@ impl Vbo{
             gl::BindBuffer(gl_type, vbo);
             gl::BufferData(
                 gl_type,
-                ( data.len() * std::mem::size_of::<f32>() ) as gl::types::GLsizeiptr,
+                ( data.len() * std::mem::size_of::<T>() ) as gl::types::GLsizeiptr,
                 data.as_ptr() as *const gl::types::GLvoid,
                 gl::STATIC_DRAW,
             );
@@ -27,7 +28,8 @@ impl Vbo{
 
         Vbo{
             handle : vbo,
-            gl_type :gl_type
+            gl_type :gl_type,
+            number_of_items : data.len()
         }
     }
 
@@ -39,6 +41,9 @@ impl Vbo{
         self.gl_type
     }
 
+    pub fn len(&self) -> usize{
+        self.number_of_items
+    }
 }
 
 impl Drop for Vbo{

@@ -4,4 +4,5 @@ members = [
     "examples/particles",
     "examples/textured_quad",
     "examples/instances",
+    "examples/indexed",
 ]
