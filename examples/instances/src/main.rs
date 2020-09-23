@@ -36,7 +36,6 @@ fn main() {
         //rotatedPoint.w = 1.0;
 
         gl_Position = uPerspectiveMatrix * uViewMatrix * uModelMatrix * vec4(rotatedPoint, 1.0);
-        // gl_Position = uPerspectiveMatrix * uViewMatrix * uModelMatrix * vec4(inPosition + instancePosition, 1.0); 
         
         vColor = inColor;
     }   
@@ -77,10 +76,9 @@ fn main() {
     colors.append( &mut vec![0.7, 0.9, 0.1, 1.0]);
     colors.append( &mut vec![0.2, 0.1, 0.1,  1.0]);
 
-
-
+    //create the instance position attribute buffer
     let mut instance_positions : Vec<f32> = Vec::new();
-    let spacing = 40.0;
+    let spacing = 25.;
     for x in 0..300{
         for y in 0 .. 100{
             instance_positions.append( &mut vec![x as f32 * spacing * 0.5, y as f32 * spacing, 0.0 ]);
