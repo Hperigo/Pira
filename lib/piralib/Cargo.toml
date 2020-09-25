@@ -8,4 +8,4 @@ edition = "2018"
 gl = {path = "../gl" }
 gl_helper = {path = "../gl_helper"}
 nalgebra-glm = "*"
-glfw = "*"
+imgui-glfw-rs = "*"
