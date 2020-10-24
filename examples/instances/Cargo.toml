@@ -8,6 +8,8 @@ edition = "2018"
 
 [dependencies]
 piralib = { path = "../../lib/piralib" }
+rand = "0.7"
+imgui-glfw-rs = "*"
 
 [build-dependencies]
 gl_generator = "0.5.0"

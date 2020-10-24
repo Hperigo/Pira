@@ -5,13 +5,20 @@ use piralib::glm;
 
 use std::ffi::CString;
 
+use rand::Rng;
+use imgui_glfw_rs::imgui::*;
+
 fn main() {
+
+    let mut mousePos = glm::vec2(0.0,0.0);
 
     let mut app  = piralib::App::init_with_options( &piralib::app::Options{
         window_width: 1104,
         window_height: 736,
+        samples : 2,
         title: "#️⃣".to_string()
     });
+
 
     let vertex_shader_string = "#version 330
 
@@ -19,20 +26,33 @@ fn main() {
     uniform mat4 uPerspectiveMatrix;
     uniform mat4 uViewMatrix;
     uniform float uTime;
+
+
+    
+    uniform vec2 uMousePos;
+
     layout (location = 0) in vec3 inPosition;
     layout (location = 1) in vec4 inColor; 
     layout (location = 2) in vec3 instancePosition;
 
     out vec4 vColor;
     void main()
-    {
-        float angle = uTime * 0.01 + float(gl_InstanceID) * 0.0051 + instancePosition.y * 0.01;
+    {   
+
+        float dist = (distance(uMousePos, instancePosition.xy) / 50.0);
+
+        float angle =  float(gl_InstanceID) * 0.0001 + instancePosition.y * 0.007;
+        angle = (angle + dist) + uTime * -0.01 ;
         mat3  rotation = mat3(
             vec3( cos(angle), -sin(angle), 0.0),
             vec3( sin(angle), cos(angle),  0.0),
             vec3( 0.0,        0.0,         1.0 ));
         
-        vec3 rotatedPoint =  rotation * vec3(inPosition) + vec3(instancePosition);
+
+        vec3 pos = inPosition;
+        pos.x = (pos.x - 5.0 )* ( 1.0 -  inColor.r );
+        pos.z = pos.z + 1.0 * inColor.r;
+        vec3 rotatedPoint =  rotation * vec3(pos) + vec3(instancePosition);
         //rotatedPoint.w = 1.0;
 
         gl_Position = uPerspectiveMatrix * uViewMatrix * uModelMatrix * vec4(rotatedPoint, 1.0);
@@ -46,10 +66,13 @@ fn main() {
 
     in vec4 vColor;
 
+    uniform vec3 uTipColor;
+    uniform vec3 uBaseColor;
+
     out vec4 Color;
     void main()
     {
-        Color = uColor * vColor;
+        Color = vec4(mix(uBaseColor, uTipColor, vColor.r), 1.0);
     }
     ";
 
@@ -68,19 +91,37 @@ fn main() {
 
     let mut color_attrib = glh::VertexAttrib::new_color_attr();
     let mut colors : Vec<f32> = Vec::new();
-    colors.append( &mut vec![0.2,   0.1, 0.1, 1.0]);
-    colors.append( &mut vec![0.7, 0.9, 0.1, 1.0]);
-    colors.append( &mut vec![0.7, 0.9, 0.1, 1.0]);
+    colors.append( &mut vec![0.0,   0.1, 0.1, 1.0]);
+    colors.append( &mut vec![1.0, 0.9, 0.1, 1.0]);
+    colors.append( &mut vec![1.0, 0.9, 0.1, 1.0]);
 
-    colors.append( &mut vec![0.2, 0.1, 0.1, 1.0]);
-    colors.append( &mut vec![0.7, 0.9, 0.1, 1.0]);
-    colors.append( &mut vec![0.2, 0.1, 0.1,  1.0]);
+    colors.append( &mut vec![0.0, 0.1, 0.1, 1.0]);
+    colors.append( &mut vec![1.0, 0.9, 0.1, 1.0]);
+    colors.append( &mut vec![0.0, 0.1, 0.1,  1.0]);
+
+    //base 
+    //colors.append( &mut vec![, 1.0]);
+
+    // tip
+    //colors.append( &mut vec![, 1.0]);
+
+
 
     //create the instance position attribute buffer
     let mut instance_positions : Vec<f32> = Vec::new();
-    let spacing = 25.;
-    for x in 0..300{
-        for y in 0 .. 100{
+    let spacing = 10.;
+    let mut rng = rand::thread_rng();
+
+    let random_range = 1.0;
+
+    let max_x = 550;
+    let max_y = 190;
+
+    for i in 0..max_x{
+        for k in 0 ..max_y{
+            
+            let x = ((max_x as f32) - (i as f32)) + rng.gen_range(-random_range, random_range);
+            let y = ((max_y as f32) - (k as f32)) + rng.gen_range(-random_range, random_range);
             instance_positions.append( &mut vec![x as f32 * spacing * 0.5, y as f32 * spacing, 0.0 ]);
         }
     }
@@ -105,9 +146,23 @@ fn main() {
     let vao = glh::Vao::new_from_attrib(&attribs, &shader).unwrap();
 
     let mut frame_number = 0;
-    while app.run() {
+
+    let mut mouse_pos : [f32; 2] = [0.0,0.0];
+
+    let mut baseColor : [f32; 3] = [0.2, 0.1, 0.1];
+    let mut tipColor : [f32; 3] = [0.7, 0.9, 0.1];
+
+    while app.run(){
         frame_number = frame_number + 1;
-        glh::clear(0.2, 0.1, 0.1, 1.0);
+        //glh::clear(0.2, 0.1, 0.1, 1.0);
+        glh::clear(baseColor[0], baseColor[1], baseColor[2], 1.0);
+
+        mouse_pos[0] = app.mouse_pos.x;
+        mouse_pos[1] = app.mouse_pos.y;
+
+        unsafe{
+            gl::Viewport(0,0, app.get_framebuffer_size().0, app.get_framebuffer_size().1);
+        }
 
         shader.bind();
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
@@ -118,6 +173,10 @@ fn main() {
                                     1.0));
 
        shader.set_uniform_1f("uTime", frame_number as f32);
+       shader.set_uniform_2f("uMousePos", &mouse_pos);
+       
+       shader.set_uniform_3f("uBaseColor", &baseColor);
+       shader.set_uniform_3f("uTipColor", &tipColor);
 
         shader.set_uniform_mat4( glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
 
@@ -131,5 +190,15 @@ fn main() {
         vao.draw_instanced( gl::TRIANGLES, number_of_instances );
 
         shader.unbind();
+
+
+        app.do_ui( |ui| {
+            
+            ui.text(im_str!("hey there1"));
+            ui.drag_float3(im_str!("background color"), &mut baseColor).speed(0.01).min(0.0).max(1.0).build();
+            ui.drag_float3(im_str!("tip color"), &mut tipColor).speed(0.01).min(0.0).max(1.0).build();
+
+
+        } );
     }
 }
