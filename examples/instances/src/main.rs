@@ -11,67 +11,9 @@ use imgui_glfw_rs::imgui::*;
 
 use std::rc::*;
 use std::cell::RefCell;
-// #[derive(Debug)]
-// struct EventData{
-//     data : u32,
-// }
-
-
-// struct Apped {
-//     event_handler :Option<Processor>,
-//     frame_number : u32,
-// }
-
-// impl Apped {
-//     pub fn new( handler : impl FnMut(&EventData) + 'static ) -> Apped {
-//         Apped{
-//             event_handler : Some(Processor { callback : Box::new(handler) }),
-//             frame_number : 0,
-//         }
-//     }
-
-//     pub fn update(&mut self){
-//         self.frame_number = self.frame_number + 1;
-//         let data = EventData{
-//             data : self.frame_number
-//         };
-
-//         match &mut self.event_handler{
-//             Some(handler) => handler.process_events(&data),
-//             None => ()
-//         };
-
-//         //self.event_handler.process_events(&data);
-//     }
-// }
 
 fn main() {
 
-    // let mut aaa = Apped::new(|e| println!("hey there -> {:?}", e));
-
-
-    // for _ in 0 .. 100{
-    //     aaa.update();
-    // }
-    
-    // let mut ppp = Processor  {
-    //    callback : Box::new()
-    // };
-
-    // let e = EventData{
-    //     data : 100,
-    // };
-
-
-    // ppp.process_events(&e);
-
-    // ppp.set_callback(|e| println!("hey there -----> {:?}", e));
-
-    // ppp.process_events(&e);
-
-    let mut xxx = RefCell::new(0.0);
-
-    {
     let mut app  = piralib::App::init_with_options( &piralib::app::Options{
         window_width: 1104,
         window_height: 736,
@@ -79,29 +21,12 @@ fn main() {
         title: "#️⃣".to_string()
     });
 
-
-
-
-    app.set_event_handler( |e| {
-        println!("hello there callback! {:?}", e);
-
-        match e {
-            piralib::imgui_glfw_rs::glfw::WindowEvent::CursorPos(x,_) => {
-                let mut v = xxx.borrow_mut();
-                *v = *x as f32; 
-            },
-            _ => ()
-        };
-    } );
-
-    let vertex_shader_string = "#version 330
+   let vertex_shader_string = "#version 330
 
     uniform mat4 uModelMatrix;
     uniform mat4 uPerspectiveMatrix;
     uniform mat4 uViewMatrix;
     uniform float uTime;
-
-
     
     uniform vec2 uMousePos;
 
@@ -231,15 +156,12 @@ fn main() {
 
     while app.run(){
 
-
-        println!("mouse X pos: {}", xxx.borrow());
-
         frame_number = frame_number + 1;
         //glh::clear(0.2, 0.1, 0.1, 1.0);
         glh::clear(base_color[0], base_color[1], base_color[2], 1.0);
 
-        mouse_pos[0] = app.mouse_pos.x;
-        mouse_pos[1] = app.mouse_pos.y;
+        mouse_pos[0] = app.mouse_pos.x  * 2.0;
+        mouse_pos[1] = app.mouse_pos.y  * 2.0;
 
         unsafe{
             gl::Viewport(0,0, app.get_framebuffer_size().0, app.get_framebuffer_size().1);
@@ -281,6 +203,5 @@ fn main() {
 
 
         } );
-    }
     }
 }
