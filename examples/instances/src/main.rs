@@ -8,10 +8,70 @@ use std::ffi::CString;
 use rand::Rng;
 use imgui_glfw_rs::imgui::*;
 
+
+use std::rc::*;
+use std::cell::RefCell;
+// #[derive(Debug)]
+// struct EventData{
+//     data : u32,
+// }
+
+
+// struct Apped {
+//     event_handler :Option<Processor>,
+//     frame_number : u32,
+// }
+
+// impl Apped {
+//     pub fn new( handler : impl FnMut(&EventData) + 'static ) -> Apped {
+//         Apped{
+//             event_handler : Some(Processor { callback : Box::new(handler) }),
+//             frame_number : 0,
+//         }
+//     }
+
+//     pub fn update(&mut self){
+//         self.frame_number = self.frame_number + 1;
+//         let data = EventData{
+//             data : self.frame_number
+//         };
+
+//         match &mut self.event_handler{
+//             Some(handler) => handler.process_events(&data),
+//             None => ()
+//         };
+
+//         //self.event_handler.process_events(&data);
+//     }
+// }
+
 fn main() {
 
-    let mut mousePos = glm::vec2(0.0,0.0);
+    // let mut aaa = Apped::new(|e| println!("hey there -> {:?}", e));
 
+
+    // for _ in 0 .. 100{
+    //     aaa.update();
+    // }
+    
+    // let mut ppp = Processor  {
+    //    callback : Box::new()
+    // };
+
+    // let e = EventData{
+    //     data : 100,
+    // };
+
+
+    // ppp.process_events(&e);
+
+    // ppp.set_callback(|e| println!("hey there -----> {:?}", e));
+
+    // ppp.process_events(&e);
+
+    let mut xxx = RefCell::new(0.0);
+
+    {
     let mut app  = piralib::App::init_with_options( &piralib::app::Options{
         window_width: 1104,
         window_height: 736,
@@ -19,6 +79,20 @@ fn main() {
         title: "#️⃣".to_string()
     });
 
+
+
+
+    app.set_event_handler( |e| {
+        println!("hello there callback! {:?}", e);
+
+        match e {
+            piralib::imgui_glfw_rs::glfw::WindowEvent::CursorPos(x,_) => {
+                let mut v = xxx.borrow_mut();
+                *v = *x as f32; 
+            },
+            _ => ()
+        };
+    } );
 
     let vertex_shader_string = "#version 330
 
@@ -50,7 +124,7 @@ fn main() {
         
 
         vec3 pos = inPosition;
-        pos.x = (pos.x - 5.0 )* ( 1.0 -  inColor.r );
+        pos.x = (pos.x - 5.0 )* ( 1.0 -  inColor.r + 0.0 ) ;
         pos.z = pos.z + 1.0 * inColor.r;
         vec3 rotatedPoint =  rotation * vec3(pos) + vec3(instancePosition);
         //rotatedPoint.w = 1.0;
@@ -79,14 +153,16 @@ fn main() {
     let mut pos_attrib = glh::VertexAttrib::new_position_attr();
 
     // build vertex data ----
+    let fur_width = 10.0;
+
     let mut vertices : Vec<f32> = Vec::new();
     vertices.append( &mut vec![0.0,   0.0, 0.0] );
-    vertices.append( &mut vec![10.0, 30.0, 0.0] );
+    vertices.append( &mut vec![fur_width, 30.0, 0.0] );
     vertices.append( &mut vec![0.0,  30.0, 0.0,] );
 
     vertices.append( &mut vec![0.0,   0.0, 0.0] );
-    vertices.append( &mut vec![10.0, 30.0, 0.0] );
-    vertices.append( &mut vec![10.0, 0.0, 0.0] );
+    vertices.append( &mut vec![fur_width, 30.0, 0.0] );
+    vertices.append( &mut vec![fur_width, 0.0, 0.0] );
  
 
     let mut color_attrib = glh::VertexAttrib::new_color_attr();
@@ -149,13 +225,18 @@ fn main() {
 
     let mut mouse_pos : [f32; 2] = [0.0,0.0];
 
-    let mut baseColor : [f32; 3] = [0.2, 0.1, 0.1];
-    let mut tipColor : [f32; 3] = [0.7, 0.9, 0.1];
+    let mut base_color : [f32; 3] = [0.2, 0.1, 0.1];
+    let mut tip_color : [f32; 3] = [0.9, 0.0, 0.2];
+
 
     while app.run(){
+
+
+        println!("mouse X pos: {}", xxx.borrow());
+
         frame_number = frame_number + 1;
         //glh::clear(0.2, 0.1, 0.1, 1.0);
-        glh::clear(baseColor[0], baseColor[1], baseColor[2], 1.0);
+        glh::clear(base_color[0], base_color[1], base_color[2], 1.0);
 
         mouse_pos[0] = app.mouse_pos.x;
         mouse_pos[1] = app.mouse_pos.y;
@@ -175,8 +256,8 @@ fn main() {
        shader.set_uniform_1f("uTime", frame_number as f32);
        shader.set_uniform_2f("uMousePos", &mouse_pos);
        
-       shader.set_uniform_3f("uBaseColor", &baseColor);
-       shader.set_uniform_3f("uTipColor", &tipColor);
+       shader.set_uniform_3f("uBaseColor", &base_color);
+       shader.set_uniform_3f("uTipColor", &tip_color);
 
         shader.set_uniform_mat4( glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
 
@@ -195,10 +276,11 @@ fn main() {
         app.do_ui( |ui| {
             
             ui.text(im_str!("hey there1"));
-            ui.drag_float3(im_str!("background color"), &mut baseColor).speed(0.01).min(0.0).max(1.0).build();
-            ui.drag_float3(im_str!("tip color"), &mut tipColor).speed(0.01).min(0.0).max(1.0).build();
+            ui.drag_float3(im_str!("background color"), &mut base_color).speed(0.01).min(0.0).max(1.0).build();
+            ui.drag_float3(im_str!("tip color"), &mut tip_color).speed(0.01).min(0.0).max(1.0).build();
 
 
         } );
+    }
     }
 }

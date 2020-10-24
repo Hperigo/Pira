@@ -9,6 +9,7 @@ fn main() {
     let mut app  = piralib::App::init_with_options( &piralib::app::Options{
         window_width: 1104,
         window_height: 736,
+        samples : 4,
         title: "#️⃣".to_string()
     });
 

@@ -10,6 +10,7 @@ fn main() {
     let mut app  = piralib::App::init_with_options( &piralib::app::Options{
         window_width: 1104,
         window_height: 736,
+        samples : 4,
         title: "#️⃣".to_string()
     });
 
@@ -52,18 +53,20 @@ fn main() {
 
     unsafe{ 
        gl::Enable(gl::BLEND);
-       gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA); 
+       gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
     }
 
     while app.run() {
 
         glh::clear(r, g, b, 1.0);
 
+
+
         shader.bind();
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
                                 &glm::ortho(0.0,
-                                    app.get_framebuffer_size().0 as f32 * 0.5,
-                                    app.get_framebuffer_size().1 as f32 * 0.5,
+                                    app.get_framebuffer_size().0 as f32,
+                                    app.get_framebuffer_size().1 as f32,
                                     0.0, -1.0,
                                     1.0));
 
@@ -89,11 +92,8 @@ fn main() {
             ui.drag_float3( im_str!("Translation"), &mut translation ).build();
             ui.drag_float3( im_str!("Scale"), &mut scale ).speed(0.01).build();
             ui.drag_float( im_str!("Rotation"), &mut rotation ).speed(0.01).build();
-
-            
         } );
-
-            
+           
         shader.unbind();
     }
 }
