@@ -10,11 +10,12 @@ fn main() {
     let mut app  = piralib::App::init_with_options( &piralib::app::Options{
         window_width: 1104,
         window_height: 736,
-        title: "#️⃣".to_string()
+        title: "#️⃣".to_string(),
+        samples: 2,
     });
 
 
-    let img = image::open("../../assets/bellargus.jpg").unwrap().to_rgba();
+    let img = image::open("../../assets/uv_image.png").unwrap().to_rgba();
     println!("Image width: {:?} height: {:?}", img.width(), img.height());
     let texture = glh::Texture::new_from_image(&img);
 
@@ -25,23 +26,22 @@ fn main() {
     // build vertex data ----
     let mut vertices : Vec<f32> = Vec::new();
     vertices.append( &mut vec![0.0,   0.0, 0.0] );
-    vertices.append( &mut vec![1104.0, 736.0, 0.0] );
-    vertices.append( &mut vec![0.0,   736.0, 0.0,] );
+    vertices.append( &mut vec![1024.0, 1024.0, 0.0] );
+    vertices.append( &mut vec![0.0,    1024.0, 0.0,] );
 
     vertices.append( &mut vec![0.0,   0.0, 0.0] );
-    vertices.append( &mut vec![1104.0,736.0, 0.0] );
-    vertices.append( &mut vec![1104.0, 0.0, 0.0] );
+    vertices.append( &mut vec![1024.0, 1024.0, 0.0] );
+    vertices.append( &mut vec![1024.0, 0.0, 0.0] );
 
     let mut colors : Vec<f32> = Vec::new();
     let mut texure_vertices : Vec<f32> = Vec::new();
     {   
         let num_of_vertices = vertices.len();
         let mut i = 0;
-        while i < num_of_vertices {
 
+        while i < num_of_vertices {
             colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
-            texure_vertices.append( &mut vec![ vertices[i] / 1104.0, vertices[i+1]/736.0 ] );
-            
+            texure_vertices.append( &mut vec![ vertices[i] / 1024.0, vertices[i+1]/1024.0 ] ); // normalize vertex coords
             i = i + 3;
         }
     }   
