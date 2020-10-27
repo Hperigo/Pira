@@ -142,6 +142,15 @@ fn main() {
     let mut base_color : [f32; 3] = [0.2, 0.1, 0.1];
     let mut tip_color : [f32; 3] = [0.9, 0.0, 0.2];
 
+            
+    #[cfg(target_os = "macos")]
+    let frame_buffer_scale = 2.0;
+    #[cfg(target_os = "linux")]
+    let frame_buffer_scale = 1.0;
+    #[cfg(target_os = "windows")]
+    let frame_buffer_scale = 1.0;
+    let inv_frambe_buffer_scale = 1.0 / frame_buffer_scale; // used for the glViewport
+
     while app.run(){
 
         frame_number = frame_number + 1;
@@ -158,10 +167,11 @@ fn main() {
         }
 
         shader.bind();
+
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
                                 &glm::ortho(0.0,
-                                    app.get_framebuffer_size().0 as f32 * 0.5, // beacuse of mac dpi we need to scale it down
-                                    app.get_framebuffer_size().1 as f32 * 0.5,
+                                    app.get_framebuffer_size().0 as f32 * inv_frambe_buffer_scale, // beacuse of mac dpi we need to scale it down
+                                    app.get_framebuffer_size().1 as f32 * inv_frambe_buffer_scale,
                                     0.0, -1.0,
                                     1.0));
 

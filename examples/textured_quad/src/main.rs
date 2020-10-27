@@ -59,6 +59,13 @@ fn main() {
        gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA); 
     }
 
+    #[cfg(target_os = "macos")]
+    let frame_buffer_scale = 0.5;
+    #[cfg(target_os = "linux")]
+    let frame_buffer_scale = 1.0;
+    #[cfg(target_os = "windows")]
+    let frame_buffer_scale = 1.0;
+
     while app.run() {
 
         glh::clear(0.2, 0.1, 0.1, 1.0);
@@ -67,8 +74,8 @@ fn main() {
         texture.bind();
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
                                 &glm::ortho(0.0,
-                                    app.get_framebuffer_size().0 as f32 * 0.5,
-                                    app.get_framebuffer_size().1 as f32 * 0.5,
+                                    app.get_framebuffer_size().0 as f32 * frame_buffer_scale,
+                                    app.get_framebuffer_size().1 as f32 * frame_buffer_scale,
                                     0.0, -1.0,
                                     1.0));
 

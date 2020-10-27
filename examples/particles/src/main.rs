@@ -108,10 +108,18 @@ fn main() {
         let sy : f32 = rng.gen_range(-5.0, -1.0);
         let r : f32 = rng.gen_range(-std::f32::consts::PI, std::f32::consts::PI);
 
-        let p = app.mouse_pos;
+        let p = app.mouse_pos ;
+
+        #[cfg(target_os = "macos")]
+        let frame_buffer_scale = 2.0;
+        #[cfg(target_os = "linux")]
+        let frame_buffer_scale = 1.0;
+        #[cfg(target_os = "windows")]
+        let frame_buffer_scale = 1.0;
+        
         particles.push(Particle{
             
-            position: glm::vec3(p.x * 2.0, p.y * 2.0, 0.0),
+            position: glm::vec3(p.x * frame_buffer_scale, p.y * frame_buffer_scale, 0.0),
             speed : glm::vec3(sx, sy, 0.0),
             scale : 0.1,
             rotation : r,
