@@ -61,14 +61,6 @@ impl<'a> App<'a>{
         window.set_framebuffer_size_polling(true);
         window.set_cursor_pos_polling(true);
         window.set_all_polling(true);
-    //    window.make_current();
-
-        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-
-        
-
-        
         window.make_current();
 
         gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
@@ -78,9 +70,6 @@ impl<'a> App<'a>{
         let mut imgui = ImContext::create();
         let imgui_glfw = ImguiGLFW::new(&mut imgui, &mut window);
         
-
-
-           //       glfwWindowHint(GLFW_SAMPLES, 4);
         App{
             mouse_pos : glm::Vec2::new( (opt.window_width as f32 ) / 2.0 , (opt.window_height as f32) / 2.0),
             window : window,
@@ -121,13 +110,16 @@ impl<'a> App<'a>{
         let window_size = self.window.get_size();
         io.display_size = [window_size.0 as f32, window_size.1 as f32];
         
-        io.display_framebuffer_scale = [1.0, 1.0];
         
-        if cfg!(macos) {
-            io.display_framebuffer_scale = [2.0, 2.0];
-        }
-        
-               
+        #[cfg(target_os = "macos")]
+        let frame_buffer_scale = 2.0;
+        #[cfg(target_os = "linux")]
+        let frame_buffer_scale = 1.0;
+        #[cfg(target_os = "windows")]
+        let frame_buffer_scale = 1.0;
+
+        io.display_framebuffer_scale = [frame_buffer_scale, frame_buffer_scale];
+    
     }
 
     pub fn do_ui(&mut self, f : impl FnOnce( &imgui_glfw_rs::imgui::Ui ) ){

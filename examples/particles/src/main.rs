@@ -21,6 +21,7 @@ fn main() {
         window_width: 300,
         window_height: 400,
         title: "🔥".to_string(),
+        samples: 2,
     });
 
     let mut pos_attrib = glh::VertexAttrib::new_position_attr();

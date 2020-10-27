@@ -60,8 +60,6 @@ fn main() {
 
         glh::clear(r, g, b, 1.0);
 
-
-
         shader.bind();
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
                                 &glm::ortho(0.0,
@@ -81,10 +79,8 @@ fn main() {
         shader.set_uniform_4f( glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
 
         vao.draw( gl::TRIANGLES );
-
         app.do_ui( |ui| {
             
-            ui.text(im_str!("hey there1"));
             ui.drag_float(im_str!("R"), &mut r).speed(0.001).build();
             ui.drag_float(im_str!("G"), &mut g).speed(0.001).build();
             ui.drag_float(im_str!("B"), &mut b).speed(0.001).build();

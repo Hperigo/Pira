@@ -9,9 +9,6 @@ use rand::Rng;
 use imgui_glfw_rs::imgui::*;
 
 
-use std::rc::*;
-use std::cell::RefCell;
-
 fn main() {
 
     let mut app  = piralib::App::init_with_options( &piralib::app::Options{
@@ -32,7 +29,7 @@ fn main() {
 
     layout (location = 0) in vec3 inPosition;
     layout (location = 1) in vec4 inColor; 
-    layout (location = 2) in vec3 instancePosition;
+    layout (location = 2) in vec2 instancePosition;
 
     out vec4 vColor;
     void main()
@@ -51,8 +48,7 @@ fn main() {
         vec3 pos = inPosition;
         pos.x = (pos.x - 5.0 )* ( 1.0 -  inColor.r + 0.0 ) ;
         pos.z = pos.z + 1.0 * inColor.r;
-        vec3 rotatedPoint =  rotation * vec3(pos) + vec3(instancePosition);
-        //rotatedPoint.w = 1.0;
+        vec3 rotatedPoint =  rotation * vec3(pos) + vec3(instancePosition, 0.0);
 
         gl_Position = uPerspectiveMatrix * uViewMatrix * uModelMatrix * vec4(rotatedPoint, 1.0);
         
@@ -70,8 +66,9 @@ fn main() {
 
     out vec4 Color;
     void main()
-    {
-        Color = vec4(mix(uBaseColor, uTipColor, vColor.r), 1.0);
+    {   
+        float alpha = 1.0; // - vColor.r;
+        Color = vec4(mix(uBaseColor, uTipColor, vColor.r), alpha);
     }
     ";
 
@@ -100,14 +97,6 @@ fn main() {
     colors.append( &mut vec![1.0, 0.9, 0.1, 1.0]);
     colors.append( &mut vec![0.0, 0.1, 0.1,  1.0]);
 
-    //base 
-    //colors.append( &mut vec![, 1.0]);
-
-    // tip
-    //colors.append( &mut vec![, 1.0]);
-
-
-
     //create the instance position attribute buffer
     let mut instance_positions : Vec<f32> = Vec::new();
     let spacing = 10.;
@@ -120,20 +109,20 @@ fn main() {
 
     for i in 0..max_x{
         for k in 0 ..max_y{
-            
+
             let x = ((max_x as f32) - (i as f32)) + rng.gen_range(-random_range, random_range);
             let y = ((max_y as f32) - (k as f32)) + rng.gen_range(-random_range, random_range);
-            instance_positions.append( &mut vec![x as f32 * spacing * 0.5, y as f32 * spacing, 0.0 ]);
+            instance_positions.append( &mut vec![x as f32 * spacing * 0.5, y as f32 * spacing ]);
         }
     }
 
 
-    let number_of_instances = instance_positions.len() as i32 / 3;
+    let number_of_instances = instance_positions.len() as i32 / 2;
     println!("number of instances: {}", number_of_instances);
 
     let instance_positions_attrib = glh::VertexAttrib{
         name : "instancePosition",
-        size : 3,
+        size : 2,
         stride : 0, 
         data : instance_positions,
         per_instance : true,
@@ -153,17 +142,18 @@ fn main() {
     let mut base_color : [f32; 3] = [0.2, 0.1, 0.1];
     let mut tip_color : [f32; 3] = [0.9, 0.0, 0.2];
 
-
     while app.run(){
 
         frame_number = frame_number + 1;
-        //glh::clear(0.2, 0.1, 0.1, 1.0);
         glh::clear(base_color[0], base_color[1], base_color[2], 1.0);
 
-        mouse_pos[0] = app.mouse_pos.x  * 2.0;
-        mouse_pos[1] = app.mouse_pos.y  * 2.0;
+        mouse_pos[0] = mouse_pos[0] + ((app.mouse_pos.x  * 2.0)  - mouse_pos[0]) * 0.06;
+        mouse_pos[1] = mouse_pos[1] + ((app.mouse_pos.y  * 2.0)  - mouse_pos[1]) * 0.06;
 
+    
         unsafe{
+            gl::Enable( gl::BLEND );
+            gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA );
             gl::Viewport(0,0, app.get_framebuffer_size().0, app.get_framebuffer_size().1);
         }
 
@@ -194,14 +184,10 @@ fn main() {
 
         shader.unbind();
 
-
         app.do_ui( |ui| {
-            
-            ui.text(im_str!("hey there1"));
+            ui.text(im_str!("Settings:"));
             ui.drag_float3(im_str!("background color"), &mut base_color).speed(0.01).min(0.0).max(1.0).build();
             ui.drag_float3(im_str!("tip color"), &mut tip_color).speed(0.01).min(0.0).max(1.0).build();
-
-
         } );
     }
 }
