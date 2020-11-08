@@ -129,10 +129,6 @@ impl<'a> App<'a>{
         self.imgui_glfw.draw(ui, &mut self.window);
     }
 
-    pub fn end_ui(&mut self) {
-        
-    }
-
     pub fn run(&mut self) -> bool {
         self.update();
 

@@ -13,7 +13,7 @@ fn main(){
     Registry::new(Api::Gl, 
                     (4, 5),
                     Profile::Core, 
-                    Fallbacks::All, [
+                    Fallbacks::All, [  
                     ])
                     .write_bindings(GlobalGenerator, &mut file).unwrap();
 }

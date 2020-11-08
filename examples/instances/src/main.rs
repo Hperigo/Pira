@@ -116,7 +116,6 @@ fn main() {
         }
     }
 
-
     let number_of_instances = instance_positions.len() as i32 / 2;
     println!("number of instances: {}", number_of_instances);
 
@@ -135,8 +134,8 @@ fn main() {
     let attribs = vec![pos_attrib, color_attrib, instance_positions_attrib];
     let vao = glh::Vao::new_from_attrib(&attribs, &shader).unwrap();
 
-    let mut frame_number = 0;
-
+    let mut frame_incc = 1.0;
+    let mut time = 0.0;
     let mut mouse_pos : [f32; 2] = [0.0,0.0];
 
     let mut base_color : [f32; 3] = [0.2, 0.1, 0.1];
@@ -153,7 +152,7 @@ fn main() {
 
     while app.run(){
 
-        frame_number = frame_number + 1;
+        time = time + frame_incc;
         glh::clear(base_color[0], base_color[1], base_color[2], 1.0);
 
         mouse_pos[0] = mouse_pos[0] + ((app.mouse_pos.x  * 2.0)  - mouse_pos[0]) * 0.06;
@@ -175,7 +174,7 @@ fn main() {
                                     0.0, -1.0,
                                     1.0));
 
-       shader.set_uniform_1f("uTime", frame_number as f32);
+       shader.set_uniform_1f("uTime", time);
        shader.set_uniform_2f("uMousePos", &mouse_pos);
        
        shader.set_uniform_3f("uBaseColor", &base_color);
@@ -198,6 +197,8 @@ fn main() {
             ui.text(im_str!("Settings:"));
             ui.drag_float3(im_str!("background color"), &mut base_color).speed(0.01).min(0.0).max(1.0).build();
             ui.drag_float3(im_str!("tip color"), &mut tip_color).speed(0.01).min(0.0).max(1.0).build();
+            ui.drag_float(im_str!("speed"), &mut frame_incc).speed(0.01).min(0.001).max(5.0).build();
+
         } );
     }
 }
