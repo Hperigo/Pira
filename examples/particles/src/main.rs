@@ -129,5 +129,30 @@ fn main() {
         particles.retain(|&p|{
             p.scale > 0.0
         });
+       
+        if cfg!(test){
+            if app.get_frame_number() > 100 {
+                
+                let width : usize = (app.get_window_size().0 * 2) as usize;
+                let height : usize = (app.get_window_size().1 * 2) as usize;
+                let array_size : usize = width * height * 3;
+
+                // let  pixel_data : [u8; array_size] = [0; array_size];    
+                let mut pixel_data : Vec<u8> = Vec::with_capacity(array_size);
+                pixel_data.resize(array_size, 0);
+                unsafe{
+                    gl::ReadPixels(0, 0, width as i32, height as i32, gl::RGB, gl::UNSIGNED_BYTE, pixel_data.as_ptr() as *mut gl::types::GLvoid );
+                }
+                let img : image::ImageBuffer<image::Rgb<u8>, _> = image::ImageBuffer::from_raw(width as u32, height as u32, pixel_data).unwrap();            
+                let img = image::imageops::flip_vertical(&img);
+                img.save("../../test_images/particles.png").unwrap();
+                return;
+            }
+        }
     }
+}
+
+#[test]
+fn run_app() {
+    main();
 }

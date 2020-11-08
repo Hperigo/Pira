@@ -33,6 +33,8 @@ pub struct App<'a> {
     last_frame_time : Instant,
 
     event_handler : Option<EventCallback<'a>>,
+
+    frame_number : u64,
 }
 
 pub struct Options {
@@ -81,6 +83,8 @@ impl<'a> App<'a>{
             imgui : imgui,
             last_frame_time : Instant::now(),
             event_handler : None,
+
+            frame_number : 0,
         }
     }
 
@@ -130,6 +134,8 @@ impl<'a> App<'a>{
     }
 
     pub fn run(&mut self) -> bool {
+        self.frame_number = self.frame_number + 1;
+
         self.update();
 
         // setup some default opengl stuff
@@ -139,6 +145,9 @@ impl<'a> App<'a>{
 
 
         !self.should_quit
+    }
+    pub fn get_frame_number(&self) -> u64{
+        self.frame_number
     }
 
     pub fn get_events(&mut self) -> glfw::FlushedMessages<(f64, imgui_glfw_rs::glfw::WindowEvent)>{

@@ -571,6 +571,7 @@ name = "particles"
 version = "0.1.0"
 dependencies = [
  "gl_generator 0.5.5",
+ "image",
  "piralib",
  "rand 0.7.3",
 ]
