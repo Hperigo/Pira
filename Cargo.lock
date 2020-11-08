@@ -322,6 +322,7 @@ name = "indexed"
 version = "0.1.0"
 dependencies = [
  "gl_generator 0.5.5",
+ "image",
  "piralib",
 ]
 
@@ -339,6 +340,7 @@ name = "instances"
 version = "0.1.0"
 dependencies = [
  "gl_generator 0.5.5",
+ "image",
  "imgui-glfw-rs",
  "piralib",
  "rand 0.7.3",

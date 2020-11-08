@@ -192,13 +192,42 @@ fn main() {
         vao.draw_instanced( gl::TRIANGLES, number_of_instances );
 
         shader.unbind();
-
+        
+        let mut save_frame = false;
         app.do_ui( |ui| {
+
             ui.text(im_str!("Settings:"));
             ui.drag_float3(im_str!("background color"), &mut base_color).speed(0.01).min(0.0).max(1.0).build();
             ui.drag_float3(im_str!("tip color"), &mut tip_color).speed(0.01).min(0.0).max(1.0).build();
             ui.drag_float(im_str!("speed"), &mut frame_incc).speed(0.01).min(0.001).max(5.0).build();
 
+
+            if ui.button(im_str!("Save frame"), [0.0, 0.0]){
+                save_frame = true;
+            }
         } );
+
+
+        if cfg!(test){
+            let width : usize = (app.get_window_size().0 * 2) as usize;
+            let height : usize = (app.get_window_size().1 * 2) as usize;
+            let array_size : usize = width * height * 3;
+
+            // let  pixel_data : [u8; array_size] = [0; array_size];    
+            let mut pixel_data : Vec<u8> = Vec::with_capacity(array_size);
+            pixel_data.resize(array_size, 0);
+            unsafe{
+                gl::ReadPixels(0, 0, width as i32, height as i32, gl::RGB, gl::UNSIGNED_BYTE, pixel_data.as_ptr() as *mut gl::types::GLvoid );
+            }
+            image::save_buffer("../../test_images/instances.png", &pixel_data, width as u32, height as u32, image::ColorType::RGB(8) ).unwrap();
+            return;
+        }
     }
+}
+
+#[test]
+fn run_app() {
+    main();
+
+
 }
