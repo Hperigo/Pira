@@ -1,8 +1,0 @@
-/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/include/GLFW/glfw3.h
-/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/include/GLFW/glfw3native.h
-/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/lib/cmake/glfw3/glfw3Config.cmake
-/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/lib/cmake/glfw3/glfw3ConfigVersion.cmake
-/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/lib/cmake/glfw3/glfw3Targets.cmake
-/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/lib/cmake/glfw3/glfw3Targets-debug.cmake
-/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/lib/pkgconfig/glfw3.pc
-/Users/henrique/Documents/Dev/rust/pira/lib/piralib/target/debug/build/glfw-sys-139a8ce5d6c55e17/out/lib/libglfw3.a
