@@ -163,8 +163,9 @@ impl<'a> App<'a>{
 
     pub fn get_window_size(&self) -> (i32, i32){
         self.window.get_size()
-    }
+    }   
 
+    
     fn handle_events(&mut self){
         self.glfw_context.poll_events();
         for( _, event) in glfw::flush_messages(&self.events){

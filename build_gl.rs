@@ -8,7 +8,7 @@ use std::path::Path;
 fn main(){
 
     let dest = env::var("OUT_DIR").unwrap();
-    let mut file = File::create(&Path::new(&dest).join("gl_bindings.rs")).unwrap();
+    let mut file = File::create(&Path::new(&dest).join("gl.rs")).unwrap();
     
     Registry::new(Api::Gl, 
                     (4, 5),
