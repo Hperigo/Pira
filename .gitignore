@@ -3,3 +3,4 @@ test_images/
 **/*.rs.bk
 .DS_STORE
 
+imgui.ini
