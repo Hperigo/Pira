@@ -14,3 +14,4 @@ gl_generator = "*"
 
 [dev-dependencies]
 rand = "*"
+indextree = "*"
