@@ -14,6 +14,9 @@ pub use self::vao::VertexAttrib;
 pub mod texture;
 pub use self::texture::Texture;
 
+pub mod fbo;
+pub use self::fbo::Fbo;
+
 use crate::gl;
 
 pub fn clear( red : f32, green : f32, blue : f32, alpha : f32 ){

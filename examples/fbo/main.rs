@@ -65,6 +65,8 @@ fn main() {
     #[cfg(target_os = "windows")]
     let frame_buffer_scale = 1.0;
 
+    let m_fbo = glh::Fbo::new();
+
     app.run_fn( move |event| {
 
         glh::clear(0.2, 0.1, 0.1, 1.0);
