@@ -48,7 +48,7 @@ fn main() {
     pos_attrib.data = vertices;
     color_attrib.data = colors;
     texture_attrib.data = texure_vertices;
-    let stock_shader = glh::StockShader::new().texture();
+    let stock_shader = glh::StockShader::new().texture(false);
     let shader = stock_shader.build();
     let attribs = vec![pos_attrib, texture_attrib];
     let vao = glh::Vao::new_from_attrib(&attribs, &shader).unwrap();

@@ -5,6 +5,8 @@ use nalgebra_glm as glm;
 
 use image;
 
+use imgui_glfw_rs::imgui::*;
+
 fn main() {
 
     let mut app  = piralib::App::init_with_options( &piralib::app::Options{
@@ -14,65 +16,125 @@ fn main() {
         samples: 2,
     });
 
-    let img = image::open("assets/uv_image.png").unwrap().to_rgba();
-    println!("Image width: {:?} height: {:?}", img.width(), img.height());
-    let texture = glh::Texture::new_from_image(&img);
+        // create QUAD ====
+    let (vao, shader) = {
+        let mut pos_attrib = glh::VertexAttrib::new_position_attr();
+        let mut color_attrib = glh::VertexAttrib::new_color_attr();
+        let mut texture_attrib = glh::VertexAttrib::new_texture_attr();
 
-    let mut pos_attrib = glh::VertexAttrib::new_position_attr();
-    let mut color_attrib = glh::VertexAttrib::new_color_attr();
-    let mut texture_attrib = glh::VertexAttrib::new_texture_attr();
+        // build vertex data ----
+        let mut vertices : Vec<f32> = Vec::new();
+        vertices.append( &mut vec![0.0,   0.0, 0.0] );
+        vertices.append( &mut vec![500.0, 500.0, 0.0] );
+        vertices.append( &mut vec![0.0,   500.0, 0.0,] );
 
-    // build vertex data ----
-    let mut vertices : Vec<f32> = Vec::new();
-    vertices.append( &mut vec![0.0,   0.0, 0.0] );
-    vertices.append( &mut vec![1024.0, 1024.0, 0.0] );
-    vertices.append( &mut vec![0.0,    1024.0, 0.0,] );
+        vertices.append( &mut vec![0.0,   0.0, 0.0] );
+        vertices.append( &mut vec![500.0, 500.0, 0.0] );
+        vertices.append( &mut vec![500.0, 0.0, 0.0] );
 
-    vertices.append( &mut vec![0.0,   0.0, 0.0] );
-    vertices.append( &mut vec![1024.0, 1024.0, 0.0] );
-    vertices.append( &mut vec![1024.0, 0.0, 0.0] );
+        let mut colors : Vec<f32> = Vec::new();
+        let mut texure_vertices : Vec<f32> = Vec::new();
+        {   
+            let num_of_vertices = vertices.len();
+            let mut i = 0;
 
-    let mut colors : Vec<f32> = Vec::new();
-    let mut texure_vertices : Vec<f32> = Vec::new();
-    {   
-        let num_of_vertices = vertices.len();
-        let mut i = 0;
-
-        while i < num_of_vertices {
-            colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
-            texure_vertices.append( &mut vec![ vertices[i] / 1024.0, vertices[i+1]/1024.0 ] ); // normalize vertex coords
-            i = i + 3;
+            while i < num_of_vertices {
+                colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
+                texure_vertices.append( &mut vec![ vertices[i] / 800.0, vertices[i+1]/600.0 ] ); // normalize vertex coords
+                i = i + 3;
+            }
         }
-    }   
 
-    pos_attrib.data = vertices;
-    color_attrib.data = colors;
-    texture_attrib.data = texure_vertices;
-    let stock_shader = glh::StockShader::new().texture();
-    let shader = stock_shader.build();
-    let attribs = vec![pos_attrib, texture_attrib];
-    let vao = glh::Vao::new_from_attrib(&attribs, &shader).unwrap();
+        pos_attrib.data = vertices;
+        color_attrib.data = colors;
+        texture_attrib.data = texure_vertices;
+        let stock_shader = glh::StockShader::new().texture(true);
+        let shader = stock_shader.build();
+        let attribs = vec![pos_attrib, texture_attrib];
+
+        (glh::Vao::new_from_attrib(&attribs, &shader).unwrap(), shader)
+    };
+
+        // create small quad ====
+    let (quad_vao, circle_shader) = {
+
+        let mut pos_attrib = glh::VertexAttrib::new_position_attr();
+        let mut color_attrib = glh::VertexAttrib::new_color_attr();
+        let mut texture_attrib = glh::VertexAttrib::new_texture_attr();
+
+        // build vertex data ----
+        let mut vertices : Vec<f32> = Vec::new();
+
+        vertices.append( &mut vec![0.0,   0.0, 0.0] );
+        vertices.append( &mut vec![104.0, 104.0, 0.0] );
+        vertices.append( &mut vec![0.0,    104.0, 0.0,] );
+
+        vertices.append( &mut vec![0.0,   0.0, 0.0] );
+        vertices.append( &mut vec![104.0, 104.0, 0.0] );
+        vertices.append( &mut vec![104.0, 0.0, 0.0] );
+
+        pos_attrib.data = vertices;
+        let stock_shader = glh::StockShader::new();
+        let shader = stock_shader.build();
+        let attribs = vec![pos_attrib];
+
+        (glh::Vao::new_from_attrib(&attribs, &shader).unwrap(), shader)
+    };
 
     unsafe{ 
        gl::Enable(gl::BLEND);
        gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA); 
     }
 
-    #[cfg(target_os = "macos")]
-    let frame_buffer_scale = 0.5;
-    #[cfg(target_os = "linux")]
-    let frame_buffer_scale = 1.0;
-    #[cfg(target_os = "windows")]
-    let frame_buffer_scale = 1.0;
+    let fbo = glh::Fbo::new(glh::FboSettings{width : 500, height : 500, depth : true});
 
-    let m_fbo = glh::Fbo::new();
+    let mut x_pos = 0.0;
+    let mut y_pos = 0.0;
+
+    let frame_buffer_scale = 1.0;
 
     app.run_fn( move |event| {
 
-        glh::clear(0.2, 0.1, 0.1, 1.0);
+        fbo.bind();
+        //glh::clear(0.2, 0.1, 0.0, 1.0);
+
+        unsafe{
+                gl::Viewport(0,0, fbo.get_width(), fbo.get_height());
+        }
+
+        circle_shader.bind();
+        //texture.bind();
+        circle_shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
+                                &glm::ortho(0.0,
+                                    fbo.get_width() as f32 * frame_buffer_scale,
+                                    fbo.get_height() as f32 * frame_buffer_scale,
+                                    0.0, -1.0,
+                                    1.0));
+
+        circle_shader.set_uniform_mat4( glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
+
+        let mut model_view = glm::Mat4::identity();
+        model_view = glm::translate(&model_view, &glm::vec3( x_pos, y_pos, 0.0 ));
+        model_view = glm::scale(&model_view, &glm::vec3(1.0,1.0, 1.0));
+        
+        circle_shader.set_uniform_mat4( glh::StockShader::uniform_name_model_matrix(), &model_view );
+        circle_shader.set_uniform_4f( glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
+
+        //qavao.draw( gl::TRIANGLES );
+        quad_vao.draw(gl::TRIANGLES);
+        //texture.unbind();
+        circle_shader.unbind();
+        fbo.unbind();
+
+
+        // DRAW FBO -------
+        unsafe{
+                gl::Viewport(0,0, event.framebuffer_size.0, event.framebuffer_size.1);
+        }
+
+        glh::clear(0.2, 0.1, 0.3, 1.0);
 
         shader.bind();
-        texture.bind();
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
                                 &glm::ortho(0.0,
                                     event.framebuffer_size.0 as f32 * frame_buffer_scale,
@@ -84,14 +146,21 @@ fn main() {
 
         let mut model_view = glm::Mat4::identity();
         model_view = glm::translate(&model_view, &glm::vec3( 0.0, 0.0, 0.0 ));
-        model_view = glm::scale(&model_view, &glm::vec3(0.5,0.5, 0.5));
+        model_view = glm::scale(&model_view, &glm::vec3(1.0,1.0, 0.5));
         
         shader.set_uniform_mat4( glh::StockShader::uniform_name_model_matrix(), &model_view );
         shader.set_uniform_4f( glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
 
+        fbo.bind_texture();
         vao.draw( gl::TRIANGLES );
-        texture.unbind();
+        fbo.unbind_texture();
+
         shader.unbind();
+        // END DRAW FBO -----
+
+        event.ui.drag_float(im_str!("xpos"), &mut x_pos).speed(1.0).build();
+        event.ui.drag_float(im_str!("ypos"), &mut y_pos).speed(1.0).build();
+
 
         if cfg!(test){
             if event.frame_number > 10 {

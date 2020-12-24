@@ -5,7 +5,7 @@ use std::string::String;
 
 #[derive(Debug, Clone)]
 pub struct StockShader{
-    texture : bool,
+    texture : (bool, bool), //first element is if shader has texture and second is for flipping the texture
     color : bool,
 }
 
@@ -13,7 +13,7 @@ impl StockShader{
 
     pub fn new() -> StockShader {
         StockShader{
-            texture : false,
+            texture : (false, false),
             color : false,
         }
     }
@@ -23,8 +23,8 @@ impl StockShader{
         return self.clone();
     }
 
-    pub fn texture(&mut self) -> StockShader {
-        self.texture = true;
+    pub fn texture(&mut self, flipped : bool) -> StockShader {
+        self.texture = (true, flipped);
         return self.clone();
     }
 
@@ -42,7 +42,7 @@ impl StockShader{
                 color_main =   format!("vertexColor = {};", StockShader::attrib_name_color()).to_string();
             }
 
-            if self.texture {
+            if self.texture.0 {
                 texture_layout = format!("layout (location = 2) in vec2 {};\n            out vec2 textureCoord;", StockShader::attrib_name_texture_coords()).to_string();
                 texture_main =   format!("textureCoord = {};", StockShader::attrib_name_texture_coords()).to_string();
             }
@@ -94,9 +94,16 @@ impl StockShader{
         let mut main_texture_coord = String::from("");
         let mut main_vertex_color = String::from("");
 
-        if self.texture {
+        if self.texture.0 {
             sampler_2d = format!("uniform sampler2D {};", StockShader::uniform_name_texture_sampler0());
-            main_texture_coord = format!("texture( {}, textureCoord).rgba *", StockShader::uniform_name_texture_sampler0());
+            main_texture_coord = {
+                if self.texture.1 == false {
+                 format!("texture( {}, textureCoord).rgba *", StockShader::uniform_name_texture_sampler0())
+                }
+                else {
+                 format!("texture( {}, vec2(0.0,1.0) - (textureCoord * vec2(-1,1)) ).rgba *", StockShader::uniform_name_texture_sampler0())
+                }
+            }
         }
 
         if self.color {
@@ -123,10 +130,8 @@ impl StockShader{
     }
 
     pub fn build(&self) ->  GlslProg {
-
         let vertex_string = self.get_vertex_string();
         let frag_string   = self.get_frag_string();
-
         GlslProg::new( &CString::new(vertex_string).unwrap(), &CString::new(frag_string).unwrap() )
     }
 

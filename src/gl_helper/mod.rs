@@ -16,6 +16,7 @@ pub use self::texture::Texture;
 
 pub mod fbo;
 pub use self::fbo::Fbo;
+pub use self::fbo::FboSettings;
 
 use crate::gl;
 
