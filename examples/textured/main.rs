@@ -65,7 +65,7 @@ fn main() {
     #[cfg(target_os = "windows")]
     let frame_buffer_scale = 1.0;
 
-    while app.run() {
+    app.run_fn( move |event| {
 
         glh::clear(0.2, 0.1, 0.1, 1.0);
 
@@ -73,8 +73,8 @@ fn main() {
         texture.bind();
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
                                 &glm::ortho(0.0,
-                                    app.get_framebuffer_size().0 as f32 * frame_buffer_scale,
-                                    app.get_framebuffer_size().1 as f32 * frame_buffer_scale,
+                                    event.framebuffer_size.0 as f32 * frame_buffer_scale,
+                                    event.framebuffer_size.1 as f32 * frame_buffer_scale,
                                     0.0, -1.0,
                                     1.0));
 
@@ -95,15 +95,15 @@ fn main() {
 
 
         if cfg!(test){
-            if app.get_frame_number() > 10 {
+            if event.frame_number > 10 {
                
-                let img = app.get_frame_image();
+                let img = event.get_frame_image();
                 let img = image::imageops::flip_vertical(&img);
                 img.save("test_images/textured_quad.png").unwrap();
                 return;
             }
         }
-    }
+    });
 }
 
 #[test]

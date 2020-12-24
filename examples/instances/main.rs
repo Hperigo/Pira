@@ -97,7 +97,7 @@ fn main() {
 
     //create the instance position attribute buffer
     let mut instance_positions : Vec<f32> = Vec::new();
-    let spacing = 30.;
+    let spacing = 10.;
     let mut rng = rand::thread_rng();
 
     let random_range = 1.0;
@@ -153,6 +153,7 @@ fn main() {
 
     
         unsafe{
+            gl::Enable( gl::DEPTH_TEST );
             gl::Enable( gl::BLEND );
             gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA );
         }

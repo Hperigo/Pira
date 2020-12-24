@@ -133,7 +133,7 @@ fn main() {
     let attribs = vec![pos_attrib, color_attrib];
     let vao = glh::Vao::new_from_attrib_indexed(&attribs, &indices, &shader).unwrap();
 
-    while app.run() {
+    app.run_fn( move |event|{
 
         glh::clear(0.2, 0.1, 0.1, 1.0);
         
@@ -145,14 +145,14 @@ fn main() {
 
         {
             let transform = arena.get_mut(c).unwrap().get_mut();        
-            transform.position = glm::vec3(400.0, (app.get_frame_number() as f32 * 0.06).sin() * 100.0, 0.0);
+            transform.position = glm::vec3(400.0, (event.frame_number as f32 * 0.06).sin() * 100.0, 0.0);
         }   
 
         shader.bind();
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
                                 &glm::ortho(0.0,
-                                    app.get_framebuffer_size().0 as f32 * 0.5,
-                                    app.get_framebuffer_size().1 as f32 * 0.5,
+                                    event.framebuffer_size.0 as f32 * 0.5,
+                                    event.framebuffer_size.1 as f32 * 0.5,
                                     0.0, 0.0, 1.0));
 
         shader.set_uniform_mat4( glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
@@ -180,31 +180,26 @@ fn main() {
         shader.unbind();
 
 
-        app.do_ui( |ui| {
-                
+        let ui = event.ui;
+        {
             use std::convert::TryInto;
-
             let node = arena.get_mut(a).unwrap().get_mut();
-
             ui.drag_float3( im_str!("Translation"), node.position.as_mut_slice().try_into().unwrap() ).build();
             ui.drag_float3( im_str!("Scale"), node.scale.as_mut_slice().try_into().unwrap() ).speed(0.01).build();
             ui.drag_float( im_str!("Rotation"), &mut node.rotation.z ).speed(0.01).build();
-
-            
-        } );
-
+        }
 
         if cfg!(test){
 
-            if app.get_frame_number() > 10 {
+            if event.frame_number > 10 {
                 
-                let img = app.get_frame_image();
+                let img = event.get_frame_image();
                 let img = image::imageops::flip_vertical(&img);
                 img.save("test_images/indexed.png").unwrap();
                 return;
             }
         }
-    }
+    });
 }
 
 

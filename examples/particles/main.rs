@@ -63,15 +63,15 @@ fn main() {
        gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA); 
     }
 
-    while app.run() {
 
+    app.run_fn( move |event| {
         glh::clear(0.2, 0.1, 0.1, 1.0);
 
         shader.bind();
         shader.set_uniform_mat4(glh::StockShader::uniform_name_perspective_matrix(),
                         &glm::ortho(0.0,
-                                    app.get_framebuffer_size().0 as f32,
-                                    app.get_framebuffer_size().1 as f32,
+                                    event.framebuffer_size.0 as f32,
+                                    event.framebuffer_size.1 as f32,
                                     0.0, -1.0,
                                     1.0));
 
@@ -95,7 +95,7 @@ fn main() {
 
             let green : f32 = 0.5 * (p.scale * 10.0) ;
             let red : f32 = 0.8 * (p.scale * 10.0);
-            let blue : f32 = 1.0 - ( app.mouse_pos.y / 400.0 );
+            let blue : f32 = 1.0 - ( event.mouse_pos.y / 400.0 );
             shader.set_uniform_4f( glh::StockShader::uniform_name_color(), &glm::vec4(red, green, blue, 1.0));
             vao.draw( gl::TRIANGLES );
 
@@ -108,7 +108,7 @@ fn main() {
         let sy : f32 = rng.gen_range(-5.0, -1.0);
         let r : f32 = rng.gen_range(-std::f32::consts::PI, std::f32::consts::PI);
 
-        let p = app.mouse_pos ;
+        let p = event.mouse_pos;
 
         #[cfg(target_os = "macos")]
         let frame_buffer_scale = 2.0;
@@ -131,15 +131,15 @@ fn main() {
         });
        
         if cfg!(test){
-            if app.get_frame_number() > 100 {
+            if event.frame_number > 100 {
                 
-                let img = app.get_frame_image();
+                let img = event.get_frame_image();
                 let img = image::imageops::flip_vertical(&img);
                 img.save("test_images/particles.png").unwrap();
                 return;
             }
         }
-    }
+    });
 }
 
 #[test]
