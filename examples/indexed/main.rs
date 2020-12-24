@@ -45,15 +45,15 @@ fn main() {
        gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA); 
     }
 
-    while app.run() {
+    app.run_fn(move |event| {
 
         glh::clear(0.2, 0.1, 0.1, 1.0);
 
         shader.bind();
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
                                 &glm::ortho(0.0,
-                                    app.get_framebuffer_size().0 as f32 * 0.5,
-                                    app.get_framebuffer_size().1 as f32 * 0.5,
+                                    event.framebuffer_size.0 as f32 * 0.5,
+                                    event.framebuffer_size.1 as f32 * 0.5,
                                     0.0, -1.0,
                                     1.0));
 
@@ -73,15 +73,14 @@ fn main() {
 
         if cfg!(test){
 
-            if app.get_frame_number() > 10 {
-                
-                let img = app.get_frame_image();
+            if event.frame_number > 10 {
+                let img = event.get_frame_image();
                 let img = image::imageops::flip_vertical(&img);
                 img.save("test_images/indexed.png").unwrap();
                 return;
             }
         }
-    }
+    });
 }
 
 

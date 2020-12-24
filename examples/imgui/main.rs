@@ -55,16 +55,17 @@ fn main() {
        gl::Enable(gl::BLEND);
        gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
     }
+    let frame_buffer_size = app.get_framebuffer_size();
 
-    while app.run() {
+    app.run_fn(move |frame| {
 
         glh::clear(r, g, b, 1.0);
 
         shader.bind();
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
                                 &glm::ortho(0.0,
-                                    app.get_framebuffer_size().0 as f32,
-                                    app.get_framebuffer_size().1 as f32,
+                                    frame.framebuffer_size.0 as f32, 
+                                    frame.framebuffer_size.1 as f32,
                                     0.0, -1.0,
                                     1.0));
 
@@ -79,17 +80,23 @@ fn main() {
         shader.set_uniform_4f( glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
 
         vao.draw( gl::TRIANGLES );
-        app.do_ui( |ui| {
-            
-            ui.drag_float(im_str!("R"), &mut r).speed(0.001).build();
-            ui.drag_float(im_str!("G"), &mut g).speed(0.001).build();
-            ui.drag_float(im_str!("B"), &mut b).speed(0.001).build();
 
-            ui.drag_float3( im_str!("Translation"), &mut translation ).build();
-            ui.drag_float3( im_str!("Scale"), &mut scale ).speed(0.01).build();
-            ui.drag_float( im_str!("Rotation"), &mut rotation ).speed(0.01).build();
-        } );
+        let ui = frame.ui;
+        ui.drag_float(im_str!("R"), &mut r).speed(0.001).build();
+        ui.drag_float(im_str!("G"), &mut g).speed(0.001).build();
+        ui.drag_float(im_str!("B"), &mut b).speed(0.001).build();
+
+        ui.drag_float3( im_str!("Translation"), &mut translation ).build();
+        ui.drag_float3( im_str!("Scale"), &mut scale ).speed(0.01).build();
+        ui.drag_float( im_str!("Rotation"), &mut rotation ).speed(0.01).build();
            
         shader.unbind();
+    });
+
+    /*
+    while app.run() {
+
     }
+
+    */
 }

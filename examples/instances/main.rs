@@ -97,7 +97,7 @@ fn main() {
 
     //create the instance position attribute buffer
     let mut instance_positions : Vec<f32> = Vec::new();
-    let spacing = 10.;
+    let spacing = 30.;
     let mut rng = rand::thread_rng();
 
     let random_range = 1.0;
@@ -142,27 +142,27 @@ fn main() {
     let framebuffer_scale = app.get_framebuffer_scale();
     let inv_frambe_buffer_scale = 1.0 / framebuffer_scale; // used for the glViewport
 
-    while app.run(){
+
+    app.run_fn(  move |event| {
 
         time = time + frame_incc;
         glh::clear(base_color[0], base_color[1], base_color[2], 1.0);
 
-        mouse_pos[0] = mouse_pos[0] + ((app.mouse_pos.x  * 2.0)  - mouse_pos[0]) * 0.06;
-        mouse_pos[1] = mouse_pos[1] + ((app.mouse_pos.y  * 2.0)  - mouse_pos[1]) * 0.06;
+        mouse_pos[0] = mouse_pos[0] + ((event.mouse_pos.x  * 2.0)  - mouse_pos[0]) * 0.06;
+        mouse_pos[1] = mouse_pos[1] + ((event.mouse_pos.y  * 2.0)  - mouse_pos[1]) * 0.06;
 
     
         unsafe{
             gl::Enable( gl::BLEND );
             gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA );
-            gl::Viewport(0,0, app.get_framebuffer_size().0, app.get_framebuffer_size().1);
         }
 
         shader.bind();
 
         shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
                                 &glm::ortho(0.0,
-                                    app.get_framebuffer_size().0 as f32 * inv_frambe_buffer_scale, // beacuse of mac dpi we need to scale it down
-                                    app.get_framebuffer_size().1 as f32 * inv_frambe_buffer_scale,
+                                    event.framebuffer_size.0 as f32 * inv_frambe_buffer_scale, // beacuse of mac dpi we need to scale it down
+                                    event.framebuffer_size.1 as f32 * inv_frambe_buffer_scale,
                                     0.0, -1.0,
                                     1.0));
 
@@ -186,29 +186,27 @@ fn main() {
         shader.unbind();
         
         let mut save_frame = false;
-        app.do_ui( |ui| {
 
-            ui.text(im_str!("Settings:"));
-            ui.drag_float3(im_str!("background color"), &mut base_color).speed(0.01).min(0.0).max(1.0).build();
-            ui.drag_float3(im_str!("tip color"), &mut tip_color).speed(0.01).min(0.0).max(1.0).build();
-            ui.drag_float(im_str!("speed"), &mut frame_incc).speed(0.01).min(0.001).max(5.0).build();
+        let ui = event.ui;
+        ui.text(im_str!("Settings:"));
+        ui.drag_float3(im_str!("background color"), &mut base_color).speed(0.01).min(0.0).max(1.0).build();
+        ui.drag_float3(im_str!("tip color"), &mut tip_color).speed(0.01).min(0.0).max(1.0).build();
+        ui.drag_float(im_str!("speed"), &mut frame_incc).speed(0.01).min(0.001).max(5.0).build();
 
 
-            if ui.button(im_str!("Save frame"), [0.0, 0.0]){
-                save_frame = true;
-            }
-        } );
-
+        if ui.button(im_str!("Save frame"), [0.0, 0.0]){
+            save_frame = true;
+        }
 
         if cfg!(test){
-            if app.get_frame_number() > 10 {
-                let img = app.get_frame_image();
+            if event.frame_number > 10 {
+                let img = event.get_frame_image();
                 let img = image::imageops::flip_vertical(&img);
                 img.save("test_images/instances.png").unwrap();
                 return;
             }
         }
-    }
+    });
 }
 
 #[test]
