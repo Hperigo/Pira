@@ -15,8 +15,9 @@ fn main() {
         title: "#️⃣".to_string(),
         samples: 2,
     });
-
-        // create QUAD ====
+    let fbo = glh::Fbo::new(glh::FboSettings{width : 500, height : 500, depth : true});
+ 
+    // create QUAD ====
     let (vao, shader) = {
         let mut pos_attrib = glh::VertexAttrib::new_position_attr();
         let mut color_attrib = glh::VertexAttrib::new_color_attr();
@@ -25,12 +26,12 @@ fn main() {
         // build vertex data ----
         let mut vertices : Vec<f32> = Vec::new();
         vertices.append( &mut vec![0.0,   0.0, 0.0] );
-        vertices.append( &mut vec![500.0, 500.0, 0.0] );
-        vertices.append( &mut vec![0.0,   500.0, 0.0,] );
+        vertices.append( &mut vec![fbo.get_width() as f32, fbo.get_height() as f32, 0.0] );
+        vertices.append( &mut vec![0.0,                    fbo.get_height() as f32, 0.0,] );
 
         vertices.append( &mut vec![0.0,   0.0, 0.0] );
-        vertices.append( &mut vec![500.0, 500.0, 0.0] );
-        vertices.append( &mut vec![500.0, 0.0, 0.0] );
+        vertices.append( &mut vec![fbo.get_width() as f32, fbo.get_height() as f32, 0.0] );
+        vertices.append( &mut vec![fbo.get_width() as f32, 0.0, 0.0] );
 
         let mut colors : Vec<f32> = Vec::new();
         let mut texure_vertices : Vec<f32> = Vec::new();
@@ -40,7 +41,7 @@ fn main() {
 
             while i < num_of_vertices {
                 colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
-                texure_vertices.append( &mut vec![ vertices[i] / 800.0, vertices[i+1]/600.0 ] ); // normalize vertex coords
+                texure_vertices.append( &mut vec![ vertices[i] / fbo.get_width() as f32, vertices[i+1]/ fbo.get_height() as f32 ] ); // normalize vertex coords
                 i = i + 3;
             }
         }
@@ -55,7 +56,7 @@ fn main() {
         (glh::Vao::new_from_attrib(&attribs, &shader).unwrap(), shader)
     };
 
-        // create small quad ====
+        // create geomtry that is drawn inside the fbo ====
     let (quad_vao, circle_shader) = {
 
         let mut pos_attrib = glh::VertexAttrib::new_position_attr();
@@ -64,15 +65,16 @@ fn main() {
 
         // build vertex data ----
         let mut vertices : Vec<f32> = Vec::new();
-
         vertices.append( &mut vec![0.0,   0.0, 0.0] );
-        vertices.append( &mut vec![104.0, 104.0, 0.0] );
-        vertices.append( &mut vec![0.0,    104.0, 0.0,] );
 
-        vertices.append( &mut vec![0.0,   0.0, 0.0] );
-        vertices.append( &mut vec![104.0, 104.0, 0.0] );
-        vertices.append( &mut vec![104.0, 0.0, 0.0] );
+        for i in 0..33 {
+            let angle = (i as f32 / 32.0) * 2.0 * std::f32::consts::PI;
+            let x = angle.cos() * 60.0;
+            let y = angle.sin() * 60.0;
 
+            vertices.append( &mut vec![x, y, 0.0] );    
+        }
+        
         pos_attrib.data = vertices;
         let stock_shader = glh::StockShader::new();
         let shader = stock_shader.build();
@@ -86,7 +88,6 @@ fn main() {
        gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA); 
     }
 
-    let fbo = glh::Fbo::new(glh::FboSettings{width : 500, height : 500, depth : true});
 
     let mut x_pos = 0.0;
     let mut y_pos = 0.0;
@@ -96,11 +97,9 @@ fn main() {
     app.run_fn( move |event| {
 
         fbo.bind();
-        //glh::clear(0.2, 0.1, 0.0, 1.0);
-
-        unsafe{
-                gl::Viewport(0,0, fbo.get_width(), fbo.get_height());
-        }
+        
+        glh::clear(0.2, 0.1, 0.0, 1.0);
+        glh::set_viewport(0,0, fbo.get_width(), fbo.get_height() );
 
         circle_shader.bind();
         //texture.bind();
@@ -121,7 +120,7 @@ fn main() {
         circle_shader.set_uniform_4f( glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
 
         //qavao.draw( gl::TRIANGLES );
-        quad_vao.draw(gl::TRIANGLES);
+        quad_vao.draw(gl::TRIANGLE_FAN);
         //texture.unbind();
         circle_shader.unbind();
         fbo.unbind();
