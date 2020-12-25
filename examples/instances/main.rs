@@ -43,10 +43,11 @@ fn main() {
             vec3( 0.0,        0.0,         1.0 ));
         
 
+        float fur_length = (sin(angle) + 1.0) / 2.0;
         vec3 pos = inPosition;
         pos.x = (pos.x - 5.0 )* ( 1.0 -  inColor.r + 0.0 ) ;
         pos.z = pos.z + 1.0 * inColor.r;
-        vec3 rotatedPoint =  rotation * vec3(pos) + vec3(instancePosition, 0.0);
+        vec3 rotatedPoint =  rotation * vec3(pos * (fur_length + 0.5)) + vec3(instancePosition, 0.0);
 
         gl_Position = uPerspectiveMatrix * uViewMatrix * uModelMatrix * vec4(rotatedPoint, 1.0);
         
