@@ -94,7 +94,7 @@ fn main() {
 
     let frame_buffer_scale = 1.0;
 
-    app.run_fn( move |event| {
+    app.run_fn( move |event, should_quit| {
 
         fbo.bind();
         
@@ -166,14 +166,15 @@ fn main() {
                
                 let img = event.get_frame_image();
                 let img = image::imageops::flip_vertical(&img);
-                img.save("test_images/textured_quad.png").unwrap();
-                return;
+                img.save("test_images/fbo.png").unwrap();
+    
+                *should_quit = true;
             }
         }
     });
 }
 
 #[test]
-fn run_app() {
+fn fbo_app() {
     main();
 }

@@ -144,7 +144,7 @@ fn main() {
     let inv_frambe_buffer_scale = 1.0 / framebuffer_scale; // used for the glViewport
 
 
-    app.run_fn(  move |event| {
+    app.run_fn(  move |event, should_quit| {
 
         time = time + frame_incc;
         glh::clear(base_color[0], base_color[1], base_color[2], 1.0);
@@ -205,7 +205,7 @@ fn main() {
                 let img = event.get_frame_image();
                 let img = image::imageops::flip_vertical(&img);
                 img.save("test_images/instances.png").unwrap();
-                return;
+                *should_quit = true;
             }
         }
     });

@@ -63,8 +63,8 @@ impl<'a> FrameEvent<'a>{
 
     pub fn get_frame_image(&self) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
 
-        let width : usize = (self.framebuffer_size.0 * 2) as usize;
-        let height : usize = (self.framebuffer_size.1 * 2) as usize;
+        let width : usize = (self.framebuffer_size.0 ) as usize;
+        let height : usize = (self.framebuffer_size.1 ) as usize;
         let array_size : usize = width * height * 3;
 
         // let  pixel_data : [u8; array_size] = [0; array_size];    
@@ -136,7 +136,7 @@ impl<'a> App<'a>{
         self.event_handler = Some( EventCallback{ callback : Box::new(handler) } );
     }
 
-    pub fn run_fn<F>(&mut self, callback : F ) where F : 'static + FnMut(FrameEvent) {
+    pub fn run_fn<F>(&mut self, callback : F ) where F : 'static + FnMut(FrameEvent, &mut bool) {
         let mut cb_fn = Box::new(callback);
         
         loop{
@@ -165,8 +165,11 @@ impl<'a> App<'a>{
                 frame_number : self.frame_number,
                 ui : &ui,
             };
+            (*cb_fn)(event, &mut self.should_quit);
 
-            (*cb_fn)(event);
+            if self.should_quit{
+                break;
+            }
 
             self.imgui_glfw.draw(ui, &mut self.window);
         }   

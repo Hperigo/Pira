@@ -133,7 +133,7 @@ fn main() {
     let attribs = vec![pos_attrib, color_attrib];
     let vao = glh::Vao::new_from_attrib_indexed(&attribs, &indices, &shader).unwrap();
 
-    app.run_fn( move |event|{
+    app.run_fn( move |event, should_quit|{
 
         glh::clear(0.2, 0.1, 0.1, 1.0);
         
@@ -195,8 +195,8 @@ fn main() {
                 
                 let img = event.get_frame_image();
                 let img = image::imageops::flip_vertical(&img);
-                img.save("test_images/indexed.png").unwrap();
-                return;
+                img.save("test_images/scene_graph.png").unwrap();
+                *should_quit = true;
             }
         }
     });
@@ -204,6 +204,6 @@ fn main() {
 
 
 #[test]
-fn save_frame_test() {
+fn scene_graph_test() {
     main();
 }

@@ -45,7 +45,7 @@ fn main() {
        gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA); 
     }
 
-    app.run_fn(move |event| {
+    app.run_fn(move |event, should_quit| {
 
         glh::clear(0.2, 0.1, 0.1, 1.0);
 
@@ -69,15 +69,13 @@ fn main() {
         vao.draw( gl::TRIANGLES );
 
         shader.unbind();
-
-
+                                    
         if cfg!(test){
-
             if event.frame_number > 10 {
                 let img = event.get_frame_image();
                 let img = image::imageops::flip_vertical(&img);
-                img.save("test_images/indexed.png").unwrap();
-                return;
+                *should_quit = true;
+                img.save("test_images/indexed.png").unwrap();   
             }
         }
     });

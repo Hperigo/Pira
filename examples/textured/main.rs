@@ -65,7 +65,7 @@ fn main() {
     #[cfg(target_os = "windows")]
     let frame_buffer_scale = 1.0;
 
-    app.run_fn( move |event| {
+    app.run_fn( move |event, should_quit| {
 
         glh::clear(0.2, 0.1, 0.1, 1.0);
 
@@ -97,7 +97,7 @@ fn main() {
                 let img = event.get_frame_image();
                 let img = image::imageops::flip_vertical(&img);
                 img.save("test_images/textured_quad.png").unwrap();
-                return;
+                *should_quit = true;
             }
         }
     });

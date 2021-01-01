@@ -57,7 +57,7 @@ fn main() {
     }
     let frame_buffer_size = app.get_framebuffer_size();
 
-    app.run_fn(move |frame| {
+    app.run_fn(move |frame, _| {
 
         glh::clear(r, g, b, 1.0);
 
