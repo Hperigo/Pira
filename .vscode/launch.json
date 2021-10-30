@@ -1,0 +1,323 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'piralib'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "piralib",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'simple_app'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=simple_app",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "simple_app",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'simple_app'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=simple_app",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "simple_app",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'imgui'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=imgui",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "imgui",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'imgui'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=imgui",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "imgui",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'scene_graph'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=scene_graph",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "scene_graph",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'scene_graph'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=scene_graph",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "scene_graph",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'indexed'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=indexed",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "indexed",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'indexed'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=indexed",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "indexed",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'particles'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=particles",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "particles",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'particles'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=particles",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "particles",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'textured'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=textured",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "textured",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'textured'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=textured",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "textured",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'fbo'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=fbo",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "fbo",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'fbo'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=fbo",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "fbo",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'instances'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=instances",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "instances",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'instances'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=instances",
+                    "--package=piralib"
+                ],
+                "filter": {
+                    "name": "instances",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

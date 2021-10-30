@@ -1,42 +1,44 @@
-use crate::gl;
+use glow::{self, HasContext};
 
 pub struct Vbo{
-    handle: gl::types::GLuint,
-    gl_type :  gl::types::GLuint,
+    handle: Option<glow::Buffer>,
+    gl_type :  u32,
     number_of_items : usize,
 }
 
 impl Vbo{
 
-    pub fn new<T>( data : &Vec<T>, gl_type : gl::types::GLuint ) ->  Vbo{
+    pub fn new<T>( gl : &glow::Context, data : &Vec<T>, gl_type : u32 ) ->  Self{
 
-        let mut vbo : gl::types::GLuint = 0;
-        unsafe {
 
-            gl::GenBuffers(1, &mut vbo);
-            gl::BindBuffer(gl_type, vbo);
-            gl::BufferData(
-                gl_type,
-                ( data.len() * std::mem::size_of::<T>() ) as gl::types::GLsizeiptr,
-                data.as_ptr() as *const gl::types::GLvoid,
-                gl::STATIC_DRAW,
+        let vbo = unsafe {
+            
+            let buffer = gl.create_buffer().unwrap();
+            gl.bind_buffer(gl_type, Some(buffer));
+            
+            let data_slice: &[u8] = core::slice::from_raw_parts(
+                data.as_ptr() as *const u8,
+                data.len() * core::mem::size_of::<f32>(),
             );
 
-            gl::BindBuffer(gl_type, 0);
-        }
+            gl.buffer_data_u8_slice(gl_type, data_slice, glow::STATIC_DRAW);
+            gl.bind_buffer(gl_type, None);
+            
+            buffer
+        };
 
-        Vbo{
-            handle : vbo,
+        Self{
+            handle : Some(vbo),
             gl_type :gl_type,
             number_of_items : data.len()
         }
     }
 
-    pub fn get_handle( &self ) -> gl::types::GLuint{
+    pub fn get_handle( &self ) -> Option<glow::Buffer>{
         self.handle
     }
 
-    pub fn get_gl_type(&self) -> gl::types::GLuint {
+    pub fn get_gl_type(&self) -> u32 {
         self.gl_type
     }
 
@@ -44,23 +46,22 @@ impl Vbo{
         self.number_of_items
     }
 
-    pub fn bind(&self){
+    pub fn bind(&self, gl : &glow::Context){
         unsafe{
-            gl::BindBuffer(self.gl_type, self.handle);
+            gl.bind_buffer(self.gl_type, self.handle);
         }
         
     }
-    pub fn unbind(&self){
+    pub fn unbind(&self, gl : &glow::Context){
         unsafe{
-            gl::BindBuffer(self.gl_type, 0);
+            gl.bind_buffer(self.gl_type, None);
         }
-    }    
-}
+    }
 
-impl Drop for Vbo{
-    fn drop(&mut self){
+    pub fn delete(&mut self, gl : &glow::Context){
         unsafe{
-            gl::DeleteBuffers(1, &mut self.handle);
-        }
+            gl.delete_buffer(self.handle.unwrap());
+            self.handle = None;
+        } 
     }
 }

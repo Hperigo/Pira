@@ -1,4 +1,5 @@
 use crate::gl_helper::glsl_prog::GlslProg as GlslProg;
+use glow;
 
 use std::ffi::CString;
 use std::string::String;
@@ -54,7 +55,7 @@ impl StockShader{
 
             let vertex_shader = format!(
             "
-            #version 330
+            #version 410
 
             uniform mat4 {};
             uniform mat4 {};
@@ -112,7 +113,7 @@ impl StockShader{
 
 
         let frag_shader = format!("
-        #version 330
+        #version 410
         uniform vec4 uColor;
 
         {} // sampler
@@ -123,16 +124,16 @@ impl StockShader{
         out vec4 Color;
         void main()
         {{
-            Color = {} {} uColor;
+            Color =  vec4(1.0); //{} {} uColor;
         }}", sampler_2d, main_vertex_color, main_texture_coord );
 
         frag_shader
     }
 
-    pub fn build(&self) ->  GlslProg {
+    pub fn build(&self, gl : &glow::Context) ->  GlslProg {
         let vertex_string = self.get_vertex_string();
         let frag_string   = self.get_frag_string();
-        GlslProg::new( &CString::new(vertex_string).unwrap(), &CString::new(frag_string).unwrap() )
+        GlslProg::new(gl, vertex_string.as_str(), frag_string.as_str() )
     }
 
 

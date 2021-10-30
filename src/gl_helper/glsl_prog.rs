@@ -1,72 +1,64 @@
 
 extern crate nalgebra_glm as glm;
 
-use crate::gl;
-use std::ffi::{CString, CStr};
-
+use std::ffi::{CString};
+use glow::{self, HasContext};
 pub struct GlslProg{
-    handle: gl::types::GLuint,
+    handle: Option<glow::Program>,
 }
 
 impl GlslProg{
-    pub fn new(vertex_source : &CStr, frag_source : &CStr) -> GlslProg {
+    pub fn new(gl : &glow::Context, vertex_source : &str, frag_source : &str) -> GlslProg {
 
-        let vertex_handle = compile_shader( vertex_source, gl::VERTEX_SHADER );
-        let frag_handle = compile_shader( frag_source, gl::FRAGMENT_SHADER );
+        let vertex_handle = compile_shader( gl, vertex_source, glow::VERTEX_SHADER );
+        let frag_handle = compile_shader( gl, frag_source,  glow::FRAGMENT_SHADER );
 
-        let program_id = unsafe{ gl::CreateProgram() };
-        let mut success : gl::types::GLint = 1;
-
+        let program_id = unsafe{ gl.create_program().unwrap() };
+        
         unsafe{
 
-            gl::AttachShader(program_id, vertex_handle);
-            gl::AttachShader(program_id, frag_handle);
-            gl::LinkProgram(program_id);
+            gl.attach_shader(program_id, vertex_handle);
+            gl.attach_shader(program_id, frag_handle);
+            gl.link_program(program_id);
+            let success = gl.get_program_link_status(program_id);
 
-            gl::GetProgramiv(program_id, gl::LINK_STATUS, &mut success);
-        }
-
-        if success == 0{
-
-            let mut len : gl::types::GLint = 0;
-
-            unsafe {
-                gl::GetProgramiv(program_id, gl::INFO_LOG_LENGTH, &mut len);
-
-                let error = create_whitespace_cstring_with_len( len as usize );
-
-                gl::GetProgramInfoLog(
-                    program_id,
-                    len,
-                    std::ptr::null_mut(),
-                    error.as_ptr() as *mut gl::types::GLchar
-                );
-                println!("link shader error: {}", error.into_string().unwrap());
-
+            if success == false{
+                gl.get_program_info_log(program_id);
+                return Self{
+                    handle : None,
+                };
             }
 
-            return GlslProg{
-                handle : 0
-            };
-
-        }
-
-
-        unsafe{
-            gl::DetachShader(program_id, vertex_handle);
-            gl::DetachShader(program_id, frag_handle);
+            gl.detach_shader(program_id, vertex_handle);
+            gl.detach_shader(program_id, frag_handle);
         }
 
         GlslProg{
-            handle : program_id
+            handle : Some(program_id)
         }
     }
 
 
-    pub fn get_handle(&self) -> u32 {
+    pub fn get_handle(&self) -> Option<glow::Program> {
         return self.handle;
     }
 
+    pub fn set_uniform_mat4(&self, gl : &glow::Context, name : &str, value : &glm::Mat4){
+
+        unsafe{
+            let loc = gl.get_uniform_location(self.handle.unwrap(), name).unwrap();
+            gl.uniform_matrix_4_f32_slice(Some(&loc), false, value.as_slice());
+        };
+    }
+
+    pub fn set_uniform_4f(&self, gl : &glow::Context, name : &str, value : &glm::Vec4){
+
+        unsafe{
+            let loc = gl.get_uniform_location(self.handle.unwrap(), name).unwrap();
+            gl.uniform_4_f32(Some(&loc), value.x, value.y, value.z, value.w);
+        };
+    }
+    /*
     pub fn set_uniform_1i(&self, name : &str, value : &i32){
         let cname = CString::new( name ).expect("ill formed string");
         unsafe{
@@ -99,87 +91,51 @@ impl GlslProg{
         };
     }
 
-    pub fn set_uniform_mat4(&self, name : &str, value : &glm::Mat4){
-        let cname = CString::new( name ).expect("ill formed string");
+   
+*/
+
+    pub fn bind(&self, gl : &glow::Context){
         unsafe{
-            let loc = gl::GetUniformLocation(self.handle,  cname.as_bytes_with_nul().as_ptr() as *const i8 );
-            gl::UniformMatrix4fv( loc, 1, gl::FALSE, value.as_slice().as_ptr() as *const f32 );
-        };
-    }
-
-    pub fn set_uniform_4f(&self, name : &str, value : &glm::Vec4){
-
-        let cname = CString::new( name ).expect("ill formed string");
-        unsafe{
-            let loc = gl::GetUniformLocation(self.handle,  cname.as_bytes_with_nul().as_ptr() as *const i8 );
-            // gl::UniformMatrix4fv( loc, 1, gl::FALSE, value.as_slice().as_ptr() as *const f32 );
-            gl::Uniform4fv(loc, 1, value.as_slice().as_ptr() as * const f32);
-        };
-    }
-
-
-    pub fn bind(&self){
-        unsafe{
-            gl::UseProgram(self.handle);
+            assert!( self.handle != None );
+            gl.use_program(self.handle);
         }
     }
 
-    pub fn unbind(&self){
+    pub fn unbind(&self, gl : &glow::Context){
         unsafe{
-            gl::UseProgram(0);
+            gl.use_program(None);
         }
+    }
+
+    pub fn delete(&self, gl : &glow::Context){
+        unsafe{
+            gl.delete_program(self.handle.unwrap());
+        }        
     }
 }
 
-impl Drop for GlslProg{
-    fn drop(&mut self){
-        unsafe{
-            gl::DeleteProgram( self.handle );
-        }
-    }
-}
+fn compile_shader( gl : &glow::Context, src : &str, shader_type : u32 ) -> glow::Shader {
 
-
-fn compile_shader( src : &CStr, shader_type : gl::types::GLuint ) -> gl::types::GLuint {
-
-        let shader_id = unsafe { gl::CreateShader( shader_type ) };
+        let shader_id = unsafe { gl.create_shader(shader_type).unwrap() };
+        
         unsafe {
-            gl::ShaderSource(shader_id, 1, &src.as_ptr(), std::ptr::null());
-            gl::CompileShader(shader_id);
+            gl.shader_source(shader_id, src);
+            gl.compile_shader(shader_id);
         }
 
-        let mut success: gl::types::GLint = 1;
-        unsafe {
-            gl::GetShaderiv(shader_id, gl::COMPILE_STATUS, &mut success);
-        }
-
-        if success == 0
-        {
-            let mut len: gl::types::GLint = 0;
-            unsafe {
-                gl::GetShaderiv(shader_id, gl::INFO_LOG_LENGTH, &mut len);
-            }
-
-            let error = create_whitespace_cstring_with_len(len as usize);
-
-            unsafe {
-                gl::GetShaderInfoLog(
-                shader_id,
-                len,
-                std::ptr::null_mut(),
-                error.as_ptr() as *mut gl::types::GLchar
-                );
-            }
-            
-            let shader_type_string : &str;
-            
+        let success = unsafe{ gl.get_shader_compile_status(shader_id)};
+        if success == false
+        {   
+            let shader_type_string : &str;            
             match shader_type {
-                gl::VERTEX_SHADER => shader_type_string = "VERTEX_SHADER",
-                gl::FRAGMENT_SHADER => shader_type_string = "FRAGMENT",
+                glow::VERTEX_SHADER => shader_type_string = "VERTEX_SHADER",
+                glow::FRAGMENT_SHADER => shader_type_string = "FRAGMENT",
                 _ => shader_type_string = "unkwon shader type"
             };
-
-            println!("Failed to compile {} :: error {}", shader_type_string, error.into_string().unwrap() );
+            unsafe {
+                let log = gl.get_shader_info_log(shader_id);
+                println!("Failed to compile {} :: error {}", shader_type_string, log );
+            }
         }
 
         shader_id
