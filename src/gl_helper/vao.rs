@@ -2,9 +2,7 @@ use glow;
 use glow::HasContext;
 use crate::gl_helper::Vbo;
 use crate::gl_helper::GlslProg;
-
 use crate::gl_helper::StockShader;
-use std::ffi::CString;
 
 #[derive(Debug)]
 pub struct VertexAttrib{
@@ -91,45 +89,29 @@ impl Vao{
         }
 
         let num_of_vertices = attribs[0].data.len() / attribs[0].size as usize;        
-        let mut vao_handle = unsafe {gl.create_vertex_array().unwrap()};
+        let vao_handle = unsafe {gl.create_vertex_array().unwrap()};
         let data_vbo = Vbo::new(gl, &data, glow::ARRAY_BUFFER );
 
         unsafe{
 
-            // gl::GenVertexArrays(1, &mut vao_handle);
-            // gl::BindVertexArray(vao_handle);
-            // gl::BindBuffer(data_vbo.get_gl_type(), data_vbo.get_handle());
-
             gl.bind_vertex_array(Some(vao_handle));
+            gl.bind_buffer(data_vbo.get_gl_type(), data_vbo.get_handle());
 
             let mut current_offset  : usize = 0;
             for a in attribs{
                 let name = a.name;
                 let loc =  gl.get_attrib_location(
-                    shader.get_handle().unwrap(),
+                    shader.get_handle().expect("provided shader for attrib is None!"),
                     name
-                    );
+                ).expect(format!("unable to find attribute with name: {}", name).as_str());
 
-                if loc == None {
-                    println!("Error attrib not found in shader!\n\t {} name: {}", loc.unwrap(), name);
-                    return None;
-                }
-                let loc = loc.unwrap();
+                let loc = loc;
                 gl.enable_vertex_attrib_array(loc);
                 gl.vertex_attrib_pointer_f32(loc, a.size, glow::FLOAT, false, a.stride, current_offset as i32);
-                // gl::EnableVertexAttribArray(loc as u32);
-                // gl::VertexAttribPointer(
-                //     loc as u32,
-                //     a.size,
-                //     gl::FLOAT,
-                //     gl::FALSE,
-                //     a.stride,
-                //     current_offset as * const gl::types::GLvoid 
-                // );
-                let attrib_divisor : u32 = if a.per_instance { 1 } else { 0 };
-                // gl::VertexAttribDivisor(loc as u32, attrib_divisor);
-                gl.vertex_attrib_divisor(loc, attrib_divisor);
                 
+                let attrib_divisor : u32 = if a.per_instance { 1 } else { 0 };
+
+                gl.vertex_attrib_divisor(loc, attrib_divisor);
                 current_offset += a.data.len() * std::mem::size_of::<f32>();
             }
 
@@ -159,8 +141,6 @@ impl Vao{
             
             gl.bind_vertex_array(self.get_handle());
             gl.bind_buffer(glow::ARRAY_BUFFER, self.vbo_handle.get_handle());
-            // gl::BindVertexArray( self.get_handle() );
-            // gl::BindBuffer(gl::ARRAY_BUFFER, self.vbo_handle.get_handle() );
 
             let data_u8: &[u8] = core::slice::from_raw_parts(
                 data.as_ptr() as *const u8,
@@ -168,22 +148,12 @@ impl Vao{
             );
 
             gl.buffer_sub_data_u8_slice(glow::ARRAY_BUFFER, 0, &data_u8);
-            // gl::BufferSubData(
-            //     gl::ARRAY_BUFFER, //type
-            //     0, //offset
-            //     ( data.len() * std::mem::size_of::<f32>() ) as gl::types::GLsizeiptr, // size of data
-            //     data.as_ptr() as *const gl::types::GLvoid // data ptr
-            //     );
-            
-            gl.enable_vertex_attrib_array(0); // ? 
+        
+            gl.enable_vertex_attrib_array(0);
             gl.vertex_attrib_pointer_f32(0, size, glow::FLOAT, false, 3 * std::mem::size_of::<f32>() as i32, 0);
-            // gl::EnableVertexAttribArray(0);
-            // gl::VertexAttribPointer(0, size, gl::FLOAT, gl::FALSE, (3 * std::mem::size_of::<f32>()) as i32, 0 as *const gl::types::GLvoid);  
             
             gl.bind_buffer(glow::ARRAY_BUFFER,  None);
             gl.bind_vertex_array(None);
-            // gl::BindBuffer( gl::ARRAY_BUFFER, 0 );
-            // gl::BindVertexArray( 0 );
         }
 
     }

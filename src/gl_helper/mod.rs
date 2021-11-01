@@ -11,15 +11,9 @@ pub use self::stock_shader::StockShader;
 pub mod glsl_prog;
 pub use self::glsl_prog::GlslProg;
 
-
-/*
-
-
-
-
 pub mod texture;
 pub use self::texture::Texture;
-
+/*
 pub mod fbo;
 pub use self::fbo::Fbo;
 pub use self::fbo::FboSettings;

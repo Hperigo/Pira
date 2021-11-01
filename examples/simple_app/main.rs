@@ -5,7 +5,7 @@ use glow::*;
 
 struct FrameData { }
 
-fn m_setup( app : &mut App) -> FrameData {
+fn m_setup( _app : &mut app::App) -> FrameData {
     FrameData{ }
 }
 
@@ -18,5 +18,8 @@ fn m_update(app : &mut app::App, _data : &mut FrameData, _event : &app::Event<()
 }
 
 fn main() {
-    app::AppBuilder::new(m_setup).run(m_update);
+    app::AppBuilder::new(app::AppSettings{
+        window_size : (200, 200),
+        window_title : "simple app",
+    }, m_setup).run(m_update);
 }

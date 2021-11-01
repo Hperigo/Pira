@@ -1,7 +1,7 @@
 use crate::gl_helper::glsl_prog::GlslProg as GlslProg;
-use glow;
+extern crate nalgebra_glm as glm;
 
-use std::ffi::CString;
+use glow;
 use std::string::String;
 
 #[derive(Debug, Clone)]
@@ -52,7 +52,8 @@ impl StockShader{
                                                                                       StockShader::uniform_name_view_matrix(),
                                                                                       StockShader::uniform_name_model_matrix(),
                                                                                       StockShader::attrib_name_position()  ).to_string();
-
+            
+            // let position_main = format!("gl_Position = vec4({}, 1.0);", StockShader::attrib_name_position());
             let vertex_shader = format!(
             "
             #version 410
@@ -124,7 +125,7 @@ impl StockShader{
         out vec4 Color;
         void main()
         {{
-            Color =  vec4(1.0); //{} {} uColor;
+            Color = {} {} uColor;
         }}", sampler_2d, main_vertex_color, main_texture_coord );
 
         frag_shader
@@ -133,7 +134,15 @@ impl StockShader{
     pub fn build(&self, gl : &glow::Context) ->  GlslProg {
         let vertex_string = self.get_vertex_string();
         let frag_string   = self.get_frag_string();
-        GlslProg::new(gl, vertex_string.as_str(), frag_string.as_str() )
+
+        let prog = GlslProg::new(gl, vertex_string.as_str(), frag_string.as_str() );
+
+        // set some default values for uniforms
+        prog.bind(gl);
+        prog.set_uniform_4f(gl, StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
+        prog.unbind(gl);
+        
+        prog
     }
 
 

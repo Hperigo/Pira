@@ -8,16 +8,24 @@ pub type Event<'a, T> = glutin::event::Event<'a, T>;
 
 type SetupFn<T> = fn(&mut App) -> T;
 type UpdateFn<T> = fn(&mut App, &mut T, &Event<()>);
+
+#[derive(Clone, Copy)]
+pub struct AppSettings {
+    pub window_size : (i32, i32),
+    pub window_title : &'static str,
+}
 pub struct AppBuilder<T : 'static> {
     setup_fn : SetupFn<T>,
     update_fn : Option<UpdateFn<T>>,
+    settings : AppSettings,
 }
 
 impl<T> AppBuilder<T>{
-    pub fn new(setup_fn : SetupFn<T>) -> Self {
+    pub fn new(settings : AppSettings, setup_fn : SetupFn<T>) -> Self {
         Self{
-           setup_fn,
-           update_fn :  None,
+            settings,
+            setup_fn,
+            update_fn :  None,
         }
     }
 
@@ -32,17 +40,24 @@ impl<T> AppBuilder<T>{
     }
 }
 
-#[cfg(target_arch = "wasm32")]
-pub struct App {
-    pub gl : glow::Context,
-    pub frame_number : u64,
+// #[cfg(target_arch = "wasm32")]
+// pub struct App {
+//     pub gl : glow::Context,
+//     pub frame_number : u64,
+// }
+
+pub struct InputState {
+   pub mouse_pos : (f32, f32),
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 pub struct App {
     pub gl : glow::Context,
-    pub window : Option<glutin::ContextWrapper< glutin::PossiblyCurrent, glutin::window::Window>>,
     pub frame_number : u64,
+    pub input_state : InputState,
+    pub settings : AppSettings,
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub window : Option<glutin::ContextWrapper< glutin::PossiblyCurrent, glutin::window::Window>>,
 }
 
 
@@ -104,12 +119,13 @@ fn main_loop_wasm<T : 'static>(builder : AppBuilder<T>){
 #[cfg(not(target_arch = "wasm32"))]
 fn main_loop_glutin<T : 'static>(builder : AppBuilder<T>){
     
+    let settings = builder.settings.clone();
     let (gl, window, event_loop) = unsafe {
         let event_loop = glutin::event_loop::EventLoop::new();
         
         let window_builder = glutin::window::WindowBuilder::new()
-            .with_title("Hello triangle!")
-            .with_inner_size(glutin::dpi::LogicalSize::new(1024.0, 768.0));
+            .with_title(settings.window_title)
+            .with_inner_size(glutin::dpi::LogicalSize::new(settings.window_size.0, settings.window_size.1));
         
         let window = glutin::ContextBuilder::new()
             .with_vsync(true)
@@ -124,22 +140,34 @@ fn main_loop_glutin<T : 'static>(builder : AppBuilder<T>){
     
     let mut app  = App{
         gl, 
+        settings,
         window,
         frame_number : 0,
+        input_state : InputState { mouse_pos: (0.0, 0.0) },
     };
 
     let mut data = (builder.setup_fn)(&mut app);
-    event_loop.run( move |event, _, control_flow| { 
+    event_loop.run( move |main_event, _, control_flow| { 
+        *control_flow = glutin::event_loop::ControlFlow::Poll;
 
-       match event {
-           glutin::event::Event::WindowEvent { ref event, .. } => {
-
-           },
+        match main_event {
+            glutin::event::Event::WindowEvent { ref event, .. } => match event {
+                glutin::event::WindowEvent::Resized(physical_size) => app.window.as_ref().unwrap().resize(physical_size.clone()),
+                glutin::event::WindowEvent::CloseRequested => *control_flow =  glutin::event_loop::ControlFlow::Exit,
+                glutin::event::WindowEvent::CursorMoved{position, ..} =>  {
+                    let scale_factor = 0.5;
+                    app.input_state.mouse_pos = (position.x as f32 * scale_factor, position.y as f32 * scale_factor );
+                }
+                _ => (),
+            },
+            Event::RedrawRequested(_) => {
+            },
+            Event::MainEventsCleared => {
+                app.frame_number = app.frame_number + 1;
+                builder.update_fn.unwrap()(&mut app, &mut data, &main_event);
+                app.window.as_ref().unwrap().swap_buffers().unwrap();
+            }
            _ => ()
        }
-
-       app.frame_number = app.frame_number + 1;
-       builder.update_fn.unwrap()(&mut app, &mut data, &event);
-       app.window.as_ref().unwrap().swap_buffers().unwrap();
     });
 }

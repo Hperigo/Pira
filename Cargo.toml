@@ -9,15 +9,15 @@ edition = "2018"
 [dependencies]
 glow = "*"
 nalgebra-glm = "*"
+image = "*"
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
 glutin = { version = "*" }
 
 # [dependencies]
 # imgui-glfw-rs = "*"
-# image = "*"
 # gl_generator = "*"
 
-# [dev-dependencies]
-# rand = "*"
-# indextree = "*"
+[dev-dependencies]
+rand = "*"
+indextree = "*"

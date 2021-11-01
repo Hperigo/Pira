@@ -1,8 +1,6 @@
-
 extern crate nalgebra_glm as glm;
-
-use std::ffi::{CString};
 use glow::{self, HasContext};
+
 pub struct GlslProg{
     handle: Option<glow::Program>,
 }
@@ -43,10 +41,15 @@ impl GlslProg{
         return self.handle;
     }
 
+    pub fn get_uniform_location(&self, gl : &glow::Context, name : &str) -> glow::UniformLocation {
+        let loc = unsafe { gl.get_uniform_location(self.handle.unwrap(), name).expect(format!("no uniform named: {}", name).as_str()) };
+        loc
+    }
+
     pub fn set_uniform_mat4(&self, gl : &glow::Context, name : &str, value : &glm::Mat4){
 
         unsafe{
-            let loc = gl.get_uniform_location(self.handle.unwrap(), name).unwrap();
+            let loc = self.get_uniform_location(gl, name);
             gl.uniform_matrix_4_f32_slice(Some(&loc), false, value.as_slice());
         };
     }
@@ -54,7 +57,7 @@ impl GlslProg{
     pub fn set_uniform_4f(&self, gl : &glow::Context, name : &str, value : &glm::Vec4){
 
         unsafe{
-            let loc = gl.get_uniform_location(self.handle.unwrap(), name).unwrap();
+            let loc = self.get_uniform_location(gl, name);
             gl.uniform_4_f32(Some(&loc), value.x, value.y, value.z, value.w);
         };
     }
@@ -130,6 +133,7 @@ fn compile_shader( gl : &glow::Context, src : &str, shader_type : u32 ) -> glow:
             match shader_type {
                 glow::VERTEX_SHADER => shader_type_string = "VERTEX_SHADER",
                 glow::FRAGMENT_SHADER => shader_type_string = "FRAGMENT",
+                glow::COMPUTE_SHADER => shader_type_string = "COMPUTE",
                 _ => shader_type_string = "unkwon shader type"
             };
             unsafe {
@@ -137,16 +141,5 @@ fn compile_shader( gl : &glow::Context, src : &str, shader_type : u32 ) -> glow:
                 println!("Failed to compile {} :: error {}", shader_type_string, log );
             }
         }
-
         shader_id
-}
-
-
-fn create_whitespace_cstring_with_len(len: usize) -> CString {
-    // allocate buffer of correct size
-    let mut buffer: Vec<u8> = Vec::with_capacity(len + 1);
-    // fill it with len spaces
-    buffer.extend([b' '].iter().cycle().take(len));
-    // convert buffer to CString
-    unsafe { CString::from_vec_unchecked(buffer) }
 }
