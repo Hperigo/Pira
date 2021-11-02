@@ -13,6 +13,7 @@ pub use self::glsl_prog::GlslProg;
 
 pub mod texture;
 pub use self::texture::Texture;
+
 /*
 pub mod fbo;
 pub use self::fbo::Fbo;
@@ -20,6 +21,33 @@ pub use self::fbo::FboSettings;
 */
 
 use glow::*;
+
+
+pub trait Bindable {
+    fn bind(&self, gl : &glow::Context);
+    fn unbind(&self, gl : &glow::Context);
+}
+
+pub struct ScopedBind<'a, T : Bindable>  {
+    pub gl : &'a glow::Context,
+    pub object : &'a T,
+}
+
+impl<'a, T : Bindable> ScopedBind<'a, T> {
+    pub fn new(gl : &'a glow::Context, object : &'a T) -> Self{
+        object.bind(gl);
+        Self{
+            gl,
+            object,
+        }
+    }
+}
+
+impl<'a, T : Bindable> Drop for ScopedBind<'a, T> {
+    fn drop(&mut self) {
+        self.object.unbind(self.gl);
+    }
+}
 
 pub fn clear( gl : &glow::Context, red : f32, green : f32, blue : f32, alpha : f32 ){
     unsafe{

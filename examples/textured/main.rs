@@ -5,6 +5,8 @@
 extern crate piralib;
 // use piralib::{app, gl_helper::{self, GlslProg, Vao}};
 use piralib::gl_helper as glh;
+use piralib::gl_helper::Bindable;
+
 use piralib::app;
 
 use nalgebra_glm as glm;
@@ -73,13 +75,14 @@ fn m_update(app : &mut app::App, data : &mut FrameData, _event : &app::Event<()>
 
     glh::clear(gl, 0.2, 0.1, 0.1, 1.0);
 
-    shader.bind(gl);
-    texture.bind(gl);
+    let _s_shader = glh::ScopedBind::new(gl, shader);
+    let _s_tex = glh::ScopedBind::new(gl, texture);
+
     let frame_buffer_scale = 1.0;
     shader.set_uniform_mat4(gl, glh::StockShader::uniform_name_perspective_matrix(),
                             &glm::ortho(0.0,
                                 app.settings.window_size.0 as f32 * frame_buffer_scale,
-                               app.settings.window_size.0 as f32 * frame_buffer_scale,
+                              app.settings.window_size.0 as f32 * frame_buffer_scale,
                                 0.0, -1.0,
                                 1.0));
 
@@ -93,8 +96,6 @@ fn m_update(app : &mut app::App, data : &mut FrameData, _event : &app::Event<()>
     shader.set_uniform_4f(gl, glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
 
     vao.draw( gl, glow::TRIANGLES );
-    texture.unbind(gl);
-    shader.unbind(gl);
 
 }
 

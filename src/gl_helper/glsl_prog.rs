@@ -1,5 +1,6 @@
 extern crate nalgebra_glm as glm;
 use glow::{self, HasContext};
+use crate::gl_helper::Bindable;
 
 pub struct GlslProg{
     handle: Option<glow::Program>,
@@ -142,4 +143,19 @@ fn compile_shader( gl : &glow::Context, src : &str, shader_type : u32 ) -> glow:
             }
         }
         shader_id
+}
+
+impl Bindable for GlslProg {
+    fn bind(&self, gl : &glow::Context){
+        unsafe{
+            assert_eq!(self.handle.is_some(), true, "You are trying to bind a NONE Shader");
+            gl.use_program(self.handle);
+        }
+    }
+
+    fn unbind(&self, gl : &glow::Context){
+        unsafe{
+            gl.use_program(None);
+        }
+    }
 }
