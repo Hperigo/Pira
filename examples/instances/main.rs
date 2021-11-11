@@ -140,24 +140,18 @@ fn m_setup( app : &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(app : &mut app::App, _data : &mut FrameData, event : &app::Event<()>)
+fn m_update(app : &mut app::App, _data : &mut FrameData, _event : &app::Event<()>)
 {   
-    // unsafe {
-    //     app.gl.clear( glow::COLOR_BUFFER_BIT );
-    //     app.gl.clear_color(1.0, 0.0, 0.4, 1.0);
-    // }    
-
 
     let time = &mut _data.time;
     let gl = &app.gl;
     let shader = &_data.shader;
     let vao = &_data.vao;
 
-    let mut frame_incc = 1.0;
     let mut mouse_pos : [f32; 2] = [0.0,0.0];
 
-    let mut base_color : [f32; 3] = [0.2, 0.1, 0.1];
-    let mut tip_color : [f32; 3] = [0.9, 0.0, 0.2];
+    let base_color : [f32; 3] = [0.2, 0.1, 0.1];
+    let tip_color : [f32; 3] = [0.9, 0.0, 0.2];
 
     let framebuffer_scale = 2.0;
     let inv_frambe_buffer_scale = 1.0 / framebuffer_scale; 
