@@ -1,7 +1,6 @@
-
-use crate::gl;
-
-use std::ffi::c_void;
+extern crate nalgebra_glm as glm;
+use glow::{self, HasContext, Framebuffer};
+use crate::gl_helper::Bindable;
 
 pub struct FboSettings{
     pub width : i32,
@@ -11,66 +10,60 @@ pub struct FboSettings{
 
 
 pub struct Fbo{
-    pub fbo_handle : gl::types::GLuint,
-    pub texture_handle : gl::types::GLuint,
+    pub fbo_handle : Option<glow::Framebuffer>,
+    pub texture_handle : Option<glow::Texture>,
 
     settings : FboSettings,
 }
 
 impl Fbo{
-    pub fn new( settings : FboSettings ) -> Self{
+    pub fn new(gl : &glow::Context, settings : FboSettings ) -> Self{
         
-        let mut fbo = Fbo {
-            fbo_handle : 0,
-            texture_handle : 0,
-            settings : settings,
-        };
+        let (fbo, texture) = unsafe {
+    
+            let fbo = gl.create_framebuffer().expect("could not create frame buffer");
 
-        unsafe {
-            gl::GenFramebuffers(1, &mut fbo.fbo_handle);
-            gl::BindFramebuffer(gl::FRAMEBUFFER, fbo.fbo_handle);
-            
-            gl::GenTextures(1, &mut fbo.texture_handle);
-            gl::BindTexture(gl::TEXTURE_2D, fbo.texture_handle);
+            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fbo));
 
-            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as i32, fbo.settings.width, fbo.settings.height, 0, gl::RGB, gl::UNSIGNED_BYTE, 0 as *const c_void);
+            let texture = gl.create_texture().expect("could not create frame buffer texture");
+            gl.bind_texture(glow::TEXTURE_2D, Some(texture));
 
-            gl::TexParameteri( gl::TEXTURE_2D,gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32 );
-            gl::TexParameteri( gl::TEXTURE_2D,gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32 );
+            gl.tex_image_2d(glow::TEXTURE_2D, 0, glow::RGB as i32,settings.width, settings.height, 0, glow::RGB, glow::UNSIGNED_BYTE, None );
 
-            gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, fbo.texture_handle, 0);
+            gl.tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_MIN_FILTER, glow::LINEAR as i32);
+            gl.tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_MAG_FILTER, glow::LINEAR as i32);
 
-            if gl::CheckFramebufferStatus(gl::FRAMEBUFFER) != gl::FRAMEBUFFER_COMPLETE {
-                println!("Error framebuffer not complete...");
+
+            gl.framebuffer_texture_2d(glow::FRAMEBUFFER, glow::COLOR_ATTACHMENT0, glow::TEXTURE_2D, Some(texture), 0);
+
+            if gl.check_framebuffer_status(glow::FRAMEBUFFER) != glow::FRAMEBUFFER_COMPLETE {
+                println!("Error creating framebuffer");
             }
 
-            gl::BindTexture(gl::TEXTURE_2D, 0);
-            gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
-        }
+            gl.bind_texture(glow::TEXTURE_2D,None);
+            gl.bind_framebuffer(glow::FRAMEBUFFER, None);
 
-        return fbo;
+            (fbo, texture)
+        };
+
+        Self{
+            fbo_handle : Some(fbo),
+            texture_handle : Some(texture),
+            settings,
+        }
     }
 
-    pub fn bind(&self){
+    pub fn bind_texture(&self, gl : &glow::Context){
         unsafe{
-            gl::BindFramebuffer(gl::FRAMEBUFFER, self.fbo_handle);
+            assert_eq!(self.texture_handle.is_some(), true, "You are trying to bind a NONE texture");
+            gl.bind_texture(glow::TEXTURE_2D, self.texture_handle);
         }
     }
 
-    pub fn unbind(&self){
-        unsafe {
-            gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
-        }
-    }
-
-    pub fn bind_texture(&self){
+    pub fn unbind_texture(&self, gl : &glow::Context){
         unsafe{
-            gl::BindTexture(gl::TEXTURE_2D, self.get_texture_handle() );
-        }
-    }
-    pub fn unbind_texture(&self){
-        unsafe{
-            gl::BindTexture(gl::TEXTURE_2D, 0);
+            // gl::BindTexture(gl::TEXTURE_2D, 0);
+            gl.bind_texture(glow::TEXTURE_2D, None);
         }
     }
 
@@ -82,15 +75,22 @@ impl Fbo{
         self.settings.height
     }
 
-    pub fn get_texture_handle(&self) -> gl::types::GLuint {
+    pub fn get_texture_handle(&self) -> Option<glow::Texture> {
         return self.texture_handle
     }
 }
 
-impl Drop for Fbo {
-    fn drop(&mut self) {
-        unsafe {
-            gl::DeleteFramebuffers(1, &self.fbo_handle);
+impl Bindable for Fbo {
+    fn bind(&self, gl : &glow::Context){
+        unsafe{
+            assert_eq!(self.fbo_handle.is_some(), true, "You are trying to bind a NONE texture");
+            gl.bind_framebuffer(glow::FRAMEBUFFER, self.fbo_handle);
+        }
+    }
+
+    fn unbind(&self, gl : &glow::Context){
+        unsafe{
+            gl.bind_framebuffer(glow::FRAMEBUFFER, None);
         }
     }
 }

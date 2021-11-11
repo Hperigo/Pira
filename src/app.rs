@@ -65,7 +65,8 @@ pub struct App {
 fn main_loop_wasm<T : 'static>(builder : AppBuilder<T>){
 
     let event_loop = winit::event_loop::EventLoop::new();
-
+    let settings = builder.settings.clone();
+    
     let window = winit::window::WindowBuilder::new()
         .with_title("A fantastic window!")
         .build(&event_loop)
@@ -93,11 +94,14 @@ fn main_loop_wasm<T : 'static>(builder : AppBuilder<T>){
         (gl, "#version 300 es")
     };
     
-    let mut data = (builder.setup_fn)();
     let mut app  = App{
         gl, 
+        settings,
         frame_number : 0,
+        input_state : InputState { mouse_pos: (0.0, 0.0) },
     };
+
+    let mut data = (builder.setup_fn)(&mut app);
 
     event_loop.run(move |event, _, control_flow| {
 

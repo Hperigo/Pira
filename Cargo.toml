@@ -14,10 +14,45 @@ image = "*"
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
 glutin = { version = "*" }
 
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+winit = {version = "*", features = ["web-sys"]}
+wasm-bindgen = { version = "0.2.78" }
+wasm-bindgen-futures = { version = "*" }
+js-sys = "*"
+console_error_panic_hook = "*"
+
+
+[target.'cfg(target_arch = "wasm32")'.dependencies.web_sys]
+package = "web-sys"
+version = "*"
+features = [
+    'console',
+    "AddEventListenerOptions",
+    'CssStyleDeclaration',
+    'BeforeUnloadEvent',
+    'Document',
+    'DomRect',
+    'Element',
+    'Event',
+    'EventTarget',
+    'FocusEvent',
+    'HtmlCanvasElement',
+    'HtmlElement',
+    'KeyboardEvent',
+    'MediaQueryList',
+    'MediaQueryListEvent',
+    'MouseEvent',
+    'Node',
+    'PointerEvent',
+    'Window',
+    'WheelEvent'
+]
+
 # [dependencies]
 # imgui-glfw-rs = "*"
 # gl_generator = "*"
 
 [dev-dependencies]
-rand = "*"
+getrandom = { version = "*", features=["js"]}
+rand = { version = "*"}
 indextree = "*"

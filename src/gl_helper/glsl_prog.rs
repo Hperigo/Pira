@@ -62,42 +62,37 @@ impl GlslProg{
             gl.uniform_4_f32(Some(&loc), value.x, value.y, value.z, value.w);
         };
     }
-    /*
-    pub fn set_uniform_1i(&self, name : &str, value : &i32){
-        let cname = CString::new( name ).expect("ill formed string");
+
+    pub fn set_uniform_1i(&self, gl : &glow::Context, name : &str, value : i32){
         unsafe{
-            let loc = gl::GetUniformLocation(self.handle,  cname.as_bytes_with_nul().as_ptr() as *const i8 );
-            gl::Uniform1i( loc, *value );
+            let loc = self.get_uniform_location(gl, name);
+            gl.uniform_1_i32(Some(&loc), value);
         };
     }
     
-    pub fn set_uniform_1f(&self, name : &str, value : f32){
-        let cname = CString::new( name ).expect("ill formed string");
+
+    pub fn set_uniform_1f(&self, gl : &glow::Context, name : &str, value : f32){
         unsafe{
-            let loc = gl::GetUniformLocation(self.handle,  cname.as_bytes_with_nul().as_ptr() as *const i8 );
-            gl::Uniform1f( loc, value );
+            let loc = self.get_uniform_location(gl, name);
+            gl.uniform_1_f32( Some(&loc), value );
+        };
+    }
+    
+     pub fn set_uniform_2f(&self, gl : &glow::Context, name : &str, value : &[f32; 2]){
+        unsafe{
+            let loc = self.get_uniform_location(gl, name);
+            gl.uniform_2_f32(Some(&loc), value[0], value[1]);
         };
     }
 
-     pub fn set_uniform_2f(&self, name : &str, value : &[f32; 2]){
-        let cname = CString::new( name ).expect("ill formed string");
+
+   pub fn set_uniform_3f(&self, gl : &glow::Context, name : &str, value : &[f32; 3]){
         unsafe{
-            let loc = gl::GetUniformLocation(self.handle,  cname.as_bytes_with_nul().as_ptr() as *const i8 );
-            gl::Uniform2f( loc, value[0], value[1] );
+            let loc = self.get_uniform_location(gl, name);
+            gl.uniform_3_f32( Some(&loc), value[0], value[1], value[2] );
         };
     }
-
-   pub fn set_uniform_3f(&self, name : &str, value : &[f32; 3]){
-        let cname = CString::new( name ).expect("ill formed string");
-        unsafe{
-            let loc = gl::GetUniformLocation(self.handle,  cname.as_bytes_with_nul().as_ptr() as *const i8 );
-            gl::Uniform3f( loc, value[0], value[1], value[2] );
-        };
-    }
-
-   
-*/
-
+    
     pub fn bind(&self, gl : &glow::Context){
         unsafe{
             assert!( self.handle != None );

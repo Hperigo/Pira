@@ -1,11 +1,5 @@
-// extern crate piralib;
-// use piralib::gl_helper as glh;
-// use piralib::gl as gl;
-
 extern crate piralib;
-// use piralib::{app, gl_helper::{self, GlslProg, Vao}};
 use piralib::gl_helper as glh;
-use piralib::gl_helper::Bindable;
 
 use piralib::app;
 

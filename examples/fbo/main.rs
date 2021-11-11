@@ -1,23 +1,27 @@
 extern crate piralib;
+use piralib::app;
 use piralib::gl_helper as glh;
-use piralib::gl as gl;
 use nalgebra_glm as glm;
+use glow::*;
+use piralib::gl_helper::Bindable;
 
-use image;
+struct FrameData { 
+    vao : glh::Vao,
+    shader : glh::GlslProg,
 
-use imgui_glfw_rs::imgui::*;
+    quad_vao : glh::Vao,
+    circle_shader : glh::GlslProg,
 
-fn main() {
 
-    let mut app  = piralib::App::init_with_options( &piralib::app::Options{
-        window_width: 1104,
-        window_height: 736,
-        title: "#️⃣".to_string(),
-        samples: 2,
-    });
-    let fbo = glh::Fbo::new(glh::FboSettings{width : 500, height : 500, depth : true});
- 
-    // create QUAD ====
+    fbo : glh::Fbo,
+}
+
+fn m_setup( app : &mut app::App) -> FrameData {
+
+    let gl = &app.gl;
+    let fbo = glh::Fbo::new(gl, glh::FboSettings{width : 500, height : 500, depth : true});
+
+  // create QUAD ====
     let (vao, shader) = {
         let mut pos_attrib = glh::VertexAttrib::new_position_attr();
         let mut color_attrib = glh::VertexAttrib::new_color_attr();
@@ -50,18 +54,16 @@ fn main() {
         color_attrib.data = colors;
         texture_attrib.data = texure_vertices;
         let stock_shader = glh::StockShader::new().texture(true);
-        let shader = stock_shader.build();
+        let shader = stock_shader.build(gl);
         let attribs = vec![pos_attrib, texture_attrib];
 
-        (glh::Vao::new_from_attrib(&attribs, &shader).unwrap(), shader)
+        (glh::Vao::new_from_attrib(gl, &attribs, &shader).unwrap(), shader)
     };
 
-        // create geomtry that is drawn inside the fbo ====
+          // create geomtry that is drawn inside the fbo ====
     let (quad_vao, circle_shader) = {
 
         let mut pos_attrib = glh::VertexAttrib::new_position_attr();
-        let mut color_attrib = glh::VertexAttrib::new_color_attr();
-        let mut texture_attrib = glh::VertexAttrib::new_texture_attr();
 
         // build vertex data ----
         let mut vertices : Vec<f32> = Vec::new();
@@ -77,104 +79,101 @@ fn main() {
         
         pos_attrib.data = vertices;
         let stock_shader = glh::StockShader::new();
-        let shader = stock_shader.build();
+        let shader = stock_shader.build(gl);
         let attribs = vec![pos_attrib];
 
-        (glh::Vao::new_from_attrib(&attribs, &shader).unwrap(), shader)
+        (glh::Vao::new_from_attrib(gl, &attribs, &shader).unwrap(), shader)
     };
+    
 
-    unsafe{ 
-       gl::Enable(gl::BLEND);
-       gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA); 
+    FrameData{
+        vao,
+        shader,
+
+        quad_vao,
+        circle_shader,
+
+        fbo,
+     }
+}
+
+fn m_update(app : &mut app::App, _data : &mut FrameData, _event : &app::Event<()>)
+{   
+    let frame_buffer_scale = 1.0;
+
+    
+    let gl = &app.gl;
+
+    let vao = &_data.vao;
+    let quad_vao = &_data.quad_vao;
+    let shader  = &_data.shader;
+    let circle_shader = &_data.circle_shader;
+    let fbo = &_data.fbo;
+    unsafe {
+        gl.clear( glow::COLOR_BUFFER_BIT );
+        gl.clear_color(1.0, 0.0, 0.4, 1.0);
     }
 
 
-    let mut x_pos = 0.0;
-    let mut y_pos = 0.0;
-
-    let frame_buffer_scale = 1.0;
-
-    app.run_fn( move |event, should_quit| {
-
-        fbo.bind();
+    fbo.bind(gl);
         
-        glh::clear(0.2, 0.1, 0.0, 1.0);
-        glh::set_viewport(0,0, fbo.get_width(), fbo.get_height() );
+    glh::clear(gl, 0.2, 0.1, 0.0, 1.0);
+    glh::set_viewport(gl, 0,0, fbo.get_width(), fbo.get_height() );
 
-        circle_shader.bind();
-        //texture.bind();
-        circle_shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
-                                &glm::ortho(0.0,
-                                    fbo.get_width() as f32 * frame_buffer_scale,
-                                    fbo.get_height() as f32 * frame_buffer_scale,
-                                    0.0, -1.0,
-                                    1.0));
+    circle_shader.bind(gl);
+    circle_shader.set_uniform_mat4(gl, glh::StockShader::uniform_name_perspective_matrix(),
+                            &glm::ortho(0.0,
+                                fbo.get_width() as f32 * frame_buffer_scale,
+                                fbo.get_height() as f32 * frame_buffer_scale,
+                                0.0, -1.0,
+                                1.0));
 
-        circle_shader.set_uniform_mat4( glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
+    circle_shader.set_uniform_mat4( gl, glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
 
-        let mut model_view = glm::Mat4::identity();
-        model_view = glm::translate(&model_view, &glm::vec3( x_pos, y_pos, 0.0 ));
-        model_view = glm::scale(&model_view, &glm::vec3(1.0,1.0, 1.0));
-        
-        circle_shader.set_uniform_mat4( glh::StockShader::uniform_name_model_matrix(), &model_view );
-        circle_shader.set_uniform_4f( glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
-
-        //qavao.draw( gl::TRIANGLES );
-        quad_vao.draw(gl::TRIANGLE_FAN);
-        //texture.unbind();
-        circle_shader.unbind();
-        fbo.unbind();
-
-
-        // DRAW FBO -------
-        unsafe{
-                gl::Viewport(0,0, event.framebuffer_size.0, event.framebuffer_size.1);
-        }
-
-        glh::clear(0.2, 0.1, 0.3, 1.0);
-
-        shader.bind();
-        shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
-                                &glm::ortho(0.0,
-                                    event.framebuffer_size.0 as f32 * frame_buffer_scale,
-                                    event.framebuffer_size.1 as f32 * frame_buffer_scale,
-                                    0.0, -1.0,
-                                    1.0));
-
-        shader.set_uniform_mat4( glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
-
-        let mut model_view = glm::Mat4::identity();
-        model_view = glm::translate(&model_view, &glm::vec3( 0.0, 0.0, 0.0 ));
-        model_view = glm::scale(&model_view, &glm::vec3(1.0,1.0, 0.5));
-        
-        shader.set_uniform_mat4( glh::StockShader::uniform_name_model_matrix(), &model_view );
-        shader.set_uniform_4f( glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
-
-        fbo.bind_texture();
-        vao.draw( gl::TRIANGLES );
-        fbo.unbind_texture();
-
-        shader.unbind();
-        // END DRAW FBO -----
-
-        event.ui.drag_float(im_str!("xpos"), &mut x_pos).speed(1.0).build();
-        event.ui.drag_float(im_str!("ypos"), &mut y_pos).speed(1.0).build();
-
-
-        if cfg!(test){
-            if event.frame_number > 10 {
-               
-                let img = event.get_frame_image();
-                let img = image::imageops::flip_vertical(&img);
-                img.save("test_images/fbo.png").unwrap();
+    let mut model_view = glm::Mat4::identity();
+    model_view = glm::translate(&model_view, &glm::vec3( 10.0, 10.0, 0.0 ));
+    model_view = glm::scale(&model_view, &glm::vec3(1.0,1.0, 1.0));
     
-                *should_quit = true;
-            }
-        }
-    });
+    circle_shader.set_uniform_mat4( gl, glh::StockShader::uniform_name_model_matrix(), &model_view );
+    circle_shader.set_uniform_4f( gl, glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
+
+    quad_vao.draw(gl, glow::TRIANGLE_FAN);
+    circle_shader.unbind(gl);
+    fbo.unbind(gl);
+
+
+    // DRAW FBO -------
+    glh::set_viewport(gl, 0,0, app.settings.window_size.0, app.settings.window_size.1);
+    glh::clear(gl, 0.2, 0.1, 0.3, 1.0);
+
+    shader.bind(gl);
+    shader.set_uniform_mat4(gl,  glh::StockShader::uniform_name_perspective_matrix(),
+                            &glm::ortho(0.0,
+                                app.settings.window_size.0 as f32 * frame_buffer_scale,
+                               app.settings.window_size.0 as f32 * frame_buffer_scale,
+                                0.0, -1.0,
+                                1.0));
+
+    shader.set_uniform_mat4(gl, glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
+
+    let mut model_view = glm::Mat4::identity();
+    model_view = glm::translate(&model_view, &glm::vec3( 0.0, 0.0, 0.0 ));
+    model_view = glm::scale(&model_view, &glm::vec3(1.0,1.0, 0.5));
+    
+    shader.set_uniform_mat4( gl, glh::StockShader::uniform_name_model_matrix(), &model_view );
+    shader.set_uniform_4f( gl, glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
+
+    fbo.bind_texture(gl);
+    vao.draw( gl, glow::TRIANGLES );
+    fbo.unbind_texture(gl);
+
+    shader.unbind(gl);
+
 }
 
-#[test]
-fn fbo_app() {
-    main();
+fn main() {
+    app::AppBuilder::new(app::AppSettings{
+        window_size : (1920 / 2,1080 / 2),
+        window_title : "FBO app",
+    }, m_setup).run(m_update);
 }

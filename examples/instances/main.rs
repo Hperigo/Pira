@@ -1,22 +1,22 @@
 extern crate piralib;
+use piralib::app;
 use piralib::gl_helper as glh;
-use piralib::gl as gl;
+use glow::*;
 use nalgebra_glm as glm;
-use std::ffi::CString;
-
 use rand::Rng;
-use imgui_glfw_rs::imgui::*;
 
-fn main() {
+struct FrameData { 
+    vao : glh::Vao,
+    shader : glh::GlslProg,
+    time : f32,
+    number_of_instances : i32,
+}
 
-    let mut app  = piralib::App::init_with_options( &piralib::app::Options{
-        window_width: 1104,
-        window_height: 736,
-        samples : 2,
-        title: "#️⃣".to_string()
-    });
+fn m_setup( app : &mut app::App) -> FrameData {
+    
+    let gl = &app.gl;
 
-   let vertex_shader_string = "#version 330
+    let vertex_shader_string = "#version 410
 
     uniform mat4 uModelMatrix;
     uniform mat4 uPerspectiveMatrix;
@@ -55,8 +55,7 @@ fn main() {
     }   
     ";
 
-    let frag_shader_string = "#version 330
-    uniform vec4 uColor;
+    let frag_shader_string = "#version 410
 
     in vec4 vColor;
 
@@ -66,7 +65,7 @@ fn main() {
     out vec4 Color;
     void main()
     {   
-        float alpha = 1.0; // - vColor.r;
+        float alpha = vColor.r;
         Color = vec4(mix(uBaseColor, uTipColor, vColor.r), alpha);
     }
     ";
@@ -109,8 +108,8 @@ fn main() {
     for i in 0..max_x{
         for k in 0 ..max_y{
 
-            let x = ((max_x as f32) - (i as f32)) + rng.gen_range(-random_range, random_range);
-            let y = ((max_y as f32) - (k as f32)) + rng.gen_range(-random_range, random_range);
+            let x = ((max_x as f32) - (i as f32)) + rng.gen_range(-random_range..random_range);
+            let y = ((max_y as f32) - (k as f32)) + rng.gen_range(-random_range..random_range);
             instance_positions.append( &mut vec![x as f32 * spacing * 0.5, y as f32 * spacing ]);
         }
     }
@@ -129,91 +128,85 @@ fn main() {
     pos_attrib.data = vertices;
     color_attrib.data = colors;
 
-    let shader = glh::GlslProg::new(&CString::new(vertex_shader_string).unwrap(), &CString::new(frag_shader_string).unwrap());
+    let shader = glh::GlslProg::new(gl, vertex_shader_string, frag_shader_string);
     let attribs = vec![pos_attrib, color_attrib, instance_positions_attrib];
-    let vao = glh::Vao::new_from_attrib(&attribs, &shader).unwrap();
+    let vao = glh::Vao::new_from_attrib(gl, &attribs, &shader).unwrap();
+
+    FrameData{ 
+        vao,
+        shader,
+        number_of_instances,
+        time: 0.0,
+    }
+}
+
+fn m_update(app : &mut app::App, _data : &mut FrameData, event : &app::Event<()>)
+{   
+    // unsafe {
+    //     app.gl.clear( glow::COLOR_BUFFER_BIT );
+    //     app.gl.clear_color(1.0, 0.0, 0.4, 1.0);
+    // }    
+
+
+    let time = &mut _data.time;
+    let gl = &app.gl;
+    let shader = &_data.shader;
+    let vao = &_data.vao;
 
     let mut frame_incc = 1.0;
-    let mut time = 0.0;
     let mut mouse_pos : [f32; 2] = [0.0,0.0];
 
     let mut base_color : [f32; 3] = [0.2, 0.1, 0.1];
     let mut tip_color : [f32; 3] = [0.9, 0.0, 0.2];
 
-    let framebuffer_scale = app.get_framebuffer_scale();
-    let inv_frambe_buffer_scale = 1.0 / framebuffer_scale; // used for the glViewport
+    let framebuffer_scale = 2.0;
+    let inv_frambe_buffer_scale = 1.0 / framebuffer_scale; 
+
+    *time = *time + 1f32;
+    glh::clear(gl, base_color[0], base_color[1], base_color[2], 1.0);
+
+    mouse_pos[0] = mouse_pos[0] + ((app.input_state.mouse_pos.0  * 2.0)  - mouse_pos[0]) * 0.06;
+    mouse_pos[1] = mouse_pos[1] + ((app.input_state.mouse_pos.1  * 2.0)  - mouse_pos[1]) * 0.06;
 
 
-    app.run_fn(  move |event, should_quit| {
+    unsafe{
+        gl.enable( glow::DEPTH_TEST );
+        gl.enable( glow::BLEND );
+        gl.blend_func( glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA );
+    }
 
-        time = time + frame_incc;
-        glh::clear(base_color[0], base_color[1], base_color[2], 1.0);
+    shader.bind(gl);
 
-        mouse_pos[0] = mouse_pos[0] + ((event.mouse_pos.x  * 2.0)  - mouse_pos[0]) * 0.06;
-        mouse_pos[1] = mouse_pos[1] + ((event.mouse_pos.y  * 2.0)  - mouse_pos[1]) * 0.06;
+    shader.set_uniform_mat4(gl, glh::StockShader::uniform_name_perspective_matrix(),
+                            &glm::ortho(0.0,
+                                app.settings.window_size.0 as f32 * inv_frambe_buffer_scale, // beacuse of mac dpi we need to scale it down
+                                app.settings.window_size.1 as f32 * inv_frambe_buffer_scale,
+                                0.0, -1.0,
+                                1.0));
 
+   shader.set_uniform_1f(gl, "uTime", *time);
+   shader.set_uniform_2f(gl, "uMousePos", &mouse_pos);
+   
+   shader.set_uniform_3f(gl, "uBaseColor", &base_color);
+   shader.set_uniform_3f(gl, "uTipColor", &tip_color);
+
+    shader.set_uniform_mat4( gl, glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
+
+    let mut model_view = glm::Mat4::identity();
+    model_view = glm::translate(&model_view, &glm::vec3( 0.0, 0.0, 0.0 ));
+    model_view = glm::scale(&model_view, &glm::vec3(0.5,0.5, 0.5));
     
-        unsafe{
-            gl::Enable( gl::DEPTH_TEST );
-            gl::Enable( gl::BLEND );
-            gl::BlendFunc( gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA );
-        }
+    shader.set_uniform_mat4(gl,  glh::StockShader::uniform_name_model_matrix(), &model_view );
 
-        shader.bind();
+    vao.draw_instanced( gl, glow::TRIANGLES, _data.number_of_instances );
 
-        shader.set_uniform_mat4( glh::StockShader::uniform_name_perspective_matrix(),
-                                &glm::ortho(0.0,
-                                    event.framebuffer_size.0 as f32 * inv_frambe_buffer_scale, // beacuse of mac dpi we need to scale it down
-                                    event.framebuffer_size.1 as f32 * inv_frambe_buffer_scale,
-                                    0.0, -1.0,
-                                    1.0));
-
-       shader.set_uniform_1f("uTime", time);
-       shader.set_uniform_2f("uMousePos", &mouse_pos);
-       
-       shader.set_uniform_3f("uBaseColor", &base_color);
-       shader.set_uniform_3f("uTipColor", &tip_color);
-
-        shader.set_uniform_mat4( glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
-
-        let mut model_view = glm::Mat4::identity();
-        model_view = glm::translate(&model_view, &glm::vec3( 0.0, 0.0, 0.0 ));
-        model_view = glm::scale(&model_view, &glm::vec3(0.5,0.5, 0.5));
-        
-        shader.set_uniform_mat4( glh::StockShader::uniform_name_model_matrix(), &model_view );
-        shader.set_uniform_4f( glh::StockShader::uniform_name_color(), &glm::vec4(1.0, 1.0, 1.0, 1.0));
-
-        vao.draw_instanced( gl::TRIANGLES, number_of_instances );
-
-        shader.unbind();
-        
-        let mut save_frame = false;
-
-        let ui = event.ui;
-        ui.text(im_str!("Settings:"));
-        ui.drag_float3(im_str!("background color"), &mut base_color).speed(0.01).min(0.0).max(1.0).build();
-        ui.drag_float3(im_str!("tip color"), &mut tip_color).speed(0.01).min(0.0).max(1.0).build();
-        ui.drag_float(im_str!("speed"), &mut frame_incc).speed(0.01).min(0.001).max(5.0).build();
-
-
-        if ui.button(im_str!("Save frame"), [0.0, 0.0]){
-            save_frame = true;
-        }
-
-        if cfg!(test){
-            if event.frame_number > 10 {
-                let img = event.get_frame_image();
-                let img = image::imageops::flip_vertical(&img);
-                img.save("test_images/instances.png").unwrap();
-                *should_quit = true;
-            }
-        }
-    });
+    shader.unbind(gl);
+    
 }
 
-#[test]
-fn run_app() {
-    main();
-
-
+fn main() {
+    app::AppBuilder::new(app::AppSettings{
+        window_size : (1024, 768),
+        window_title : "simple app",
+    }, m_setup).run(m_update);
 }
