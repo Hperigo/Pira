@@ -10,9 +10,13 @@ edition = "2018"
 glow = "*"
 nalgebra-glm = "*"
 image = "*"
+egui = "*"
+egui_glow = {version = "*", features=["epi"]}
+epi = "*"
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
-glutin = { version = "*" }
+glutin = { version = "*", optional = false }
+# egui-winit = { version = "*", default-features = false, features = ["epi"], optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 winit = {version = "*", features = ["web-sys"]}

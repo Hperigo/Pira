@@ -1,10 +1,10 @@
+use egui_glow;
+
 #[cfg(target_arch = "wasm32")]
 pub type Event<'a, T> = winit::event::Event<'a, T>;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub type Event<'a, T> = glutin::event::Event<'a, T>;
-
-
 
 type SetupFn<T> = fn(&mut App) -> T;
 type UpdateFn<T> = fn(&mut App, &mut T, &Event<()>);
@@ -40,12 +40,6 @@ impl<T> AppBuilder<T>{
     }
 }
 
-// #[cfg(target_arch = "wasm32")]
-// pub struct App {
-//     pub gl : glow::Context,
-//     pub frame_number : u64,
-// }
-
 pub struct InputState {
    pub mouse_pos : (f32, f32),
 }
@@ -55,6 +49,8 @@ pub struct App {
     pub frame_number : u64,
     pub input_state : InputState,
     pub settings : AppSettings,
+
+    pub egui : egui_glow::EguiGlow,
 
     #[cfg(not(target_arch = "wasm32"))]
     pub window : Option<glutin::ContextWrapper< glutin::PossiblyCurrent, glutin::window::Window>>,
@@ -141,15 +137,18 @@ fn main_loop_glutin<T : 'static>(builder : AppBuilder<T>){
             glow::Context::from_loader_function(|s| window.get_proc_address(s) as *const _);
         (gl, Some(window), event_loop)
     };
-    
+
+    let egui_glow = egui_glow::EguiGlow::new(&window.as_ref().unwrap(), &gl);
+
     let mut app  = App{
         gl, 
         settings,
         window,
+        egui : egui_glow,
         frame_number : 0,
         input_state : InputState { mouse_pos: (0.0, 0.0) },
     };
-
+    
     let mut data = (builder.setup_fn)(&mut app);
     event_loop.run( move |main_event, _, control_flow| { 
         *control_flow = glutin::event_loop::ControlFlow::Poll;
@@ -161,14 +160,25 @@ fn main_loop_glutin<T : 'static>(builder : AppBuilder<T>){
                 glutin::event::WindowEvent::CursorMoved{position, ..} =>  {
                     let scale_factor = 0.5;
                     app.input_state.mouse_pos = (position.x as f32 * scale_factor, position.y as f32 * scale_factor );
+                    app.egui.on_event(&event);
                 }
-                _ => (),
+                _ => {
+                    app.egui.on_event(&event);
+                },
             },
             Event::RedrawRequested(_) => {
             },
             Event::MainEventsCleared => {
                 app.frame_number = app.frame_number + 1;
+
+
+                app.egui.begin_frame(app.window.as_ref().unwrap().window());
                 builder.update_fn.unwrap()(&mut app, &mut data, &main_event);
+
+                let (_needs_repaint, shapes) = app.egui.end_frame(app.window.as_ref().unwrap().window());
+
+                app.egui.paint(app.window.as_ref().unwrap(), &app.gl, shapes);
+                        
                 app.window.as_ref().unwrap().swap_buffers().unwrap();
             }
            _ => ()
