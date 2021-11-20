@@ -1,5 +1,5 @@
 extern crate nalgebra_glm as glm;
-use glow::{self, HasContext, Framebuffer};
+use glow::{self, HasContext};
 use crate::gl_helper::Bindable;
 
 pub struct FboSettings{
