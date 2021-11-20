@@ -66,7 +66,7 @@ fn m_setup( app : &mut app::App) -> FrameData {
      }
 }
 
-fn m_update(app : &mut app::App, _data : &mut FrameData, _event : &app::Event<()>)
+fn m_update(app : &mut app::App, _data : &mut FrameData, _event : &app::Event<()>, _ui : &egui::CtxRef)
 {      
     let gl = &app.gl;
     let shader = &_data.shader;

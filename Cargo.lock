@@ -515,25 +515,32 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 [[package]]
 name = "egui"
 version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c8d416a3343cbfc6f4d17bb1cba46b4d7efecb9ee541967763e0b5e04e5fae7"
 dependencies = [
  "ahash",
- "epaint",
+ "epaint 0.15.0",
  "nohash-hasher",
  "ron",
  "serde",
 ]
 
 [[package]]
-name = "egui-winit"
+name = "egui"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc403e91d1bd693239f1c734193cdf0eb38c8682bbfb9990c4b6cd2db5ee368e"
+checksum = "1c8d416a3343cbfc6f4d17bb1cba46b4d7efecb9ee541967763e0b5e04e5fae7"
+dependencies = [
+ "ahash",
+ "epaint 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nohash-hasher",
+]
+
+[[package]]
+name = "egui-winit"
+version = "0.15.0"
 dependencies = [
  "copypasta",
- "egui",
- "epi",
+ "egui 0.15.0",
+ "epi 0.15.0",
  "serde",
  "webbrowser",
  "winit",
@@ -542,15 +549,15 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fba815b217b8d4c17dcd080497d9ea2ad0e2047aec8d584db1c7c4a28e978db"
 dependencies = [
- "egui",
+ "egui 0.15.0",
  "egui-winit",
- "epi",
+ "epi 0.15.0",
  "glow",
  "glutin",
  "memoffset",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
@@ -562,9 +569,25 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.15.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "emath"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24a1aaa922d55da6a2bf32957c3d153e7fb9d52ed8d69777a75092240172eb6e"
+
+[[package]]
+name = "epaint"
+version = "0.15.0"
 dependencies = [
+ "ab_glyph",
+ "ahash",
+ "atomic_refcell",
+ "emath 0.15.0",
+ "nohash-hasher",
  "serde",
 ]
 
@@ -577,8 +600,17 @@ dependencies = [
  "ab_glyph",
  "ahash",
  "atomic_refcell",
- "emath",
+ "emath 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "nohash-hasher",
+]
+
+[[package]]
+name = "epi"
+version = "0.15.0"
+dependencies = [
+ "directories-next",
+ "egui 0.15.0",
+ "ron",
  "serde",
 ]
 
@@ -588,10 +620,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f5e4e08127f9b86e2c450c96a3032764b63546eb170c2fc54684dc70ff3fc82"
 dependencies = [
- "directories-next",
- "egui",
- "ron",
- "serde",
+ "egui 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1313,9 +1342,9 @@ name = "piralib"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "egui",
+ "egui 0.15.0",
  "egui_glow",
- "epi",
+ "epi 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "getrandom",
  "glow",
  "glutin",
