@@ -95,7 +95,6 @@ fn m_setup(app: &mut app::App) -> FrameData {
             let angle = (i as f32 / 32.0) * 2.0 * std::f32::consts::PI;
             let x = angle.cos() * 60.0;
             let y = angle.sin() * 60.0;
-
             vertices.append(&mut vec![x, y, 0.0]);
         }
 
@@ -103,7 +102,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
         let stock_shader = glh::StockShader::new();
         let shader = stock_shader.build(gl);
         let attribs = vec![pos_attrib];
-
+            
         (
             glh::Vao::new_from_attrib(gl, &attribs, &shader).unwrap(),
             shader,
@@ -117,11 +116,12 @@ fn m_setup(app: &mut app::App) -> FrameData {
         quad_vao,
         circle_shader,
 
-        fbo,
-
         quad_pos: glm::vec3(0.0, 0.0, 0.0),
+
         circle_pos: glm::vec3(0.0, 0.0, 0.0),
         circle_scale: glm::vec3(1.0, 1.0, 1.0),
+        
+        fbo,
     }
 }
 

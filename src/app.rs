@@ -42,6 +42,9 @@ impl<T> AppBuilder<T> {
 }
 
 pub struct InputState {
+    pub window_size : (i32, i32),
+    pub window_pos :  (i32, i32),
+    
     pub mouse_pos: (f32, f32),
 }
 
@@ -50,11 +53,6 @@ pub struct App {
     pub frame_number: u64,
     pub input_state: InputState,
     pub settings: AppSettings,
-    // pub egui : egui_glow::EguiGlow,
-    // pub run_ui: Option<&'a dyn FnMut(&egui::CtxRef)>,
-
-    // #[cfg(not(target_arch = "wasm32"))]
-    // pub window : Option<glutin::ContextWrapper< glutin::PossiblyCurrent, glutin::window::Window>>,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -151,6 +149,8 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
         frame_number: 0,
         input_state: InputState {
             mouse_pos: (0.0, 0.0),
+            window_size : settings.window_size,
+            window_pos : window.window().inner_position().unwrap().into(),
         },
     };
 
@@ -222,44 +222,4 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
             _ => (),
         }
     });
-    // event_loop.run( move |main_event, _, control_flow| {
-    //     //*control_flow = glutin::event_loop::ControlFlow::Poll;
-
-    //     match main_event {
-    //         glutin::event::Event::WindowEvent { ref event, .. } => match event {
-    //             glutin::event::WindowEvent::Resized(physical_size) => window.as_ref().unwrap().resize(physical_size.clone()),
-    //             glutin::event::WindowEvent::CloseRequested => *control_flow =  glutin::event_loop::ControlFlow::Exit,
-    //             glutin::event::WindowEvent::CursorMoved{position, ..} =>  {
-    //                 let scale_factor = 0.5;
-    //                 app.input_state.mouse_pos = (position.x as f32 * scale_factor, position.y as f32 * scale_factor );
-    //                 egui.on_event(&event);
-    //             }
-    //             _ => {
-    //                 println!("Event!");
-    //                 egui.on_event(&event);
-    //             },
-    //         },
-    //         Event::RedrawRequested(_) => {
-    //
-
-    //             let (needs_repaint, shapes) = egui.run(window.as_ref().unwrap().window(), |ui|{
-    //                 builder.update_fn.unwrap()(&mut app, &mut data, &main_event, ui);
-    //             });
-
-    //             egui.paint(window.as_ref().unwrap(), &app.gl, shapes);
-    //             window.as_ref().unwrap().swap_buffers().unwrap();
-
-    //             *control_flow = if needs_repaint {
-    //                 window.as_ref().unwrap().window().request_redraw();
-    //                 glutin::event_loop::ControlFlow::Poll
-    //             } else {
-    //                 glutin::event_loop::ControlFlow::Wait
-    //             };
-    //         },
-    //         Event::MainEventsCleared => {
-
-    //         }
-    //        _ => ()
-    //    }
-    // });
 }
