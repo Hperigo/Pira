@@ -1,6 +1,7 @@
 extern crate nalgebra_glm as glm;
 use crate::gl_helper::Bindable;
 use glow::{self, HasContext};
+use crate::gl_helper as glh;
 
 pub struct GlslProg {
     handle: Option<glow::Program>,
@@ -45,17 +46,39 @@ impl GlslProg {
         loc
     }
 
-    pub fn set_uniform_mat4(&self, gl: &glow::Context, name: &str, value: &glm::Mat4) {
-        unsafe {
-            let loc = self.get_uniform_location(gl, name);
-            gl.uniform_matrix_4_f32_slice(Some(&loc), false, value.as_slice());
-        };
+    pub fn set_orthographic_matrix(&self, gl : &glow::Context, size : [f32; 2]){
+        self.set_uniform_mat4(gl,  glh::StockShader::uniform_name_perspective_matrix(),
+                                     &glm::ortho(0.0,
+                                    size[0],
+                                   size[1],
+                                    0.0, -1.0,
+                                    1.0));
     }
 
-    pub fn set_uniform_4f(&self, gl: &glow::Context, name: &str, value: &glm::Vec4) {
-        unsafe {
+    pub fn set_view_matrix(&self, gl : &glow::Context, mat : &glm::Mat4){
+        self.set_uniform_mat4(gl, glh::StockShader::uniform_name_view_matrix(), mat);
+    }
+
+    pub fn set_model_matrix(&self, gl : &glow::Context, mat : &glm::Mat4){
+        self.set_uniform_mat4( gl, glh::StockShader::uniform_name_model_matrix(), &mat );
+    }
+
+    pub fn set_transform(&self, gl : &glow::Context, pos : &glm::Vec3, _rot : &glm::Vec3, scale : &glm::Vec3){
+        let mut model_view = glm::Mat4::identity();
+        model_view = glm::translate(&model_view, pos);
+        model_view = glm::scale(&model_view, scale);
+        self.set_uniform_mat4( gl, glh::StockShader::uniform_name_model_matrix(), &model_view );
+    }
+
+    pub fn set_color(&self, gl : &glow::Context, color : &[f32; 4]){
+        self.set_uniform_4f( gl, glh::StockShader::uniform_name_color(), color);
+    }
+
+    pub fn set_uniform_mat4(&self, gl : &glow::Context, name : &str, value : &glm::Mat4){
+
+        unsafe{
             let loc = self.get_uniform_location(gl, name);
-            gl.uniform_4_f32(Some(&loc), value.x, value.y, value.z, value.w);
+            gl.uniform_matrix_4_f32_slice(Some(&loc), false, value.as_slice());
         };
     }
 
@@ -87,9 +110,16 @@ impl GlslProg {
         };
     }
 
-    pub fn bind(&self, gl: &glow::Context) {
-        unsafe {
-            assert!(self.handle != None);
+    pub fn set_uniform_4f(&self, gl : &glow::Context, name : &str, value : &[f32; 4]){
+        unsafe{
+            let loc = self.get_uniform_location(gl, name);
+            gl.uniform_4_f32(Some(&loc), value[0], value[1], value[2], value[3]);
+        };
+    }
+    
+    pub fn bind(&self, gl : &glow::Context){
+        unsafe{
+            assert!( self.handle != None );
             gl.use_program(self.handle);
         }
     }

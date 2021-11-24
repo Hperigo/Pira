@@ -26,13 +26,15 @@ impl VertexAttrib {
         position_attr
     }
 
-    pub fn new_color_attr() -> VertexAttrib {
-        let color_attrib = VertexAttrib {
-            name: StockShader::attrib_name_color(), //String::from("Color"),
-            size: 4,
-            stride: 0,
-            data: Vec::<f32>::new(),
-            per_instance: false,
+
+    pub fn new_color_attr() -> VertexAttrib{
+
+        let color_attrib = VertexAttrib{
+            name  : StockShader::attrib_name_color(),
+            size : 4,
+            stride : 0,
+            data : Vec::<f32>::new(),
+            per_instance : false,
         };
 
         color_attrib
@@ -127,8 +129,6 @@ impl Vao {
                 current_offset += a.data.len() * std::mem::size_of::<f32>();
             }
 
-            // gl::BindBuffer(data_vbo.get_gl_type(), 0);
-            // gl::BindVertexArray(0);
             data_vbo.unbind(gl);
             gl.bind_vertex_array(None);
         }

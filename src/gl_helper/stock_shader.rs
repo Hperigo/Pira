@@ -160,11 +160,7 @@ impl StockShader {
 
         // set some default values for uniforms
         prog.bind(gl);
-        prog.set_uniform_4f(
-            gl,
-            StockShader::uniform_name_color(),
-            &glm::vec4(1.0, 1.0, 1.0, 1.0),
-        );
+        prog.set_uniform_4f(gl, StockShader::uniform_name_color(), &[1.0, 1.0, 1.0, 1.0]);
         prog.unbind(gl);
 
         prog
