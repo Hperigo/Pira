@@ -78,14 +78,11 @@ fn m_update(app : &mut app::App, _data : &mut FrameData, _event : &app::Event<()
     glh::set_viewport(gl, 0,0, fbo.get_width(), fbo.get_height() );
 
     circle_shader.bind(gl);
-    circle_shader.set_uniform_mat4(gl, glh::StockShader::uniform_name_perspective_matrix(),
-                            &glm::ortho(0.0,
-                                fbo.get_width() as f32 * frame_buffer_scale,
-                                fbo.get_height() as f32 * frame_buffer_scale,
-                                0.0, -1.0,
-                                1.0));
+    circle_shader.set_orthographic_matrix(gl, 
+                                [fbo.get_width() as f32 * frame_buffer_scale,
+                                      fbo.get_height() as f32 * frame_buffer_scale]);
 
-    circle_shader.set_uniform_mat4( gl, glh::StockShader::uniform_name_view_matrix(), &glm::Mat4::identity() );
+    circle_shader.set_view_matrix(gl, &glm::Mat4::identity());
 
     let mut model_view = glm::Mat4::identity();
     model_view = glm::translate(&model_view, &glm::vec3( 10.0, 10.0, 0.0 ));
