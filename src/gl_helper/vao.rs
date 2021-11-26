@@ -4,6 +4,13 @@ use crate::gl_helper::Vbo;
 use glow;
 use glow::HasContext;
 
+
+/*
+TODO: add traits to Vertex Attribs and use a templated version of it
+    get_data_sclice();
+    get_stride();
+    get_size();
+*/
 #[derive(Debug)]
 pub struct VertexAttrib {
     pub name: &'static str,
