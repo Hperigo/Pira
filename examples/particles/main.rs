@@ -65,7 +65,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(app: &mut app::App, _data: &mut FrameData, _event: &app::Event<()>) {
+fn m_update(app: &mut app::App, _data: &mut FrameData) {
     let gl = &app.gl;
     let shader = &_data.shader;
     let vao = &_data.vao;
@@ -120,7 +120,7 @@ fn m_update(app: &mut app::App, _data: &mut FrameData, _event: &app::Event<()>) 
         shader.set_uniform_4f(
             gl,
             glh::StockShader::uniform_name_color(),
-            &glm::vec4(red, green, blue, 1.0),
+            &[red, green, blue, 1.0],
         );
         vao.draw(gl, glow::TRIANGLES);
     }

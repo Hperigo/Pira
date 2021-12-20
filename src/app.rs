@@ -1,3 +1,5 @@
+use glutin::event::WindowEvent;
+
 #[cfg(target_arch = "wasm32")]
 pub type Event<'a, T> = winit::event::Event<'a, T>;
 
@@ -5,7 +7,8 @@ pub type Event<'a, T> = winit::event::Event<'a, T>;
 pub type Event<'a, T> = glutin::event::Event<'a, T>;
 
 type SetupFn<T> = fn(&mut App) -> T;
-type UpdateFn<T> = fn(&mut App, &mut T, &Event<()>);
+type UpdateFn<T> = fn(&mut App, &mut T);
+type EventFn<T> = fn(&mut App, &mut T, &WindowEvent);
 
 #[derive(Clone, Copy)]
 pub struct AppSettings {
@@ -15,6 +18,7 @@ pub struct AppSettings {
 pub struct AppBuilder<T: 'static> {
     setup_fn: SetupFn<T>,
     update_fn: Option<UpdateFn<T>>,
+    event_fn: Option<EventFn<T>>,
     settings: AppSettings,
 }
 
@@ -24,7 +28,13 @@ impl<T> AppBuilder<T> {
             settings,
             setup_fn,
             update_fn: None,
+            event_fn : None,
         }
+    }
+
+    pub fn event( mut self, event_fn : EventFn<T> ) -> Self {
+        self.event_fn = Some(event_fn);
+        self
     }
 
     pub fn run(mut self, update_fn: UpdateFn<T>) {
@@ -154,28 +164,36 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
     let mut data = (builder.setup_fn)(&mut app);
     event_loop.run(move |main_event, _, control_flow| {
         *control_flow = glutin::event_loop::ControlFlow::Poll;
-
+        
         match main_event {
-            glutin::event::Event::WindowEvent { ref event, .. } => match event {
-                glutin::event::WindowEvent::Resized(physical_size) => {
-                    app.window.as_ref().unwrap().resize(physical_size.clone())
+            glutin::event::Event::WindowEvent { ref event, .. } => { 
+
+                if builder.event_fn.is_some() {
+                    builder.event_fn.unwrap()(&mut app, &mut data, &event);
                 }
-                glutin::event::WindowEvent::CloseRequested => {
-                    *control_flow = glutin::event_loop::ControlFlow::Exit
+                
+                match event {
+                    glutin::event::WindowEvent::Resized(physical_size) => {
+                        app.window.as_ref().unwrap().resize(physical_size.clone())
+                    }
+                    glutin::event::WindowEvent::CloseRequested => {
+                        *control_flow = glutin::event_loop::ControlFlow::Exit
+                    }
+                    glutin::event::WindowEvent::CursorMoved { position, .. } => {
+                        
+                        let scale_factor = 0.5;
+                        app.input_state.mouse_pos = (
+                            position.x as f32 * scale_factor,
+                            position.y as f32 * scale_factor,
+                        );
+                    }
+                    _ => (),
                 }
-                glutin::event::WindowEvent::CursorMoved { position, .. } => {
-                    let scale_factor = 0.5;
-                    app.input_state.mouse_pos = (
-                        position.x as f32 * scale_factor,
-                        position.y as f32 * scale_factor,
-                    );
-                }
-                _ => (),
             },
             Event::RedrawRequested(_) => {}
             Event::MainEventsCleared => {
                 app.frame_number = app.frame_number + 1;
-                builder.update_fn.unwrap()(&mut app, &mut data, &main_event);
+                builder.update_fn.unwrap()(&mut app, &mut data);
                 app.window.as_ref().unwrap().swap_buffers().unwrap();
             }
             _ => (),

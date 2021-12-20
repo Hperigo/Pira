@@ -62,7 +62,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(app: &mut app::App, _data: &mut FrameData, _event: &app::Event<()>) {
+fn m_update(app: &mut app::App, _data: &mut FrameData) {
     let frame_buffer_scale = 1.0;
 
     let gl = &app.gl;

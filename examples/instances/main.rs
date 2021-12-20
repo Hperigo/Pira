@@ -1,5 +1,6 @@
 extern crate piralib;
 use glow::*;
+use glutin::event::WindowEvent;
 use nalgebra_glm as glm;
 use piralib::app;
 use piralib::gl_helper as glh;
@@ -10,6 +11,18 @@ struct FrameData {
     shader: glh::GlslProg,
     time: f32,
     number_of_instances: i32,
+
+    mouse_position : glm::Vec2,
+}
+
+
+fn m_event( app : &mut app::App, data : &mut FrameData, event : &WindowEvent ){
+    match event {
+        WindowEvent::CursorMoved { position, .. } => {
+            println!("cursor moved! {:?}", position);
+        }
+        _ => ()
+    }
 }
 
 fn m_setup(app: &mut app::App) -> FrameData {
@@ -149,10 +162,11 @@ fn m_setup(app: &mut app::App) -> FrameData {
         shader,
         number_of_instances,
         time: 0.0,
+        mouse_position : glm::vec2(0.0, 0.0),
     }
 }
 
-fn m_update(app: &mut app::App, _data: &mut FrameData, _event: &app::Event<()>) {
+fn m_update(app: &mut app::App, _data: &mut FrameData) {
     let time = &mut _data.time;
     let gl = &app.gl;
     let shader = &_data.shader;
@@ -231,6 +245,6 @@ fn main() {
             window_title: "simple app",
         },
         m_setup,
-    )
+    ).event(m_event)
     .run(m_update);
 }

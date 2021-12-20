@@ -8,7 +8,7 @@ fn m_setup(_app: &mut app::App) -> FrameData {
     FrameData {}
 }
 
-fn m_update(app: &mut app::App, _data: &mut FrameData, _event: &app::Event<()>) {
+fn m_update(app: &mut app::App, _data: &mut FrameData) {
     unsafe {
         app.gl.clear(glow::COLOR_BUFFER_BIT);
         app.gl.clear_color(1.0, 0.0, 0.4, 1.0);

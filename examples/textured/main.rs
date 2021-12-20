@@ -60,7 +60,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(app: &mut app::App, data: &mut FrameData, _event: &app::Event<()>) {
+fn m_update(app: &mut app::App, data: &mut FrameData) {
     let gl = &app.gl;
     let shader = &data.shader;
     let vao = &data.vao;
