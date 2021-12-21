@@ -4,6 +4,13 @@ use crate::gl_helper::Vbo;
 use glow;
 use glow::HasContext;
 
+
+/*
+TODO: add traits to Vertex Attribs and use a templated version of it
+    get_data_sclice();
+    get_stride();
+    get_size();
+*/
 #[derive(Debug)]
 pub struct VertexAttrib {
     pub name: &'static str,
@@ -103,9 +110,9 @@ impl Vao {
                 let name = a.name;
                 let loc = gl
                     .get_attrib_location(
-                        shader.get_handle().expect(
-                            format!("provided shader for attrib {} is None!", name).as_str(),
-                        ),
+                        shader
+                            .get_handle()
+                            .expect("provided shader for attrib is None!"),
                         name,
                     )
                     .expect(format!("unable to find attribute with name: {}", name).as_str());

@@ -11,6 +11,7 @@ struct FrameData {
     shader: glh::GlslProg,
     time: f32,
     number_of_instances: i32,
+<<<<<<< HEAD
 
     mouse_position : glm::Vec2,
 }
@@ -25,6 +26,10 @@ fn m_event( app : &mut app::App, data : &mut FrameData, event : &WindowEvent ){
     }
 }
 
+=======
+}
+
+>>>>>>> egui
 fn m_setup(app: &mut app::App) -> FrameData {
     let gl = &app.gl;
 
@@ -166,7 +171,16 @@ fn m_setup(app: &mut app::App) -> FrameData {
     }
 }
 
+<<<<<<< HEAD
 fn m_update(app: &mut app::App, _data: &mut FrameData) {
+=======
+fn m_update(
+    app: &mut app::App,
+    _data: &mut FrameData,
+    _event: &app::Event<()>,
+    _ui: &egui::CtxRef,
+) {
+>>>>>>> egui
     let time = &mut _data.time;
     let gl = &app.gl;
     let shader = &_data.shader;
@@ -174,7 +188,11 @@ fn m_update(app: &mut app::App, _data: &mut FrameData) {
 
     let mut mouse_pos: [f32; 2] = [0.0, 0.0];
 
+<<<<<<< HEAD
     let base_color: [f32; 3] = [0.2, 0.1, 0.0];
+=======
+    let base_color: [f32; 3] = [0.2, 0.1, 0.1];
+>>>>>>> egui
     let tip_color: [f32; 3] = [0.9, 0.0, 0.2];
 
     let framebuffer_scale = 2.0;
@@ -187,12 +205,19 @@ fn m_update(app: &mut app::App, _data: &mut FrameData) {
 
     unsafe {
         gl.enable(glow::DEPTH_TEST);
+<<<<<<< HEAD
         // gl.enable( glow::BLEND );
         gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
     }
 
     glh::clear(gl, base_color[0], base_color[1], base_color[2], 1.0);
 
+=======
+        gl.enable(glow::BLEND);
+        gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
+    }
+
+>>>>>>> egui
     shader.bind(gl);
 
     shader.set_uniform_mat4(
@@ -236,15 +261,22 @@ fn m_update(app: &mut app::App, _data: &mut FrameData) {
 }
 
 fn main() {
+<<<<<<< HEAD
     #[cfg(target_arch = "wasm32")]
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
+=======
+>>>>>>> egui
     app::AppBuilder::new(
         app::AppSettings {
             window_size: (1024, 768),
             window_title: "simple app",
         },
         m_setup,
+<<<<<<< HEAD
     ).event(m_event)
+=======
+    )
+>>>>>>> egui
     .run(m_update);
 }

@@ -1,7 +1,7 @@
 extern crate nalgebra_glm as glm;
-use crate::gl_helper as glh;
 use crate::gl_helper::Bindable;
 use glow::{self, HasContext};
+use crate::gl_helper as glh;
 
 pub struct GlslProg {
     handle: Option<glow::Program>,
@@ -10,28 +10,7 @@ pub struct GlslProg {
 impl GlslProg {
     pub fn new(gl: &glow::Context, vertex_source: &str, frag_source: &str) -> GlslProg {
         let vertex_handle = compile_shader(gl, vertex_source, glow::VERTEX_SHADER);
-
-        unsafe {
-            let success = gl.get_shader_compile_status(vertex_handle);
-            if success == false {
-                panic!(
-                    "failed to compile VERTEX shader: {}",
-                    gl.get_shader_info_log(vertex_handle).as_str()
-                );
-            }
-        }
-
         let frag_handle = compile_shader(gl, frag_source, glow::FRAGMENT_SHADER);
-
-        unsafe {
-            let success = gl.get_shader_compile_status(frag_handle);
-            if success == false {
-                panic!(
-                    "failed to compile FRAGMENT shader: {}",
-                    gl.get_shader_info_log(frag_handle).as_str()
-                );
-            }
-        }
 
         let program_id = unsafe { gl.create_program().unwrap() };
 
@@ -42,10 +21,8 @@ impl GlslProg {
             let success = gl.get_program_link_status(program_id);
 
             if success == false {
-                panic!(
-                    "failed to compile shader: {}",
-                    gl.get_program_info_log(program_id).as_str()
-                );
+                gl.get_program_info_log(program_id);
+                return Self { handle: None };
             }
 
             gl.detach_shader(program_id, vertex_handle);

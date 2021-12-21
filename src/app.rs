@@ -1,14 +1,18 @@
-use glutin::event::WindowEvent;
+use egui_glow;
+use glow::HasContext;
 
 #[cfg(target_arch = "wasm32")]
-pub type Event<'a, T> = winit::event::Event<'a, T>;
+use winit::event;
+//pub type Event<'a, T> = winit::event; //::Event<'a, T>;
+
 
 #[cfg(not(target_arch = "wasm32"))]
-pub type Event<'a, T> = glutin::event::Event<'a, T>;
+use glutin::event;
 
+pub type Event<'a, T> = event::Event<'a, T>;
 type SetupFn<T> = fn(&mut App) -> T;
-type UpdateFn<T> = fn(&mut App, &mut T);
-type EventFn<T> = fn(&mut App, &mut T, &WindowEvent);
+type UpdateFn<T> = fn(&mut App, &mut T, ui : &egui::CtxRef);
+type EventFn<T> = fn(&mut App, &mut T, &event::WindowEvent);
 
 #[derive(Clone, Copy)]
 pub struct AppSettings {
@@ -32,11 +36,6 @@ impl<T> AppBuilder<T> {
         }
     }
 
-    pub fn event( mut self, event_fn : EventFn<T> ) -> Self {
-        self.event_fn = Some(event_fn);
-        self
-    }
-
     pub fn run(mut self, update_fn: UpdateFn<T>) {
         self.update_fn = Some(update_fn);
 
@@ -48,13 +47,10 @@ impl<T> AppBuilder<T> {
     }
 }
 
-// #[cfg(target_arch = "wasm32")]
-// pub struct App {
-//     pub gl : glow::Context,
-//     pub frame_number : u64,
-// }
-
 pub struct InputState {
+    pub window_size : (i32, i32),
+    pub window_pos :  (i32, i32),
+    
     pub mouse_pos: (f32, f32),
 }
 
@@ -63,9 +59,6 @@ pub struct App {
     pub frame_number: u64,
     pub input_state: InputState,
     pub settings: AppSettings,
-
-    #[cfg(not(target_arch = "wasm32"))]
-    pub window: Option<glutin::ContextWrapper<glutin::PossiblyCurrent, glutin::window::Window>>,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -78,7 +71,7 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
         .build(&event_loop)
         .unwrap();
 
-    let gl = {
+    let (gl, shader_version) = {
         use wasm_bindgen::JsCast;
         let canvas = web_sys::window()
             .unwrap()
@@ -130,6 +123,8 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
+    use glutin::event::VirtualKeyCode;
+
     let settings = builder.settings.clone();
     let (gl, window, event_loop) = unsafe {
         let event_loop = glutin::event_loop::EventLoop::new();
@@ -148,54 +143,95 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
             .make_current()
             .unwrap();
         let gl = glow::Context::from_loader_function(|s| window.get_proc_address(s) as *const _);
-        (gl, Some(window), event_loop)
+
+        gl.enable(glow::FRAMEBUFFER_SRGB);
+
+        (gl, window, event_loop)
     };
+
+    let mut egui = egui_glow::EguiGlow::new(&window, &gl);
 
     let mut app = App {
         gl,
         settings,
-        window,
         frame_number: 0,
         input_state: InputState {
             mouse_pos: (0.0, 0.0),
+            window_size : settings.window_size,
+            window_pos : window.window().inner_position().unwrap().into(),
         },
     };
 
     let mut data = (builder.setup_fn)(&mut app);
-    event_loop.run(move |main_event, _, control_flow| {
-        *control_flow = glutin::event_loop::ControlFlow::Poll;
-        
-        match main_event {
-            glutin::event::Event::WindowEvent { ref event, .. } => { 
+
+    event_loop.run(move |event, _, control_flow| {
+        let mut redraw = || {
+            app.frame_number = app.frame_number + 1;
+
+            let (needs_repaint, shapes) = egui.run(window.window(), |egui_ctx| {
+                builder.update_fn.unwrap()(&mut app, &mut data, egui_ctx);
+            });
+
+            *control_flow = if needs_repaint {
+                window.window().request_redraw();
+                glutin::event_loop::ControlFlow::Poll
+            } else {
+                glutin::event_loop::ControlFlow::Wait
+            };
+
+            // draw things behind egui here
+
+            egui.paint(&window, &app.gl, shapes);
+
+            // draw things on top of egui here
+
+            window.swap_buffers().unwrap();
+        };
+
+        match event {
+            // Platform-dependent event handlers to workaround a winit bug
+            // See: https://github.com/rust-windowing/winit/issues/987
+            // See: https://github.com/rust-windowing/winit/issues/1619
+            glutin::event::Event::RedrawEventsCleared if cfg!(windows) => redraw(),
+            glutin::event::Event::RedrawRequested(_) if !cfg!(windows) => redraw(),
+
+            glutin::event::Event::WindowEvent { event, .. } => {
+                use glutin::event::WindowEvent;
 
                 if builder.event_fn.is_some() {
                     builder.event_fn.unwrap()(&mut app, &mut data, &event);
                 }
-                
-                match event {
-                    glutin::event::WindowEvent::Resized(physical_size) => {
-                        app.window.as_ref().unwrap().resize(physical_size.clone())
-                    }
-                    glutin::event::WindowEvent::CloseRequested => {
-                        *control_flow = glutin::event_loop::ControlFlow::Exit
-                    }
-                    glutin::event::WindowEvent::CursorMoved { position, .. } => {
-                        
-                        let scale_factor = 0.5;
-                        app.input_state.mouse_pos = (
-                            position.x as f32 * scale_factor,
-                            position.y as f32 * scale_factor,
-                        );
-                    }
-                    _ => (),
+
+                if matches!(event, WindowEvent::CloseRequested | WindowEvent::Destroyed) {
+                    *control_flow = glutin::event_loop::ControlFlow::Exit;
                 }
-            },
-            Event::RedrawRequested(_) => {}
-            Event::MainEventsCleared => {
-                app.frame_number = app.frame_number + 1;
-                builder.update_fn.unwrap()(&mut app, &mut data);
-                app.window.as_ref().unwrap().swap_buffers().unwrap();
+
+                if let glutin::event::WindowEvent::Resized(physical_size) = event {
+                    window.resize(physical_size);
+                }
+
+                if let glutin::event::WindowEvent::CursorMoved { position, .. } = event {
+                    let scale_factor = 0.5;
+                    app.input_state.mouse_pos = (
+                        position.x as f32 * scale_factor,
+                        position.y as f32 * scale_factor,
+                    );
+                }
+
+                if let glutin::event::WindowEvent::KeyboardInput { input, .. } = event {
+                    if input.virtual_keycode == Some(VirtualKeyCode::Escape) {
+                        *control_flow = glutin::event_loop::ControlFlow::Exit;
+                    }
+                }
+
+                egui.on_event(&event);
+
+                window.window().request_redraw(); // TODO: ask egui if the events warrants a repaint instead
             }
+            glutin::event::Event::LoopDestroyed => {
+                egui.destroy(&app.gl);
+            }
+
             _ => (),
         }
     });
