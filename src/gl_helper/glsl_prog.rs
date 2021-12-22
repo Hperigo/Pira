@@ -20,7 +20,7 @@ impl GlslProg {
             gl.link_program(program_id);
             let success = gl.get_program_link_status(program_id);
 
-            if success == false {
+            if success {
                 gl.get_program_info_log(program_id);
                 return Self { handle: None };
             }
@@ -35,7 +35,7 @@ impl GlslProg {
     }
 
     pub fn get_handle(&self) -> Option<glow::Program> {
-        return self.handle;
+        self.handle
     }
 
     pub fn get_uniform_location(&self, gl: &glow::Context, name: &str) -> glow::UniformLocation {
@@ -59,7 +59,7 @@ impl GlslProg {
     }
 
     pub fn set_model_matrix(&self, gl: &glow::Context, mat: &glm::Mat4) {
-        self.set_uniform_mat4(gl, glh::StockShader::uniform_name_model_matrix(), &mat);
+        self.set_uniform_mat4(gl, glh::StockShader::uniform_name_model_matrix(), mat);
     }
 
     pub fn set_transform(
@@ -154,7 +154,7 @@ fn compile_shader(gl: &glow::Context, src: &str, shader_type: u32) -> glow::Shad
     }
 
     let success = unsafe { gl.get_shader_compile_status(shader_id) };
-    if success == false {
+    if !success {
         let shader_type_string: &str;
         match shader_type {
             glow::VERTEX_SHADER => shader_type_string = "VERTEX_SHADER",
@@ -173,9 +173,8 @@ fn compile_shader(gl: &glow::Context, src: &str, shader_type: u32) -> glow::Shad
 impl Bindable for GlslProg {
     fn bind(&self, gl: &glow::Context) {
         unsafe {
-            assert_eq!(
+            assert!(
                 self.handle.is_some(),
-                true,
                 "You are trying to bind a NONE Shader"
             );
             gl.use_program(self.handle);

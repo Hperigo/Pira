@@ -68,12 +68,12 @@ pub struct Vao {
 impl Vao {
     pub fn new_from_attrib_indexed(
         gl: &glow::Context,
-        attribs: &Vec<VertexAttrib>,
-        indices: &Vec<u32>,
+        attribs: &[VertexAttrib],
+        indices: &[u32],
         shader: &GlslProg,
     ) -> Option<Vao> {
         let mut vao = Vao::new_from_attrib(gl, attribs, shader).unwrap();
-        let index_vbo = Vbo::new(gl, &indices, glow::ELEMENT_ARRAY_BUFFER);
+        let index_vbo = Vbo::new(gl,indices, glow::ELEMENT_ARRAY_BUFFER);
 
         vao.bind(gl);
         index_vbo.bind(gl);
@@ -87,7 +87,7 @@ impl Vao {
 
     pub fn new_from_attrib(
         gl: &glow::Context,
-        attribs: &Vec<VertexAttrib>,
+        attribs: &[VertexAttrib],
         shader: &GlslProg,
     ) -> Option<Vao> {
         let mut data = Vec::<f32>::new();
@@ -142,7 +142,7 @@ impl Vao {
         let vao = Vao {
             handle: Some(vao_handle),
             vbo_handle: data_vbo,
-            num_of_vertices: num_of_vertices,
+            num_of_vertices,
             index_buffer: None,
         };
 
@@ -153,7 +153,7 @@ impl Vao {
         self.handle
     }
 
-    pub fn buffer_sub_data(&self, gl: &glow::Context, data: &Vec<f32>, size: i32) {
+    pub fn buffer_sub_data(&self, gl: &glow::Context, data: &[f32], size: i32) {
         unsafe {
             gl.bind_vertex_array(self.get_handle());
             gl.bind_buffer(glow::ARRAY_BUFFER, self.vbo_handle.get_handle());
@@ -163,7 +163,7 @@ impl Vao {
                 data.len() * core::mem::size_of::<f32>(),
             );
 
-            gl.buffer_sub_data_u8_slice(glow::ARRAY_BUFFER, 0, &data_u8);
+            gl.buffer_sub_data_u8_slice(glow::ARRAY_BUFFER, 0, data_u8);
 
             gl.enable_vertex_attrib_array(0);
             gl.vertex_attrib_pointer_f32(

@@ -1,10 +1,7 @@
 use egui_glow;
-use glow::HasContext;
 
 #[cfg(target_arch = "wasm32")]
 use winit::event;
-//pub type Event<'a, T> = winit::event; //::Event<'a, T>;
-
 
 #[cfg(not(target_arch = "wasm32"))]
 use glutin::event;
@@ -125,7 +122,7 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
 fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
     use glutin::event::VirtualKeyCode;
 
-    let settings = builder.settings.clone();
+    let settings = builder.settings;
     let (gl, window, event_loop) = unsafe {
         let event_loop = glutin::event_loop::EventLoop::new();
 
@@ -143,14 +140,11 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
             .make_current()
             .unwrap();
         let gl = glow::Context::from_loader_function(|s| window.get_proc_address(s) as *const _);
-
-        gl.enable(glow::FRAMEBUFFER_SRGB);
-
         (gl, window, event_loop)
     };
 
     let mut egui = egui_glow::EguiGlow::new(&window, &gl);
-
+    
     let mut app = App {
         gl,
         settings,
@@ -165,36 +159,25 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
     let mut data = (builder.setup_fn)(&mut app);
 
     event_loop.run(move |event, _, control_flow| {
-        let mut redraw = || {
-            app.frame_number = app.frame_number + 1;
 
-            let (needs_repaint, shapes) = egui.run(window.window(), |egui_ctx| {
+
+        let mut redraw = || {
+            app.frame_number += 1;
+
+            let (_needs_repaint, shapes) = egui.run(window.window(), |egui_ctx| {
                 builder.update_fn.unwrap()(&mut app, &mut data, egui_ctx);
             });
 
-            *control_flow = if needs_repaint {
-                window.window().request_redraw();
-                glutin::event_loop::ControlFlow::Poll
-            } else {
-                glutin::event_loop::ControlFlow::Wait
-            };
-
             // draw things behind egui here
-
             egui.paint(&window, &app.gl, shapes);
 
             // draw things on top of egui here
-
+            window.window().request_redraw();
             window.swap_buffers().unwrap();
         };
 
         match event {
-            // Platform-dependent event handlers to workaround a winit bug
-            // See: https://github.com/rust-windowing/winit/issues/987
-            // See: https://github.com/rust-windowing/winit/issues/1619
-            glutin::event::Event::RedrawEventsCleared if cfg!(windows) => redraw(),
             glutin::event::Event::RedrawRequested(_) if !cfg!(windows) => redraw(),
-
             glutin::event::Event::WindowEvent { event, .. } => {
                 use glutin::event::WindowEvent;
 
@@ -208,6 +191,11 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
 
                 if let glutin::event::WindowEvent::Resized(physical_size) = event {
                     window.resize(physical_size);
+                    *control_flow = glutin::event_loop::ControlFlow::Wait;
+                }
+
+                if let  glutin::event::WindowEvent::Moved( _position ) = event {
+                    *control_flow = glutin::event_loop::ControlFlow::Wait;
                 }
 
                 if let glutin::event::WindowEvent::CursorMoved { position, .. } = event {
@@ -226,7 +214,7 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
 
                 egui.on_event(&event);
 
-                window.window().request_redraw(); // TODO: ask egui if the events warrants a repaint instead
+                //window.window().request_redraw(); // TODO: ask egui if the events warrants a repaint instead
             }
             glutin::event::Event::LoopDestroyed => {
                 egui.destroy(&app.gl);

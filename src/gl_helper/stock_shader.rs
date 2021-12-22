@@ -20,12 +20,12 @@ impl StockShader {
 
     pub fn color(&mut self) -> StockShader {
         self.color = true;
-        return self.clone();
+        self.clone()
     }
 
     pub fn texture(&mut self, flipped: bool) -> StockShader {
         self.texture = (true, flipped);
-        return self.clone();
+        self.clone()
     }
 
     pub fn get_vertex_string(&self) -> std::string::String {
@@ -45,22 +45,20 @@ impl StockShader {
             color_layout = format!(
                 "in vec4 {};\n            out vec4 vColor;",
                 StockShader::attrib_name_color()
-            )
-            .to_string();
-            color_main = format!("vColor = {};", StockShader::attrib_name_color()).to_string();
+            );
+           
+            color_main = format!("vColor = {};", StockShader::attrib_name_color());
         }
 
         if self.texture.0 {
             texture_layout = format!(
                 "in vec2 {};\n            out vec2 textureCoord;",
                 StockShader::attrib_name_texture_coords()
-            )
-            .to_string();
+            );
             texture_main = format!(
                 "textureCoord = {};",
                 StockShader::attrib_name_texture_coords()
-            )
-            .to_string();
+            );
         }
 
         let position_main = format!(
@@ -69,8 +67,8 @@ impl StockShader {
             StockShader::uniform_name_view_matrix(),
             StockShader::uniform_name_model_matrix(),
             StockShader::attrib_name_position()
-        )
-        .to_string();
+        );
+        
         let vertex_shader = format!(
             "{}
         precision mediump float;
@@ -123,7 +121,7 @@ impl StockShader {
                 StockShader::uniform_name_texture_sampler0()
             );
             main_texture_coord = {
-                if self.texture.1 == false {
+                if !self.texture.1 {
                     format!(
                         "texture( {}, textureCoord).rgba *",
                         StockShader::uniform_name_texture_sampler0()
@@ -180,27 +178,27 @@ impl StockShader {
     // Default uniforms and attribute names ---
     // we can use this query the names of variables used on the stock shader
     pub fn uniform_name_model_matrix() -> &'static str {
-        return "uModelMatrix";
+         "uModelMatrix"
     }
     pub fn uniform_name_perspective_matrix() -> &'static str {
-        return "uPerspectiveMatrix";
+         "uPerspectiveMatrix"
     }
     pub fn uniform_name_view_matrix() -> &'static str {
-        return "uViewMatrix";
+         "uViewMatrix"
     }
     pub fn uniform_name_texture_sampler0() -> &'static str {
-        return "tex0";
+         "tex0"
     }
     pub fn uniform_name_color() -> &'static str {
-        return "uColor";
+         "uColor"
     }
     pub fn attrib_name_position() -> &'static str {
-        return "inPosition";
+         "inPosition"
     }
     pub fn attrib_name_color() -> &'static str {
-        return "inColor";
+         "inColor"
     }
     pub fn attrib_name_texture_coords() -> &'static str {
-        return "inTexture";
+         "inTexture"
     }
 }

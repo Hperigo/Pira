@@ -7,7 +7,7 @@ pub struct Vbo {
 }
 
 impl Vbo {
-    pub fn new<T>(gl: &glow::Context, data: &Vec<T>, gl_type: u32) -> Self {
+    pub fn new<T>(gl: &glow::Context, data: &[T], gl_type: u32) -> Self {
         let vbo = unsafe {
             let buffer = gl.create_buffer().unwrap();
             gl.bind_buffer(gl_type, Some(buffer));
@@ -25,7 +25,7 @@ impl Vbo {
 
         Self {
             handle: Some(vbo),
-            gl_type: gl_type,
+            gl_type,
             number_of_items: data.len(),
         }
     }
@@ -40,6 +40,10 @@ impl Vbo {
 
     pub fn len(&self) -> usize {
         self.number_of_items
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.number_of_items == 0
     }
 
     pub fn bind(&self, gl: &glow::Context) {

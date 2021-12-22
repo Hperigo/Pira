@@ -79,9 +79,8 @@ impl Fbo {
 
     pub fn bind_texture(&self, gl: &glow::Context) {
         unsafe {
-            assert_eq!(
+            assert!(
                 self.texture_handle.is_some(),
-                true,
                 "You are trying to bind a NONE texture"
             );
             gl.bind_texture(glow::TEXTURE_2D, self.texture_handle);
@@ -90,7 +89,6 @@ impl Fbo {
 
     pub fn unbind_texture(&self, gl: &glow::Context) {
         unsafe {
-            // gl::BindTexture(gl::TEXTURE_2D, 0);
             gl.bind_texture(glow::TEXTURE_2D, None);
         }
     }
@@ -104,16 +102,15 @@ impl Fbo {
     }
 
     pub fn get_texture_handle(&self) -> Option<glow::Texture> {
-        return self.texture_handle;
+        self.texture_handle
     }
 }
 
 impl Bindable for Fbo {
     fn bind(&self, gl: &glow::Context) {
         unsafe {
-            assert_eq!(
+            assert!(
                 self.fbo_handle.is_some(),
-                true,
                 "You are trying to bind a NONE texture"
             );
             gl.bind_framebuffer(glow::FRAMEBUFFER, self.fbo_handle);

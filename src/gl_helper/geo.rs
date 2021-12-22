@@ -31,7 +31,7 @@ impl Geometry {
         }
     }
 
-    pub fn rect(x: f32, y: f32, w: f32, h: f32) -> Geometry {
+    pub fn rect(x: f32, y: f32, width: f32, height: f32) -> Geometry {
         let mut pos_attrib = glh::VertexAttrib::new_position_attr();
         let mut color_attrib = glh::VertexAttrib::new_color_attr();
         let mut texture_attrib = glh::VertexAttrib::new_texture_attr();
@@ -45,12 +45,12 @@ impl Geometry {
 
         let mut vertices: Vec<f32> = Vec::new();
         vertices.append(&mut vec![x, y, 0.0]); //0
-        vertices.append(&mut vec![x + w, y + h, 0.0]); //3
-        vertices.append(&mut vec![x, y + h, 0.0]); //2
+        vertices.append(&mut vec![x + width, y + height, 0.0]); //3
+        vertices.append(&mut vec![x, y + height, 0.0]); //2
 
         vertices.append(&mut vec![x, y, 0.0]); //0
-        vertices.append(&mut vec![x + w, y + h, 0.0]); //3
-        vertices.append(&mut vec![x + w, 0.0, 0.0]); //1
+        vertices.append(&mut vec![x + width, y + height, 0.0]); //3
+        vertices.append(&mut vec![x + width, 0.0, 0.0]); //1
 
         let mut colors: Vec<f32> = Vec::new();
         let mut texure_vertices: Vec<f32> = Vec::new();
@@ -61,10 +61,10 @@ impl Geometry {
             while i < num_of_vertices {
                 colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
                 texure_vertices.append(&mut vec![
-                    vertices[i] / w as f32,
-                    vertices[i + 1] / h as f32,
+                    vertices[i] / width as f32,
+                    vertices[i + 1] / height as f32,
                 ]); // normalize vertex coords
-                i = i + 3;
+                i += 3;
             }
         }
 

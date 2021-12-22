@@ -90,9 +90,8 @@ impl Texture {
 impl Bindable for Texture {
     fn bind(&self, gl: &glow::Context) {
         unsafe {
-            assert_eq!(
+            assert!(
                 self.handle.is_some(),
-                true,
                 "You are trying to bind a NONE texture"
             );
             gl.bind_texture(glow::TEXTURE_2D, self.handle);

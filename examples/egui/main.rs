@@ -1,5 +1,4 @@
 extern crate piralib;
-use glow::*;
 use piralib::app;
 
 use piralib::gl_helper as glh;

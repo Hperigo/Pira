@@ -11,25 +11,11 @@ struct FrameData {
     shader: glh::GlslProg,
     time: f32,
     number_of_instances: i32,
-<<<<<<< HEAD
 
-    mouse_position : glm::Vec2,
+    base_color: [f32; 3],
+    tip_color: [f32; 3],
 }
 
-
-fn m_event( app : &mut app::App, data : &mut FrameData, event : &WindowEvent ){
-    match event {
-        WindowEvent::CursorMoved { position, .. } => {
-            println!("cursor moved! {:?}", position);
-        }
-        _ => ()
-    }
-}
-
-=======
-}
-
->>>>>>> egui
 fn m_setup(app: &mut app::App) -> FrameData {
     let gl = &app.gl;
 
@@ -167,20 +153,17 @@ fn m_setup(app: &mut app::App) -> FrameData {
         shader,
         number_of_instances,
         time: 0.0,
-        mouse_position : glm::vec2(0.0, 0.0),
+
+        base_color: [0.2, 0.1, 0.1],
+        tip_color: [0.9, 0.0, 0.2],
     }
 }
 
-<<<<<<< HEAD
-fn m_update(app: &mut app::App, _data: &mut FrameData) {
-=======
 fn m_update(
     app: &mut app::App,
     _data: &mut FrameData,
-    _event: &app::Event<()>,
-    _ui: &egui::CtxRef,
+    ui: &egui::CtxRef,
 ) {
->>>>>>> egui
     let time = &mut _data.time;
     let gl = &app.gl;
     let shader = &_data.shader;
@@ -188,36 +171,35 @@ fn m_update(
 
     let mut mouse_pos: [f32; 2] = [0.0, 0.0];
 
-<<<<<<< HEAD
-    let base_color: [f32; 3] = [0.2, 0.1, 0.0];
-=======
-    let base_color: [f32; 3] = [0.2, 0.1, 0.1];
->>>>>>> egui
-    let tip_color: [f32; 3] = [0.9, 0.0, 0.2];
+    let mut base_color = &mut _data.base_color;
+    let mut tip_color = &mut _data.tip_color;
 
     let framebuffer_scale = 2.0;
     let inv_frambe_buffer_scale = 1.0 / framebuffer_scale;
 
     *time = *time + 1f32;
 
-    mouse_pos[0] = mouse_pos[0] + ((app.input_state.mouse_pos.0 * 2.0) - mouse_pos[0]) * 0.06;
-    mouse_pos[1] = mouse_pos[1] + ((app.input_state.mouse_pos.1 * 2.0) - mouse_pos[1]) * 0.06;
+    mouse_pos[0] = mouse_pos[0] + ((app.input_state.mouse_pos.0 * 2.0) - mouse_pos[0]) * 0.5;
+    mouse_pos[1] = mouse_pos[1] + ((app.input_state.mouse_pos.1 * 2.0) - mouse_pos[1]) * 0.5;
 
-    unsafe {
+    egui::SidePanel::new(egui::panel::Side::Left, "panel").show(ui, |ui| {
+        ui.label("base color");
+        ui.color_edit_button_rgb(&mut base_color);
+        
+        ui.label("tip color");
+        ui.color_edit_button_rgb(&mut tip_color);
+        //ui.color_edit_button_rgb(&mut tip_color);
+    });
+    unsafe{
+        gl.disable(glow::FRAMEBUFFER_SRGB);
+        gl.clear_color(base_color[0], base_color[1], base_color[2], 1.0);
+        gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
         gl.enable(glow::DEPTH_TEST);
-<<<<<<< HEAD
-        // gl.enable( glow::BLEND );
-        gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
-    }
-
-    glh::clear(gl, base_color[0], base_color[1], base_color[2], 1.0);
-
-=======
         gl.enable(glow::BLEND);
         gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
+        gl.viewport(0, 0, app.settings.window_size.0 * 2, app.settings.window_size.1  * 2);
     }
 
->>>>>>> egui
     shader.bind(gl);
 
     shader.set_uniform_mat4(
@@ -258,25 +240,17 @@ fn m_update(
     vao.draw_instanced(gl, glow::TRIANGLES, _data.number_of_instances);
 
     shader.unbind(gl);
+
 }
 
 fn main() {
-<<<<<<< HEAD
-    #[cfg(target_arch = "wasm32")]
-    std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
-=======
->>>>>>> egui
     app::AppBuilder::new(
         app::AppSettings {
             window_size: (1024, 768),
             window_title: "simple app",
         },
         m_setup,
-<<<<<<< HEAD
-    ).event(m_event)
-=======
     )
->>>>>>> egui
     .run(m_update);
 }
