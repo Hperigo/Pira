@@ -91,6 +91,7 @@ impl Vao {
         shader: &GlslProg,
     ) -> Option<Vao> {
         let mut data = Vec::<f32>::new();
+
         // merge buffers
         // TODO: we dont need to flatten the data into a single array, a better aproach would be to just buffer with an offset
         for a in attribs {
@@ -104,7 +105,7 @@ impl Vao {
         unsafe {
             gl.bind_vertex_array(Some(vao_handle));
             gl.bind_buffer(data_vbo.get_gl_type(), data_vbo.get_handle());
-
+            
             let mut current_offset: usize = 0;
             for a in attribs {
                 let name = a.name;

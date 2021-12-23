@@ -20,7 +20,8 @@ impl GlslProg {
             gl.link_program(program_id);
             let success = gl.get_program_link_status(program_id);
 
-            if success {
+            if !success {
+                println!("Could not LINK shader: \n\n");
                 gl.get_program_info_log(program_id);
                 return Self { handle: None };
             }
@@ -154,6 +155,9 @@ fn compile_shader(gl: &glow::Context, src: &str, shader_type: u32) -> glow::Shad
     }
 
     let success = unsafe { gl.get_shader_compile_status(shader_id) };
+
+    print!("Shader success: {}", success );
+
     if !success {
         let shader_type_string: &str;
         match shader_type {

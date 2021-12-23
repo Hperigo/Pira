@@ -241,6 +241,11 @@ fn m_update(
 
     shader.unbind(gl);
 
+
+    unsafe{
+        gl.disable( glow::DEPTH_TEST );
+    }
+
 }
 
 fn main() {
