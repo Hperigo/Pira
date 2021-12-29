@@ -1,6 +1,5 @@
 extern crate piralib;
 use glow::*;
-use glutin::event::WindowEvent;
 use nalgebra_glm as glm;
 use piralib::app;
 use piralib::gl_helper as glh;
@@ -117,7 +116,9 @@ fn m_setup(app: &mut app::App) -> FrameData {
 
     let max_x = 550;
     let max_y = 190;
-
+ 
+    // let max_x = 550 / 2;
+    // let max_y = 190 / 2;
     for i in 0..max_x {
         for k in 0..max_y {
             let x = ((max_x as f32) - (i as f32)) + rng.gen_range(-random_range..random_range);
@@ -245,14 +246,13 @@ fn m_update(
     unsafe{
         gl.disable( glow::DEPTH_TEST );
     }
-
 }
 
 fn main() {
 
     app::AppBuilder::new(
         app::AppSettings {
-            window_size: (1024, 768),
+            window_size: (1920, 1080),
             window_title: "simple app",
         },
         m_setup,

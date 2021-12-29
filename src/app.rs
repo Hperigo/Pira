@@ -1,10 +1,13 @@
-use egui_glow;
+#[cfg(target_arch = "wasm32")]
+use egui_web;
 
 #[cfg(target_arch = "wasm32")]
 use winit::event;
 
 #[cfg(not(target_arch = "wasm32"))]
 use glutin::event;
+
+use egui_glow;
 
 pub type Event<'a, T> = event::Event<'a, T>;
 type SetupFn<T> = fn(&mut App) -> T;
@@ -63,31 +66,33 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
     let event_loop = winit::event_loop::EventLoop::new();
     let settings = builder.settings.clone();
 
-    let window = winit::window::WindowBuilder::new()
-        .with_title("A fantastic window!")
-        .build(&event_loop)
+
+    use wasm_bindgen::JsCast;
+    use winit::{platform::web::WindowBuilderExtWebSys};
+    let canvas = web_sys::window()
+        .unwrap()
+        .document()
+        .unwrap()
+        .get_element_by_id("canvas")
+        .unwrap()
+        .dyn_into::<web_sys::HtmlCanvasElement>()
         .unwrap();
 
-    let (gl, shader_version) = {
-        use wasm_bindgen::JsCast;
-        let canvas = web_sys::window()
-            .unwrap()
-            .document()
-            .unwrap()
-            .get_element_by_id("canvas")
-            .unwrap()
-            .dyn_into::<web_sys::HtmlCanvasElement>()
-            .unwrap();
+    let webgl2_context = canvas
+        .get_context("webgl2")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::WebGl2RenderingContext>()
+        .unwrap();
+    let gl = glow::Context::from_webgl2_context(webgl2_context);
 
-        let webgl2_context = canvas
-            .get_context("webgl2")
-            .unwrap()
-            .unwrap()
-            .dyn_into::<web_sys::WebGl2RenderingContext>()
-            .unwrap();
-        let gl = glow::Context::from_webgl2_context(webgl2_context);
-        gl
-    };
+    let window = winit::window::WindowBuilder::new()
+    .with_title("A fantastic window!")
+    .with_canvas(Some(canvas))
+    .build(&event_loop)
+    .unwrap();
+
+    let mut egui  = egui::CtxRef::default();
 
     let mut app = App {
         gl,
@@ -95,6 +100,8 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
         frame_number: 0,
         input_state: InputState {
             mouse_pos: (0.0, 0.0),
+            window_size : settings.window_size,
+            window_pos :(0, 0),
         },
     };
 
@@ -103,18 +110,56 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
     event_loop.run(move |event, _, control_flow| {
+        
         match event {
-            Event::WindowEvent {
-                event: winit::event::WindowEvent::CloseRequested,
-                window_id,
-            } if window_id == window.id() => *control_flow = winit::event_loop::ControlFlow::Exit,
+            
+            Event::WindowEvent { event, .. } => {
+                use winit::event::WindowEvent;
+                let raw_input = egui::RawInput::default();
+
+
+                let (_needs_repaint, shapes) = egui.run(raw_input , |egui_ctx| {
+
+                });
+
+                if builder.event_fn.is_some() {
+                    builder.event_fn.unwrap()(&mut app, &mut data, &event);
+                }
+
+                if matches!(event, WindowEvent::CloseRequested | WindowEvent::Destroyed) {
+                    *control_flow = winit::event_loop::ControlFlow::Exit;
+                }
+
+                if let WindowEvent::CursorMoved { position, .. } = event {
+                        let scale_factor = 0.5;
+                    app.input_state.mouse_pos = (
+                        position.x as f32 * scale_factor,
+                        position.y as f32 * scale_factor,
+                    );
+                }
+
+
+                if let winit::event::WindowEvent::Resized(physical_size) = event {
+                    unsafe{web_sys::console::log_1(&"resized!".into());}
+                    *control_flow = winit::event_loop::ControlFlow::Wait;
+                    app.input_state.window_size = (physical_size.width as i32, physical_size.height as i32);
+                }
+            },
+            
+            Event::DeviceEvent { event ,..} => {
+                // if let DeviceEvent::MouseMotion{position, ..} = event {
+                //     app.input_state.mouse_pos
+                // }
+            },
             Event::MainEventsCleared => {
                 window.request_redraw();
-            }
-            _ => (),
+            },
+            _ => {
+            },
         }
         app.frame_number = app.frame_number + 1;
-        builder.update_fn.unwrap()(&mut app, &mut data, &event);
+        builder.update_fn.unwrap()(&mut app, &mut data, &egui);
+        // builder.update_fn.unwrap()(&mut app, &mut data, &egui);
     });
 }
 
@@ -144,6 +189,7 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
     };
 
     let mut egui = egui_glow::EguiGlow::new(&window, &gl);
+    // let mut egui = egui_glow::Painter::new(&gl, None, "").unwrap();
     
     let mut app = App {
         gl,
@@ -164,9 +210,15 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
         let mut redraw = || {
             app.frame_number += 1;
 
-            let (_needs_repaint, shapes) = egui.run(window.window(), |egui_ctx| {
-                builder.update_fn.unwrap()(&mut app, &mut data, egui_ctx);
-            });
+            // For future versions of egui we need to use this
+            // let (_needs_repaint, shapes) = egui.run(window.window(), |egui_ctx| {
+            //     builder.update_fn.unwrap()(&mut app, &mut data, egui_ctx);
+            // });
+
+                
+            egui.begin_frame(window.window());
+            builder.update_fn.unwrap()(&mut app, &mut data,  egui.ctx());
+            let (_needs_repain, shapes) = egui.end_frame(window.window());
 
             // draw things behind egui here
             egui.paint(&window, &app.gl, shapes);

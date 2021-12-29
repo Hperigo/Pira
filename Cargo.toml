@@ -10,13 +10,12 @@ edition = "2018"
 glow = "*"
 nalgebra-glm = "*"
 image = "*"
-egui = {version = "*", path="../egui/egui" }
-egui_glow = {version = "*", path="../egui/egui_glow/", features=["epi"]}
-epi = "*"
+egui = {version = "0.15.0" }
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
 glutin = { version = "*", optional = false }
-# egui-winit = { version = "*", default-features = false, features = ["epi"], optional = true }
+egui_glow = {version = "*", features=["epi"]}
+epi = "*"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 winit = {version = "*", features = ["web-sys"]}
@@ -24,6 +23,8 @@ wasm-bindgen = { version = "0.2.78" }
 wasm-bindgen-futures = { version = "*" }
 js-sys = "*"
 console_error_panic_hook = "*"
+egui_web = { version = "*", default-features=false, features=["glow"]}
+egui_glow = { version = "*", default-features=false }
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.web_sys]
@@ -51,10 +52,6 @@ features = [
     'Window',
     'WheelEvent'
 ]
-
-# [dependencies]
-# imgui-glfw-rs = "*"
-# gl_generator = "*"
 
 [dev-dependencies]
 getrandom = { version = "*", features=["js"]}

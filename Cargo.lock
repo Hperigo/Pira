@@ -515,6 +515,8 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 [[package]]
 name = "egui"
 version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c8d416a3343cbfc6f4d17bb1cba46b4d7efecb9ee541967763e0b5e04e5fae7"
 dependencies = [
  "ahash",
  "epaint 0.15.0",
@@ -525,18 +527,20 @@ dependencies = [
 
 [[package]]
 name = "egui"
-version = "0.15.0"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c8d416a3343cbfc6f4d17bb1cba46b4d7efecb9ee541967763e0b5e04e5fae7"
+checksum = "82e80e8014bfc292b411b3f4b25300f9082e4e76484d5bf67b77274d23a72607"
 dependencies = [
  "ahash",
- "epaint 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "epaint 0.16.0",
  "nohash-hasher",
 ]
 
 [[package]]
 name = "egui-winit"
 version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc403e91d1bd693239f1c734193cdf0eb38c8682bbfb9990c4b6cd2db5ee368e"
 dependencies = [
  "copypasta",
  "egui 0.15.0",
@@ -549,6 +553,8 @@ dependencies = [
 [[package]]
 name = "egui_glow"
 version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4fba815b217b8d4c17dcd080497d9ea2ad0e2047aec8d584db1c7c4a28e978db"
 dependencies = [
  "egui 0.15.0",
  "egui-winit",
@@ -556,7 +562,34 @@ dependencies = [
  "glow",
  "glutin",
  "memoffset",
+]
+
+[[package]]
+name = "egui_glow"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c338df7b5901be67203077410b7a53345c017db935d33e1d93382f2b873476df"
+dependencies = [
+ "egui 0.16.0",
+ "epi 0.16.0",
+ "glow",
+ "memoffset",
  "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "egui_web"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a717dbb0cc1909a4c7c0955cc0cf7c77a9eee2a88cca18fe96888c428a4c206"
+dependencies = [
+ "egui 0.16.0",
+ "egui_glow 0.16.0",
+ "epi 0.16.0",
+ "js-sys",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
  "web-sys",
 ]
 
@@ -569,19 +602,23 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "emath"
 version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24a1aaa922d55da6a2bf32957c3d153e7fb9d52ed8d69777a75092240172eb6e"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "emath"
-version = "0.15.0"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24a1aaa922d55da6a2bf32957c3d153e7fb9d52ed8d69777a75092240172eb6e"
+checksum = "55673de2eb96660dde25ba7b2d36a7054beead1a2bec74dcfd5eb05a1e1ba76d"
 
 [[package]]
 name = "epaint"
 version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16bb4d3b8bbbd132c99d2a5efec8567e8b6d09b742f758ae6cf1e4b104fe0231"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -593,20 +630,22 @@ dependencies = [
 
 [[package]]
 name = "epaint"
-version = "0.15.0"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16bb4d3b8bbbd132c99d2a5efec8567e8b6d09b742f758ae6cf1e4b104fe0231"
+checksum = "adfd9296f7f92902e41c0e8e5deca6d2fb29f289c86d03a01ea01bd7498316c2"
 dependencies = [
  "ab_glyph",
  "ahash",
  "atomic_refcell",
- "emath 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "emath 0.16.0",
  "nohash-hasher",
 ]
 
 [[package]]
 name = "epi"
 version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f5e4e08127f9b86e2c450c96a3032764b63546eb170c2fc54684dc70ff3fc82"
 dependencies = [
  "directories-next",
  "egui 0.15.0",
@@ -616,11 +655,11 @@ dependencies = [
 
 [[package]]
 name = "epi"
-version = "0.15.0"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f5e4e08127f9b86e2c450c96a3032764b63546eb170c2fc54684dc70ff3fc82"
+checksum = "b4ae4ce3271febeacc5b4afbd77e500316c6ba316561067acbdddf0c14268a7c"
 dependencies = [
- "egui 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "egui 0.16.0",
 ]
 
 [[package]]
@@ -1343,8 +1382,9 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "egui 0.15.0",
- "egui_glow",
- "epi 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "egui_glow 0.15.0",
+ "egui_web",
+ "epi 0.16.0",
  "getrandom",
  "glow",
  "glutin",
@@ -1664,9 +1704,9 @@ dependencies = [
 
 [[package]]
 name = "smithay-client-toolkit"
-version = "0.15.2"
+version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "210cf40de565aaaa085face1d860b17f6aee9f76f9d2816307ea2cc45eeb64f3"
+checksum = "1325f292209cee78d5035530932422a30aa4c8fda1a16593ac083c1de211e68a"
 dependencies = [
  "bitflags",
  "dlib 0.5.0",
@@ -1686,7 +1726,7 @@ version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "610b551bd25378bfd2b8e7a0fcbd83d427e8f2f6a40c47ae0f70688e9949dd55"
 dependencies = [
- "smithay-client-toolkit 0.15.2",
+ "smithay-client-toolkit 0.15.3",
  "wayland-client 0.29.1",
 ]
 
