@@ -36,6 +36,11 @@ impl<T> AppBuilder<T> {
         }
     }
 
+    pub fn event(mut self, event_fn: EventFn<T>) -> Self {
+        self.event_fn = Some(event_fn);
+        self
+    }
+
     pub fn run(mut self, update_fn: UpdateFn<T>) {
         self.update_fn = Some(update_fn);
 
@@ -211,14 +216,15 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
             app.frame_number += 1;
 
             // For future versions of egui we need to use this
-            // let (_needs_repaint, shapes) = egui.run(window.window(), |egui_ctx| {
-            //     builder.update_fn.unwrap()(&mut app, &mut data, egui_ctx);
-            // });
+            let raw_input = egui.egui_winit.take_egui_input(window.window());
+            let (_needs_repaint, shapes) =  egui.egui_ctx.run(raw_input, |egui_ctx| {
+                builder.update_fn.unwrap()(&mut app, &mut data, egui_ctx);
+            });
 
                 
-            egui.begin_frame(window.window());
-            builder.update_fn.unwrap()(&mut app, &mut data,  egui.ctx());
-            let (_needs_repain, shapes) = egui.end_frame(window.window());
+            // egui.begin_frame(window.window());
+            // builder.update_fn.unwrap()(&mut app, &mut data,  &egui.egui_ctx);
+            // let (_needs_repain, shapes) = egui.end_frame(window.window());
 
             // draw things behind egui here
             egui.paint(&window, &app.gl, shapes);
@@ -233,7 +239,9 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
             glutin::event::Event::WindowEvent { event, .. } => {
                 use glutin::event::WindowEvent;
 
-                if builder.event_fn.is_some() {
+                let did_use_egui = egui.on_event(&event);
+
+                if builder.event_fn.is_some() && !did_use_egui {
                     builder.event_fn.unwrap()(&mut app, &mut data, &event);
                 }
 
@@ -243,6 +251,12 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
 
                 if let glutin::event::WindowEvent::Resized(physical_size) = event {
                     window.resize(physical_size);
+
+                    println!("1 - size is: {:?}", app.input_state.window_size);
+                    app.input_state.window_size.0 = physical_size.width as i32 / 2;
+                    app.input_state.window_size.1 = physical_size.height as i32 / 2;
+
+                    println!("2 - size is: {:?}", app.input_state.window_size);
                     *control_flow = glutin::event_loop::ControlFlow::Wait;
                 }
 
@@ -263,8 +277,6 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
                         *control_flow = glutin::event_loop::ControlFlow::Exit;
                     }
                 }
-
-                egui.on_event(&event);
 
                 //window.window().request_redraw(); // TODO: ask egui if the events warrants a repaint instead
             }

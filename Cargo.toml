@@ -10,7 +10,7 @@ edition = "2018"
 glow = "*"
 nalgebra-glm = "*"
 image = "*"
-egui = {version = "0.15.0" }
+egui = {version = "0.16.0" }
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
 glutin = { version = "*", optional = false }
