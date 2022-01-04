@@ -252,11 +252,8 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
                 if let glutin::event::WindowEvent::Resized(physical_size) = event {
                     window.resize(physical_size);
 
-                    println!("1 - size is: {:?}", app.input_state.window_size);
                     app.input_state.window_size.0 = physical_size.width as i32 / 2;
                     app.input_state.window_size.1 = physical_size.height as i32 / 2;
-
-                    println!("2 - size is: {:?}", app.input_state.window_size);
                     *control_flow = glutin::event_loop::ControlFlow::Wait;
                 }
 

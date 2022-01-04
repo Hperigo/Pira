@@ -155,9 +155,6 @@ fn compile_shader(gl: &glow::Context, src: &str, shader_type: u32) -> glow::Shad
     }
 
     let success = unsafe { gl.get_shader_compile_status(shader_id) };
-
-    print!("Shader success: {}", success );
-
     if !success {
         let shader_type_string: &str;
         match shader_type {

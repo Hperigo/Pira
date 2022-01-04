@@ -1,13 +1,12 @@
 extern crate piralib;
 use nalgebra_glm as glm;
-use piralib::gl;
 use piralib::gl_helper as glh;
 
+use piralib::app::*;
 use indextree::{Arena, NodeId};
+use piralib::gl_helper::GlslProg;
 
-use imgui_glfw_rs::imgui::*;
-
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 struct Transform {
     position: glm::Vec3,
     rotation: glm::Vec3,
@@ -49,20 +48,32 @@ fn get_world_matrix(node: NodeId, arena: &Arena<Transform>) -> glm::Mat4 {
         model_matrix = glm::translate(&model_matrix, &transform.position);
 
         model_matrix = glm::rotate_z(&model_matrix, transform.rotation.z);
-        model_matrix = glm::scale(&model_matrix, &transform.scale);
+        // model_matrix = glm::scale(&model_matrix, &transform.scale);
         world_matrix = model_matrix * world_matrix;
     }
 
     world_matrix
 }
 
-fn main() {
+
+struct FrameData {
+    transforms_arena : Arena<Transform>,
+    node_a : NodeId,
+    node_b : NodeId,
+    node_c : NodeId,
+
+    shader : glh::GlslProg,
+    vao : glh::Vao,
+}
+
+fn setup_fn(app : &mut piralib::app::App) -> FrameData {
+
     let mut arena = Arena::new();
 
     let a = arena.new_node(Transform::new());
     let b = arena.new_node(
         Transform::new()
-            .set_position(glm::vec3(100.0, 0.0, 0.0))
+            .set_position(glm::vec3(250.0, 0.0, 0.0))
             .set_rotation(glm::vec3(0.0, 0.0, 0.0))
             .set_scale(glm::vec3(0.9, 0.9, 1.1)),
     );
@@ -76,7 +87,7 @@ fn main() {
 
     {
         let node = arena.get_mut(a).unwrap().get_mut();
-        node.position = glm::vec3(100.0, 100.0, 0.0);
+        node.position = glm::vec3(1280.0, 720.0, 0.0);
         node.rotation = glm::vec3(0.0, 0.0, 3.14 / 4.0);
         node.scale = glm::vec3(1.0, 1.0, 1.0);
     }
@@ -84,45 +95,71 @@ fn main() {
     a.append(b, &mut arena);
     b.append(c, &mut arena);
 
-    let mut app = piralib::App::init_with_options(&piralib::app::Options {
-        window_width: 1104,
-        window_height: 736,
-        samples: 4,
-        title: "#️⃣".to_string(),
-    });
 
-    let mut pos_attrib = glh::VertexAttrib::new_position_attr();
-    let mut color_attrib = glh::VertexAttrib::new_color_attr();
+    let geo_rect = piralib::gl_helper::geo::Geometry::rect(-100.0, -100.0, 200.0, 200.0);
+    let shader = glh::stock_shader::StockShader::new().color().build(&app.gl);
+    let vao = glh::Vao::new_from_attrib(&app.gl, &geo_rect.attribs, &shader).unwrap();
 
-    // build vertex data ----
-    let mut vertices: Vec<f32> = Vec::new();
-    vertices.append(&mut vec![0.0, 0.0, 0.0]);
-    vertices.append(&mut vec![0.0, 736.0, 0.0]);
-    vertices.append(&mut vec![1104.0, 736.0, 0.0]);
-    vertices.append(&mut vec![1104.0, 0.0, 0.0]);
 
-    for i in 0..vertices.len() {
-        vertices[i] = vertices[i] / 4.0;
+    FrameData {
+        transforms_arena : arena,
+        node_a : a,
+        node_b : b,
+        node_c : c,
+        vao,
+        shader,
+    }
+}
+
+
+fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, egui : &egui::CtxRef){
+
+
+    let gl = &app.gl;
+
+    let FrameData{vao, shader, transforms_arena, ..} = data;
+
+    // glh::set_viewport(gl, x, y, width, height)
+    glh::set_viewport(gl, 0, 0, app.input_state.window_size.0 as i32 * 2, app.input_state.window_size.1 as i32 * 2);
+    glh::clear(gl, 0.3, 0.1, 0.13, 1.0);
+
+    {
+        let p =  transforms_arena.get_mut(data.node_a).unwrap().get_mut();
+        p.rotation.z = app.frame_number as f32 * 0.01; 
+    }
+    {
+        let p =  transforms_arena.get_mut(data.node_b).unwrap().get_mut();
+        p.rotation.z = app.frame_number as f32 * 0.01; 
     }
 
-    let mut colors: Vec<f32> = Vec::new();
-    colors.append(&mut vec![1.0, 0.0, 0.0, 1.0]);
-    colors.append(&mut vec![0.0, 1.0, 0.0, 1.0]);
-    colors.append(&mut vec![0.0, 0.0, 1.0, 1.0]);
-    colors.append(&mut vec![0.0, 0.4, 0.4, 1.0]);
+    for node in transforms_arena.iter() {
+    
+        let node_id = transforms_arena.get_node_id(node).unwrap();
 
-    let mut indices: Vec<u32> = Vec::new();
-    indices.append(&mut vec![0, 2, 3]);
-    indices.append(&mut vec![0, 1, 2]);
+        shader.bind(gl);
+        shader.set_orthographic_matrix(gl, [app.input_state.window_size.0 as f32 *2.0, app.input_state.window_size.1 as f32 * 2.0]);
+        shader.set_view_matrix(gl, &glm::Mat4::identity());
 
-    pos_attrib.data = vertices;
-    color_attrib.data = colors;
 
-    let stock_shader = glh::StockShader::new().color();
-    let shader = stock_shader.build();
-    let attribs = vec![pos_attrib, color_attrib];
-    let vao = glh::Vao::new_from_attrib_indexed(&attribs, &indices, &shader).unwrap();
+        let model_matrix = get_world_matrix(node_id, &transforms_arena);
+        shader.set_model_matrix(gl, &model_matrix);
 
+        shader.set_color(gl, &[1.0, 1.0, 0.0, 1.0]);
+
+        vao.draw(gl, glow::TRIANGLES);
+        shader.unbind(gl);
+    }
+   
+}
+
+
+fn main() {
+ 
+    piralib::app::AppBuilder::new( piralib::app::AppSettings{
+     window_title : "transforms",
+     window_size : (1280, 720),
+    }, setup_fn).run(update_fn);
+    /*
     app.run_fn(move |event, should_quit| {
         glh::clear(0.2, 0.1, 0.1, 1.0);
 
@@ -213,6 +250,7 @@ fn main() {
             }
         }
     });
+    */
 }
 
 #[test]

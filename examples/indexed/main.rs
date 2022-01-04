@@ -44,16 +44,11 @@ fn m_setup(app: &mut app::App) -> FrameData {
     }
 }
 
-<<<<<<< HEAD
-fn m_update(app: &mut app::App, _data: &mut FrameData) {
-=======
 fn m_update(
     app: &mut app::App,
     _data: &mut FrameData,
-    _event: &app::Event<()>,
     _ui: &egui::CtxRef,
 ) {
->>>>>>> egui
     glh::clear(&app.gl, 1.0, 0.0, 0.5, 1.0);
     unsafe {
         app.gl.disable(glow::CULL_FACE);

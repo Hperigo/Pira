@@ -50,7 +50,7 @@ impl Geometry {
 
         vertices.append(&mut vec![x, y, 0.0]); //0
         vertices.append(&mut vec![x + width, y + height, 0.0]); //3
-        vertices.append(&mut vec![x + width, 0.0, 0.0]); //1
+        vertices.append(&mut vec![x + width, y, 0.0]); //1
 
         let mut colors: Vec<f32> = Vec::new();
         let mut texure_vertices: Vec<f32> = Vec::new();
