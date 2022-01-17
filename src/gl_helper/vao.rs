@@ -223,7 +223,11 @@ impl Vao {
     }
 
     pub fn delete(&mut self, gl: &glow::Context) {
-        unsafe { gl.delete_vertex_array(self.handle.unwrap()) };
+
+        self.vbo_handle.delete(gl);
+        unsafe { 
+            gl.delete_vertex_array(self.handle.unwrap());
+        };
         self.handle = None;
     }
 }
