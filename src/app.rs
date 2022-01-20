@@ -1,17 +1,23 @@
 #[cfg(target_arch = "wasm32")]
-use egui_web;
-
-#[cfg(target_arch = "wasm32")]
 use winit::event;
 
 #[cfg(not(target_arch = "wasm32"))]
 use glutin::event;
 
+#[cfg(not(target_arch = "wasm32"))]
+pub use egui::CtxRef;
+
+#[cfg(not(target_arch = "wasm32"))]
 use egui_glow;
+
+#[cfg(target_arch = "wasm32")]
+#[derive(Default)]
+pub struct CtxRef{}
+
 
 pub type Event<'a, T> = event::Event<'a, T>;
 type SetupFn<T> = fn(&mut App) -> T;
-type UpdateFn<T> = fn(&mut App, &mut T, ui : &egui::CtxRef);
+type UpdateFn<T> = fn(&mut App, &mut T, ui : &CtxRef);
 type EventFn<T> = fn(&mut App, &mut T, &event::WindowEvent);
 
 #[derive(Clone, Copy)]
@@ -97,7 +103,7 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
     .build(&event_loop)
     .unwrap();
 
-    let mut egui  = egui::CtxRef::default();
+    let mut egui  = CtxRef::default();
 
     let mut app = App {
         gl,
@@ -119,23 +125,23 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
         match event {
             
             Event::WindowEvent { event, .. } => {
-                use winit::event::WindowEvent;
-                let raw_input = egui::RawInput::default();
+                // use winit::event::WindowEvent;
+                // let raw_input = egui::RawInput::default();
 
 
-                let (_needs_repaint, shapes) = egui.run(raw_input , |egui_ctx| {
+                // let (_needs_repaint, shapes) = egui.run(raw_input , |egui_ctx| {
 
-                });
+                // });
 
                 if builder.event_fn.is_some() {
                     builder.event_fn.unwrap()(&mut app, &mut data, &event);
                 }
 
-                if matches!(event, WindowEvent::CloseRequested | WindowEvent::Destroyed) {
+                if matches!(event, event::WindowEvent::CloseRequested | event::WindowEvent::Destroyed) {
                     *control_flow = winit::event_loop::ControlFlow::Exit;
                 }
 
-                if let WindowEvent::CursorMoved { position, .. } = event {
+                if let event::WindowEvent::CursorMoved { position, .. } = event {
                         let scale_factor = 0.5;
                     app.input_state.mouse_pos = (
                         position.x as f32 * scale_factor,
@@ -194,7 +200,6 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
     };
 
     let mut egui = egui_glow::EguiGlow::new(&window, &gl);
-    // let mut egui = egui_glow::Painter::new(&gl, None, "").unwrap();
     
     let mut app = App {
         gl,

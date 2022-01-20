@@ -114,9 +114,16 @@ fn m_setup(app: &mut app::App) -> FrameData {
 
     let random_range = 1.0;
 
+    #[cfg(target_arch="wasm32")]
+    let max_x = 550 / 2;
+    #[cfg(target_arch="wasm32")]
+    let max_y = 190 / 2;
+
+    #[cfg(not(target_arch="wasm32"))]
     let max_x = 550;
+    #[cfg(not(target_arch="wasm32"))]
     let max_y = 190;
- 
+
     // let max_x = 550 / 2;
     // let max_y = 190 / 2;
     for i in 0..max_x {
@@ -163,7 +170,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
 fn m_update(
     app: &mut app::App,
     _data: &mut FrameData,
-    ui: &egui::CtxRef,
+    ui: &piralib::app::CtxRef,
 ) {
     let time = &mut _data.time;
     let gl = &app.gl;
@@ -183,6 +190,7 @@ fn m_update(
     mouse_pos[0] = mouse_pos[0] + ((app.input_state.mouse_pos.0 * 2.0) - mouse_pos[0]) * 0.5;
     mouse_pos[1] = mouse_pos[1] + ((app.input_state.mouse_pos.1 * 2.0) - mouse_pos[1]) * 0.5;
 
+    #[cfg(not(target_arch="wasm32"))]
     egui::SidePanel::new(egui::panel::Side::Left, "panel").show(ui, |ui| {
         ui.label("base color");
         ui.color_edit_button_rgb(&mut base_color);
@@ -191,6 +199,7 @@ fn m_update(
         ui.color_edit_button_rgb(&mut tip_color);
         //ui.color_edit_button_rgb(&mut tip_color);
     });
+
     unsafe{
         gl.disable(glow::FRAMEBUFFER_SRGB);
         gl.clear_color(base_color[0], base_color[1], base_color[2], 1.0);

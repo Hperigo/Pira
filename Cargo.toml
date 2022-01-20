@@ -23,9 +23,6 @@ wasm-bindgen = { version = "0.2.78" }
 wasm-bindgen-futures = { version = "*" }
 js-sys = "*"
 console_error_panic_hook = "*"
-egui_web = { version = "*", default-features=false, features=["glow"]}
-egui_glow = { version = "*", default-features=false }
-
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.web_sys]
 package = "web-sys"
