@@ -58,7 +58,7 @@ fn setup_fn(app : &mut piralib::app::App) -> FrameData {
 }
 
 
-fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piralib::app::CtxRef){
+fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piralib::egui::CtxRef){
 
 
     let gl = &app.gl;

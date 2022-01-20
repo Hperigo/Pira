@@ -11,13 +11,16 @@ pub use egui::CtxRef;
 use egui_glow;
 
 #[cfg(target_arch = "wasm32")]
-#[derive(Default)]
-pub struct CtxRef{}
+pub mod egui {
+    #[derive(Default)]
+    pub struct CtxRef{}    
+}
+
 
 
 pub type Event<'a, T> = event::Event<'a, T>;
 type SetupFn<T> = fn(&mut App) -> T;
-type UpdateFn<T> = fn(&mut App, &mut T, ui : &CtxRef);
+type UpdateFn<T> = fn(&mut App, &mut T, ui : &egui::CtxRef);
 type EventFn<T> = fn(&mut App, &mut T, &event::WindowEvent);
 
 #[derive(Clone, Copy)]
@@ -103,7 +106,7 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
     .build(&event_loop)
     .unwrap();
 
-    let mut egui  = CtxRef::default();
+    let mut egui  = egui::CtxRef::default();
 
     let mut app = App {
         gl,

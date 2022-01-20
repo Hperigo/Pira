@@ -47,7 +47,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
 fn m_update(
     app: &mut app::App,
     _data: &mut FrameData,
-    _ui: &egui::CtxRef,
+    _ui: &piralib::egui::CtxRef,
 ) {
     glh::clear(&app.gl, 1.0, 0.0, 0.5, 1.0);
     unsafe {
