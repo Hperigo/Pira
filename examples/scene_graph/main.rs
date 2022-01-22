@@ -64,14 +64,13 @@ fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piral
     let gl = &app.gl;
 
     let FrameData{vao, shader, transforms_arena, ..} = data;
-    let dpi = 2.0;
     // glh::set_viewport(gl, x, y, width, height)
     glh::set_viewport(gl, 0, 0, app.input_state.window_size.0 as i32 * dpi as i32, app.input_state.window_size.1 as i32 * dpi as i32);
     glh::clear(gl, 0.3, 0.1, 0.13, 1.0);
 
     
     {   
-        // transforms_arena.set_position(&data.node_a, glm::vec3(app.input_state.mouse_pos.0 as f32 * 2.0, app.input_state.mouse_pos.1 as f32 * 2.0, 0.0));
+        transforms_arena.set_position(&data.node_a, glm::vec3(app.input_state.mouse_pos.0 as f32, app.input_state.mouse_pos.1 as f32, 0.0));
         transforms_arena.set_rotation(&data.node_a, glm::vec3(0.0, 0.0, app.frame_number as f32 * 0.001 ));
         let s = ((app.frame_number as f32) * 0.01).sin();
         transforms_arena.set_scale(&data.node_a, glm::vec3(s,s,s));
@@ -88,8 +87,6 @@ fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piral
         transforms_arena.set_rotation(&data.node_c, glm::vec3(0.0, 0.0, app.frame_number as f32 * 0.001 ));
         let s = ((app.frame_number as f32) * 0.01 + 2.0).sin();
         transforms_arena.set_scale(&data.node_c, glm::vec3(s,s,s));
-
-
     }
 
 
@@ -102,18 +99,15 @@ fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piral
         let model_matrix =   transforms_arena.get_world_matrix(id);  // get_world_matrix(node_id, &transforms_arena);
         shader.set_model_matrix(gl, &model_matrix);
 
-
-        let pos = model_matrix * glm::vec4(0.0, 0.0, 0.0, 1.0);
-    
-        let mouse_pos =  glm::vec3(app.input_state.mouse_pos.0 * 2.0, app.input_state.mouse_pos.1 * 2.0, 0.0);
-
-        if glm::distance( &mouse_pos, &pos.xyz() ) < 100.0 * transforms_arena.get_world_scale(id).x.abs() {
-            shader.set_color(gl, &[0.0, 0.0, 1.0, 1.0]);
-        }else{
-            shader.set_color(gl, &[1.0, 1.0, 0.0, 1.0]);
-        }
-
+        shader.set_color(gl, &[1.0, 1.0, 0.0, 1.0]);
         vao.draw(gl, glow::TRIANGLES);
+
+        let pos = transforms_arena.get_world_position(id);
+        shader.set_transform(gl, &pos, &glm::vec3(0.0, 0.0, 0.0), &glm::vec3(0.2, 0.2, 0.2 ));
+
+        shader.set_color(gl, &[0.0, 0.0, 1.0, 1.0]);
+        vao.draw(gl, glow::TRIANGLES);
+
         shader.unbind(gl);
     }
    

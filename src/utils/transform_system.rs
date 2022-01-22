@@ -160,19 +160,12 @@ impl TransformSystem {
     }
 
     pub fn get_world_position(&self, id : &NodeId) -> glm::Vec3 {
-        let mut node= self.transforms.get(id).unwrap();
-        let mut position = self.get_position(id);
 
-        while node.parent.is_some() {
-
-            if let Some(parent) = node.parent { 
-                let parent_position : glm::Vec3 = self.get_position(&parent);
-                position = parent_position + position;
-                node = self.transforms.get(&parent).unwrap();
-            }
-
-        }
-        position
+        let position = self.get_position(id);        
+        let world_matrix = self.get_world_matrix(id);
+        let world_position = world_matrix * glm::vec4(0.0,0.0,0.0, 1.0); // glm::vec4(0.0, 0.0, 0.0, 1.0);
+        
+        glm::vec4_to_vec3(&world_position)
     }
 
     pub fn get_world_rotation(&self, id : &NodeId) -> glm::Vec3 {
@@ -188,6 +181,8 @@ impl TransformSystem {
             }
 
         }
+
+
         rotation
     }
 

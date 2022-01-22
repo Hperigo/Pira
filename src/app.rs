@@ -16,8 +16,6 @@ pub mod egui {
     pub struct CtxRef{}    
 }
 
-
-
 pub type Event<'a, T> = event::Event<'a, T>;
 type SetupFn<T> = fn(&mut App) -> T;
 type UpdateFn<T> = fn(&mut App, &mut T, ui : &egui::CtxRef);
@@ -72,7 +70,6 @@ pub struct App {
     pub gl: glow::Context,
     pub frame_number: u64,
     pub input_state: InputState,
-    pub settings: AppSettings,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -179,7 +176,7 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
-    use glutin::event::VirtualKeyCode;
+    use glutin::{event::VirtualKeyCode, window::Window};
 
     let settings = builder.settings;
     let (gl, window, event_loop) = unsafe {
@@ -206,11 +203,10 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
     
     let mut app = App {
         gl,
-        settings,
         frame_number: 0,
         input_state: InputState {
             mouse_pos: (0.0, 0.0),
-            window_size : settings.window_size,
+            window_size : (settings.window_size.0 * window.window().scale_factor() as i32, settings.window_size.1 * window.window().scale_factor() as i32),
             window_pos : window.window().inner_position().unwrap().into(),
         },
     };
@@ -260,8 +256,10 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
                 if let glutin::event::WindowEvent::Resized(physical_size) = event {
                     window.resize(physical_size);
 
-                    app.input_state.window_size.0 = physical_size.width as i32 / 2;
-                    app.input_state.window_size.1 = physical_size.height as i32 / 2;
+                    let scale_factor = window.window().scale_factor() as i32;
+                    println!("scale factor: {}", scale_factor);
+                    app.input_state.window_size.0 = physical_size.width as i32 / scale_factor;
+                    app.input_state.window_size.1 = physical_size.height as i32 / scale_factor;
                     *control_flow = glutin::event_loop::ControlFlow::Wait;
                 }
 
@@ -270,7 +268,7 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
                 }
 
                 if let glutin::event::WindowEvent::CursorMoved { position, .. } = event {
-                    let scale_factor = 0.5;
+                    let scale_factor = 1.0; 
                     app.input_state.mouse_pos = (
                         position.x as f32 * scale_factor,
                         position.y as f32 * scale_factor,

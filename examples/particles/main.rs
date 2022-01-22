@@ -79,8 +79,8 @@ fn m_update(
         gl,
         0,
         0,
-        app.settings.window_size.0 * 2,
-        app.settings.window_size.1 * 2,
+        app.input_state.window_size.0,
+        app.input_state.window_size.1,
     );
 
     shader.bind(gl);
@@ -89,8 +89,8 @@ fn m_update(
         glh::StockShader::uniform_name_perspective_matrix(),
         &glm::ortho(
             0.0,
-            app.settings.window_size.0 as f32 * 2.0,
-            app.settings.window_size.1 as f32 * 2.0,
+            app.input_state.window_size.0 as f32,
+            app.input_state.window_size.1 as f32,
             0.0,
             -1.0,
             1.0,
@@ -138,12 +138,11 @@ fn m_update(
     let sx: f32 = rng.gen_range(-1.0..1.0);
     let sy: f32 = rng.gen_range(-5.0..-1.0);
     let r: f32 = rng.gen_range(-std::f32::consts::PI..std::f32::consts::PI);
-    let frame_buffer_scale = 2.0;
 
     _data.particles.push(Particle {
         position: glm::vec3(
-            xpos as f32 * frame_buffer_scale,
-            ypos as f32 * frame_buffer_scale,
+            xpos as f32,
+            ypos as f32,
             0.0,
         ),
         speed: glm::vec3(sx, sy, 0.0),

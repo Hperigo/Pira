@@ -182,13 +182,10 @@ fn m_update(
     let mut base_color = &mut _data.base_color;
     let mut tip_color = &mut _data.tip_color;
 
-    let framebuffer_scale = 2.0;
-    let inv_frambe_buffer_scale = 1.0 / framebuffer_scale;
-
     *time = *time + 1f32;
 
-    mouse_pos[0] = mouse_pos[0] + ((app.input_state.mouse_pos.0 * 2.0) - mouse_pos[0]) * 0.5;
-    mouse_pos[1] = mouse_pos[1] + ((app.input_state.mouse_pos.1 * 2.0) - mouse_pos[1]) * 0.5;
+    mouse_pos[0] = app.input_state.mouse_pos.0; //mouse_pos[0] + ((app.input_state.mouse_pos.0 * 1.0) - mouse_pos[0]) * 1.0;
+    mouse_pos[1] = app.input_state.mouse_pos.1; //mouse_pos[1] + ((app.input_state.mouse_pos.1 * 1.0) - mouse_pos[1]) * 1.0;
 
     #[cfg(not(target_arch="wasm32"))]
     egui::SidePanel::new(egui::panel::Side::Left, "panel").show(ui, |ui| {
@@ -207,7 +204,7 @@ fn m_update(
         gl.enable(glow::DEPTH_TEST);
         gl.enable(glow::BLEND);
         gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
-        gl.viewport(0, 0, app.settings.window_size.0 * 2, app.settings.window_size.1  * 2);
+        gl.viewport(0, 0, app.input_state.window_size.0 * 2, app.input_state.window_size.1  * 2);
     }
 
     shader.bind(gl);
@@ -217,8 +214,8 @@ fn m_update(
         glh::StockShader::uniform_name_perspective_matrix(),
         &glm::ortho(
             0.0,
-            app.settings.window_size.0 as f32 * inv_frambe_buffer_scale, // beacuse of mac dpi we need to scale it down
-            app.settings.window_size.1 as f32 * inv_frambe_buffer_scale,
+            app.input_state.window_size.0 as f32, // beacuse of mac dpi we need to scale it down
+            app.input_state.window_size.1 as f32,
             0.0,
             -1.0,
             1.0,
