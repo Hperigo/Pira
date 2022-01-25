@@ -7,7 +7,7 @@ pub struct Geometry {
 }
 
 impl Geometry {
-    pub fn circle(x: f32, y: f32, radius: f32, texture_coords : bool) -> Geometry {
+    pub fn circle(x: f32, y: f32, radius: f32, _texture_coords : bool) -> Geometry {
         let mut pos_attrib = glh::VertexAttrib::new_position_attr();
 
         // build vertex data ----
@@ -68,7 +68,7 @@ impl Geometry {
                         vertices[i + 1] / height as f32,
                     ]); // normalize vertex coords
                 }
-                
+
                 i += 3;
             }
         }

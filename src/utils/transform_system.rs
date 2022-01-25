@@ -1,4 +1,4 @@
-use std::{collections::HashMap, hash::Hash};
+use std::{collections::HashMap};
 
 use nalgebra_glm as glm;
 
@@ -88,7 +88,16 @@ impl TransformSystem {
         self.transforms.get_mut(id).unwrap().transform.scale = v;
     }
 
+    pub fn has_parent(&mut self, id : &NodeId)  -> bool {
+        self.transforms.get(id).unwrap().parent.is_some()
+    }
+
     pub fn set_parent(&mut self, id : &NodeId, parent : NodeId, keep_current_transform : bool ){
+
+        let (w_pos, w_rot, w_scale ) = {
+            ( self.get_world_position(id), self.get_world_rotation(id), self.get_world_scale(id) )
+        };
+        
 
         { // add the children to the parent node
             let parent_node = self.transforms.get_mut(&parent).unwrap();
@@ -99,10 +108,30 @@ impl TransformSystem {
             let node = self.transforms.get_mut(id).unwrap();
             node.parent = Some(parent);
         }
+
+    
+        if keep_current_transform {
+            self.set_world_position(id,&w_pos);
+            self.set_world_rotation(id,&w_rot);
+            self.set_world_scale(id, &w_scale);
+        }
     }
 
     pub fn clear_parent(&mut self, id : &NodeId, keep_current_transform : bool ){
-            
+
+        if keep_current_transform {
+            let pos =  self.get_position(id);
+            self.set_world_position(id, &pos);
+
+            let scale =  self.get_scale(id);
+            self.set_world_scale(id, &scale );
+
+            let rot = self.get_rotation(id);
+            self.set_world_rotation(id, &rot);
+
+            println!("set world transform!");
+        }
+          
         let parent_id =  {
             let node = self.transforms.get_mut(id).unwrap();
             let parent_id = node.parent;
@@ -147,6 +176,68 @@ impl TransformSystem {
         }
     }
 
+
+
+    pub fn set_world_position(&mut self, id : &NodeId, world_pos : &glm::Vec3) {
+
+        let parent_id_opt ={
+            self.transforms.get_mut(id).unwrap().parent
+        };
+
+        if let Some(parent_id) = parent_id_opt {
+           let world_pos = {
+               self.get_world_matrix(&parent_id) * glm::vec4(world_pos.x, world_pos.y, world_pos.z, 1.0)
+           };
+            let mut node = self.transforms.get_mut(id).unwrap();
+            node.transform.position = glm::vec3(world_pos.x, world_pos.y, world_pos.z);
+        }else{
+            let mut node = self.transforms.get_mut(id).unwrap();
+            node.transform.position = *world_pos;
+        }
+    }
+
+    pub fn set_world_scale(&mut self, id : &NodeId, world_scale : &glm::Vec3){
+        
+        let parent_id_opt ={
+            self.transforms.get_mut(id).unwrap().parent
+        };
+
+        if let Some(parent_id) = parent_id_opt {
+               let inv_scale = {
+                    glm::vec3(1.0, 1.0, 1.0).component_mul( &self.get_world_scale(&parent_id) )
+           };
+            let mut node = self.transforms.get_mut(id).unwrap();
+            node.transform.scale = node.transform.scale.component_mul(&inv_scale);
+        }else{
+            let mut node = self.transforms.get_mut(id).unwrap();
+            node.transform.scale = *world_scale;
+        }
+    }
+
+    pub fn set_world_rotation(&mut self, id : &NodeId, world_rot : &glm::Vec3){
+        
+        let parent_id_opt ={
+            self.transforms.get_mut(id).unwrap().parent
+        };
+
+        if let Some(parent_id) = parent_id_opt {
+               let parent_rot = {
+                    self.get_world_rotation(&parent_id)
+           };
+            let mut node = self.transforms.get_mut(id).unwrap();
+            node.transform.rotation = node.transform.rotation + parent_rot;
+        }else{
+            let mut node = self.transforms.get_mut(id).unwrap();
+            node.transform.rotation = *world_rot;
+        }
+    }
+
+    pub fn get_world_position(&self, id : &NodeId) -> glm::Vec3 {
+        let world_matrix = self.get_world_matrix(id);
+        let world_position = world_matrix * glm::vec4(0.0,0.0,0.0, 1.0); // glm::vec4(0.0, 0.0, 0.0, 1.0);
+        glm::vec4_to_vec3(&world_position)
+    }
+
     pub fn get_world_scale(&self, id : &NodeId) -> glm::Vec3 {
         let mut node= self.transforms.get(id).unwrap();
         let mut scale = self.get_scale(id);
@@ -162,15 +253,6 @@ impl TransformSystem {
         }
 
         scale
-    }
-
-    pub fn get_world_position(&self, id : &NodeId) -> glm::Vec3 {
-
-        let position = self.get_position(id);        
-        let world_matrix = self.get_world_matrix(id);
-        let world_position = world_matrix * glm::vec4(0.0,0.0,0.0, 1.0); // glm::vec4(0.0, 0.0, 0.0, 1.0);
-        
-        glm::vec4_to_vec3(&world_position)
     }
 
     pub fn get_world_rotation(&self, id : &NodeId) -> glm::Vec3 {

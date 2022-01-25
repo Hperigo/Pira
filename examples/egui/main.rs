@@ -12,7 +12,7 @@ fn m_setup(_app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(app: &mut app::App, _data: &mut FrameData, _event: &app::Event<()>, ui: &egui::CtxRef) {
+fn m_update(app: &mut app::App, _data: &mut FrameData, ui: &egui::CtxRef) {
     let gl = &app.gl;
 
     glh::clear(
@@ -26,8 +26,8 @@ fn m_update(app: &mut app::App, _data: &mut FrameData, _event: &app::Event<()>, 
         gl,
         0,
         0,
-        app.settings.window_size.0 * 2,
-        app.settings.window_size.1 * 2,
+        app.input_state.window_size.0 * app.get_dpi_factor() as i32,
+        app.input_state.window_size.1 * app.get_dpi_factor() as i32,
     );
 
     egui::SidePanel::new(egui::panel::Side::Left, "panel").show(ui, |ui| {

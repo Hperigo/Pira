@@ -25,12 +25,12 @@ fn setup_fn(app : &mut piralib::app::App) -> FrameData {
 
     ts.set_position(&aa,glm::vec3(app.input_state.window_size.0 as f32 / 2.0, app.input_state.window_size.1 as f32 / 2.0, 0.0));
     ts.set_rotation(&aa,glm::vec3(0.0, 0.0, 3.14 / 4.0));
-    ts.set_scale(&aa, glm::vec3(1.0, 1.0, 1.0));
+    ts.set_scale(&aa, glm::vec3(0.5, 0.5, 1.0));
 
 
     ts.set_position(&bb,glm::vec3(250.0, 0.0, 0.0));
     ts.set_rotation(&bb,glm::vec3(0.0, 0.0, 0.0));
-    ts.set_scale(&bb, glm::vec3(1.0, 1.0, 1.0));
+    ts.set_scale(&bb, glm::vec3(0.5, 0.5, 1.0));
 
     ts.set_position(&cc,glm::vec3(400.0, 0.0, 0.0));
     ts.set_rotation(&cc,glm::vec3(0.0, 0.0, 0.0));
@@ -66,8 +66,17 @@ fn event_fn( _app : &mut app::App, _data : &mut FrameData, event : &event::Windo
     if let event::WindowEvent::CursorMoved{ position : _, .. } = event {
     }
 
-    if let event::WindowEvent::KeyboardInput { .. } = event {
-        _data.transforms_arena.clear_parent(&_data.node_c, true);
+    if let event::WindowEvent::KeyboardInput { input, .. } = event {
+        
+        if matches!(input.state, event::ElementState::Released){
+            if _data.transforms_arena.has_parent(&_data.node_c) {
+                _data.transforms_arena.clear_parent(&_data.node_c, true);
+            }else{
+                _data.transforms_arena.set_parent(&_data.node_c, _data.node_b, true);
+            }
+        }
+
+        // if matches!( input.state,  KeyboardInput:: ) 
     }
 }
 
@@ -83,25 +92,25 @@ fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piral
     glh::clear(gl, 0.3, 0.1, 0.13, 1.0);
 
     
-    {   
-        transforms_arena.set_position(&data.node_a, glm::vec3(app.input_state.mouse_pos.0 as f32, app.input_state.mouse_pos.1 as f32, 0.0));
-        transforms_arena.set_rotation(&data.node_a, glm::vec3(0.0, 0.0, app.frame_number as f32 * 0.001 ));
-        let s = ((app.frame_number as f32) * 0.01).sin();
-        transforms_arena.set_scale(&data.node_a, glm::vec3(s,s,s));
-    }
+    // {   
+    //     transforms_arena.set_position(&data.node_a, glm::vec3(app.input_state.mouse_pos.0 as f32, app.input_state.mouse_pos.1 as f32, 0.0));
+    //     transforms_arena.set_rotation(&data.node_a, glm::vec3(0.0, 0.0, app.frame_number as f32 * 0.001 ));
+    //     let s = ((app.frame_number as f32) * 0.01).sin();
+    //     transforms_arena.set_scale(&data.node_a, glm::vec3(s,s,s));
+    // }
 
 
-    {
-        transforms_arena.set_rotation(&data.node_b, glm::vec3(0.0, 0.0, app.frame_number as f32 * 0.001 ));
-        let s = ((app.frame_number as f32) * 0.01 + 1.0).sin();
-        transforms_arena.set_scale(&data.node_b, glm::vec3(s,s,s));
-    }
+    // {
+    //     transforms_arena.set_rotation(&data.node_b, glm::vec3(0.0, 0.0, app.frame_number as f32 * 0.001 ));
+    //     let s = ((app.frame_number as f32) * 0.01 + 1.0).sin();
+    //     transforms_arena.set_scale(&data.node_b, glm::vec3(s,s,s));
+    // }
 
-    {
-        transforms_arena.set_rotation(&data.node_c, glm::vec3(0.0, 0.0, app.frame_number as f32 * 0.001 ));
-        let s = ((app.frame_number as f32) * 0.01 + 2.0).sin();
-        transforms_arena.set_scale(&data.node_c, glm::vec3(s,s,s));
-    }
+    // {
+    //     transforms_arena.set_rotation(&data.node_c, glm::vec3(0.0, 0.0, app.frame_number as f32 * 0.001 ));
+    //     //  let s = ((app.frame_number as f32) * 0.01 + 2.0).sin();
+    //    // transforms_arena.set_scale(&data.node_c, glm::vec3(s,s,s));
+    // }
 
 
     for id in transforms_arena.keys() {

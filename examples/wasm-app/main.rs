@@ -12,13 +12,13 @@ struct FrameData {
 fn m_setup(_app: &mut app::App) -> FrameData {
     let shader = glh::StockShader::new().color().build(&_app.gl); //glh::GlslProg::new(&_app.gl, vertex_source, frag_source);
 
-    let geo = glh::Geometry::rect(0.0, 0.0, 100.0, 100.0);
+    let geo = glh::Geometry::rect(0.0, 0.0, 100.0, 100.0, false);
     let vao = glh::Vao::new_from_attrib(&_app.gl, &geo.attribs, &shader).unwrap();
 
     FrameData { shader, vao }
 }
 
-fn m_update(app: &mut app::App, _data: &mut FrameData) {
+fn m_update(app: &mut app::App, _data: &mut FrameData, _egui : &egui::CtxRef) {
     let gl = &app.gl;
     unsafe {
         app.gl.clear(glow::COLOR_BUFFER_BIT);
@@ -29,8 +29,8 @@ fn m_update(app: &mut app::App, _data: &mut FrameData) {
     _data.shader.set_orthographic_matrix(
         gl,
         [
-            app.settings.window_size.0 as f32,
-            app.settings.window_size.1 as f32,
+            app.input_state.window_size.0 as f32,
+            app.input_state.window_size.1 as f32,
         ],
     );
 

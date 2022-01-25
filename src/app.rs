@@ -1,4 +1,3 @@
-use egui::Window;
 use glutin::PossiblyCurrent;
 #[cfg(target_arch = "wasm32")]
 use winit::event;
@@ -187,7 +186,7 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
-    use glutin::{event::VirtualKeyCode, window::Window};
+    use glutin::{event::VirtualKeyCode};
 
     let settings = builder.settings;
     let (gl, window, event_loop) = unsafe {
