@@ -278,10 +278,12 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
                 if let glutin::event::WindowEvent::Resized(physical_size) = event {
                     app.context.resize(physical_size);
 
-                    let scale_factor = app.context.window().scale_factor() as i32;
-                    println!("scale factor: {}", scale_factor);
-                    app.input_state.window_size.0 = physical_size.width as i32 / scale_factor;
-                    app.input_state.window_size.1 = physical_size.height as i32 / scale_factor;
+                    let scale_factor = app.context.window().scale_factor();
+                    let logical_size = physical_size;
+                    app.input_state.window_size.0 = logical_size.width as i32 * scale_factor as i32;
+                    app.input_state.window_size.1 = logical_size.height as i32 * scale_factor as i32;
+
+                    println!("scale factor: {} size: {:?}", scale_factor, app.input_state.window_size);
                     *control_flow = glutin::event_loop::ControlFlow::Wait;
                 }
 
@@ -290,10 +292,9 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
                 }
 
                 if let glutin::event::WindowEvent::CursorMoved { position, .. } = event {
-                    let scale_factor = 1.0; 
                     app.input_state.mouse_pos = (
-                        position.x as f32 * scale_factor,
-                        position.y as f32 * scale_factor,
+                        position.x as f32,
+                        position.y as f32,
                     );
                 }
 

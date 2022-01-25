@@ -16,3 +16,6 @@ pub use self::app::egui;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub extern crate glutin;
+
+#[cfg(not(target_arch = "wasm32"))]
+pub use glutin::event as event;

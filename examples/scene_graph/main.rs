@@ -2,8 +2,9 @@ extern crate piralib;
 
 use nalgebra_glm as glm;
 use piralib::gl_helper as glh;
-
-use piralib::utils::TransformSystem::*;
+use piralib::utils::transform_system::*;
+use piralib::event;
+use piralib::app;
 
  struct FrameData {
     transforms_arena :  TransformSystem, //Arena<Transform>,
@@ -16,8 +17,6 @@ use piralib::utils::TransformSystem::*;
 }
 
 fn setup_fn(app : &mut piralib::app::App) -> FrameData {
-
-
 
     let mut ts = TransformSystem::new();
     let (aa, _) = ts.new_transform();
@@ -38,8 +37,8 @@ fn setup_fn(app : &mut piralib::app::App) -> FrameData {
     ts.set_scale(&cc, glm::vec3(1.0, 1.0, 1.0));
 
     
-    ts.set_parent(&bb, Some(aa));
-    ts.set_parent(&cc, Some(bb));
+    ts.set_parent(&bb, aa, false);
+    ts.set_parent(&cc, bb, false);
 
 
     let geo_rect = piralib::gl_helper::geo::Geometry::rect(-100.0, -100.0, 200.0, 200.0);
@@ -57,6 +56,21 @@ fn setup_fn(app : &mut piralib::app::App) -> FrameData {
     }
 }
 
+fn event_fn( _app : &mut app::App, _data : &mut FrameData, event : &event::WindowEvent ){
+
+    if let event::WindowEvent::MouseInput { state, ..} = event {
+        if matches!( state, event::ElementState::Pressed ){
+        }
+    }
+
+    if let event::WindowEvent::CursorMoved{ position, .. } = event {
+    }
+
+    if let event::WindowEvent::KeyboardInput { .. } = event {
+        _data.transforms_arena.clear_parent(&_data.node_c, true);
+    }
+}
+
 
 fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piralib::egui::CtxRef){
 
@@ -65,7 +79,7 @@ fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piral
 
     let FrameData{vao, shader, transforms_arena, ..} = data;
     // glh::set_viewport(gl, x, y, width, height)
-    glh::set_viewport(gl, 0, 0, app.input_state.window_size.0 as i32 * dpi as i32, app.input_state.window_size.1 as i32 * dpi as i32);
+    glh::set_viewport(gl, 0, 0, app.input_state.window_size.0 as i32, app.input_state.window_size.1 as i32);
     glh::clear(gl, 0.3, 0.1, 0.13, 1.0);
 
     
@@ -93,7 +107,7 @@ fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piral
     for id in transforms_arena.keys() {
 
         shader.bind(gl);
-        shader.set_orthographic_matrix(gl, [app.input_state.window_size.0 as f32 * dpi, app.input_state.window_size.1 as f32 * dpi]);
+        shader.set_orthographic_matrix(gl, [app.input_state.window_size.0 as f32, app.input_state.window_size.1 as f32]);
         shader.set_view_matrix(gl, &glm::Mat4::identity());
 
         let model_matrix =   transforms_arena.get_world_matrix(id);  // get_world_matrix(node_id, &transforms_arena);
@@ -119,7 +133,7 @@ fn main() {
     piralib::app::AppBuilder::new( piralib::app::AppSettings{
      window_title : "transforms",
      window_size : (1280, 720),
-    }, setup_fn).run(update_fn);
+    }, setup_fn).event(event_fn).run(update_fn);
 
 }
 
