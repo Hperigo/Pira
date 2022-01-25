@@ -197,6 +197,7 @@ fn m_update(
         //ui.color_edit_button_rgb(&mut tip_color);
     });
 
+    let scale_factor = app.get_dpi_factor();
     unsafe{
         gl.disable(glow::FRAMEBUFFER_SRGB);
         gl.clear_color(base_color[0], base_color[1], base_color[2], 1.0);
@@ -204,7 +205,7 @@ fn m_update(
         gl.enable(glow::DEPTH_TEST);
         gl.enable(glow::BLEND);
         gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
-        gl.viewport(0, 0, app.input_state.window_size.0 * 2, app.input_state.window_size.1  * 2);
+        gl.viewport(0, 0, app.input_state.window_size.0 * scale_factor as i32, app.input_state.window_size.1  * scale_factor as i32);
     }
 
     shader.bind(gl);
@@ -214,8 +215,8 @@ fn m_update(
         glh::StockShader::uniform_name_perspective_matrix(),
         &glm::ortho(
             0.0,
-            app.input_state.window_size.0 as f32, // beacuse of mac dpi we need to scale it down
-            app.input_state.window_size.1 as f32,
+            app.input_state.window_size.0 as f32 * scale_factor, // beacuse of mac dpi we need to scale it down
+            app.input_state.window_size.1 as f32 * scale_factor,
             0.0,
             -1.0,
             1.0,

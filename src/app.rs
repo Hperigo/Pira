@@ -1,3 +1,5 @@
+use egui::Window;
+use glutin::PossiblyCurrent;
 #[cfg(target_arch = "wasm32")]
 use winit::event;
 
@@ -68,9 +70,18 @@ pub struct InputState {
 
 pub struct App {
     pub gl: glow::Context,
+    pub context : glutin::ContextWrapper<PossiblyCurrent, glutin::window::Window >,
+
     pub frame_number: u64,
     pub input_state: InputState,
 }
+
+impl App {
+    pub fn get_dpi_factor(&self) -> f32 {
+        self.context. window().scale_factor() as f32
+    }
+}
+
 
 #[cfg(target_arch = "wasm32")]
 fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
@@ -201,13 +212,18 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
 
     let mut egui = egui_glow::EguiGlow::new(&window, &gl);
     
+    println!("creating app...");
+    let window_size = (settings.window_size.0 * window.window().scale_factor() as i32, settings.window_size.1 * window.window().scale_factor() as i32);
+    let window_pos = window.window().inner_position().unwrap().into();
+
     let mut app = App {
         gl,
         frame_number: 0,
+        context : window,
         input_state: InputState {
+            window_size,
+            window_pos,
             mouse_pos: (0.0, 0.0),
-            window_size : (settings.window_size.0 * window.window().scale_factor() as i32, settings.window_size.1 * window.window().scale_factor() as i32),
-            window_pos : window.window().inner_position().unwrap().into(),
         },
     };
 
@@ -215,12 +231,11 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
 
     event_loop.run(move |event, _, control_flow| {
 
-
         let mut redraw = || {
             app.frame_number += 1;
 
             // For future versions of egui we need to use this
-            let raw_input = egui.egui_winit.take_egui_input(window.window());
+            let raw_input = egui.egui_winit.take_egui_input(app.context.window());
             let (_needs_repaint, shapes) =  egui.egui_ctx.run(raw_input, |egui_ctx| {
                 builder.update_fn.unwrap()(&mut app, &mut data, egui_ctx);
             });
@@ -231,15 +246,22 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
             // let (_needs_repain, shapes) = egui.end_frame(window.window());
 
             // draw things behind egui here
-            egui.paint(&window, &app.gl, shapes);
+            egui.paint(&app.context, &app.gl, shapes);
 
             // draw things on top of egui here
-            window.window().request_redraw();
-            window.swap_buffers().unwrap();
+        
+            app.context.swap_buffers().unwrap();
+            app.context.window().request_redraw();
         };
 
         match event {
-            glutin::event::Event::RedrawRequested(_) if !cfg!(windows) => redraw(),
+            glutin::event::Event::RedrawRequested(_)  => {
+                redraw() ;
+                *control_flow = glutin::event_loop::ControlFlow::Poll;
+            },
+            glutin::event::Event::MainEventsCleared => {
+                app.context.window().request_redraw();
+            }
             glutin::event::Event::WindowEvent { event, .. } => {
                 use glutin::event::WindowEvent;
 
@@ -254,9 +276,9 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
                 }
 
                 if let glutin::event::WindowEvent::Resized(physical_size) = event {
-                    window.resize(physical_size);
+                    app.context.resize(physical_size);
 
-                    let scale_factor = window.window().scale_factor() as i32;
+                    let scale_factor = app.context.window().scale_factor() as i32;
                     println!("scale factor: {}", scale_factor);
                     app.input_state.window_size.0 = physical_size.width as i32 / scale_factor;
                     app.input_state.window_size.1 = physical_size.height as i32 / scale_factor;
