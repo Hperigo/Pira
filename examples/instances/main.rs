@@ -204,7 +204,7 @@ fn m_update(
         gl.enable(glow::DEPTH_TEST);
         gl.enable(glow::BLEND);
         gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
-        gl.viewport(0, 0, app.input_state.window_size.0 * 2, app.input_state.window_size.1  * 2);
+        gl.viewport(0, 0, app.input_state.window_size.0 * 1, app.input_state.window_size.1 * 1);
     }
 
     shader.bind(gl);

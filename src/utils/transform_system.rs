@@ -88,29 +88,34 @@ impl TransformSystem {
         self.transforms.get_mut(id).unwrap().transform.scale = v;
     }
 
+    pub fn set_parent(&mut self, id : &NodeId, parent : NodeId, keep_current_transform : bool ){
 
+        { // add the children to the parent node
+            let parent_node = self.transforms.get_mut(&parent).unwrap();
+            parent_node.children.push(*id);
+        }
 
-    pub fn set_parent(&mut self, id : &NodeId, parent : Option<NodeId>){
+        {
+            let node = self.transforms.get_mut(id).unwrap();
+            node.parent = Some(parent);
+        }
+    }
 
-        if let Some(parent_id) = parent {
+    pub fn clear_parent(&mut self, id : &NodeId, keep_current_transform : bool ){
+            
+        let parent_id =  {
+            let node = self.transforms.get_mut(id).unwrap();
+            let parent_id = node.parent;
+            node.parent = None;
+            parent_id
+        };
 
-            {
-                let parent_node = self.transforms.get_mut(&parent_id).unwrap();
-                parent_node.children.push(*id);
-            }
-
-            {
-                let node = self.transforms.get_mut(id).unwrap();
-                node.parent = parent.clone();
-            }
-
-        }else if let Some(parent_id) = self.transforms.get(id).unwrap().parent{
-
+        // check if there's a parent
+        if let Some(parent_id) = parent_id {
             let parent_node = self.transforms.get_mut(&parent_id).unwrap();
             parent_node.children.retain( |child| {
                 child != id
             });
-
         }
     }
 

@@ -5,7 +5,7 @@ use piralib::gl_helper as glh;
 use piralib::nalgebra_glm as glm;
 use piralib::app;
 
-use piralib::glutin::event;
+use piralib::event;
 
 struct FrameData {
     shader : glh::GlslProg,
@@ -33,11 +33,11 @@ fn m_event( _app : &mut app::App, _data : &mut FrameData, event : &event::Window
         }
     }
 
-    if let event::WindowEvent::CursorMoved{ position, .. } = event {
-    }
+    // if let event::WindowEvent::CursorMoved{ position, .. } = event {
+    // }
 
-    if let event::WindowEvent::KeyboardInput { .. } = event {
-    }
+    // if let event::WindowEvent::KeyboardInput { .. } = event {
+    // }
 }
 
 fn m_update(
