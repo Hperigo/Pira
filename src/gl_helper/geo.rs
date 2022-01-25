@@ -7,7 +7,7 @@ pub struct Geometry {
 }
 
 impl Geometry {
-    pub fn circle(x: f32, y: f32, radius: f32) -> Geometry {
+    pub fn circle(x: f32, y: f32, radius: f32, texture_coords : bool) -> Geometry {
         let mut pos_attrib = glh::VertexAttrib::new_position_attr();
 
         // build vertex data ----
@@ -31,7 +31,7 @@ impl Geometry {
         }
     }
 
-    pub fn rect(x: f32, y: f32, width: f32, height: f32) -> Geometry {
+    pub fn rect(x: f32, y: f32, width: f32, height: f32, texture_coords : bool) -> Geometry {
         let mut pos_attrib = glh::VertexAttrib::new_position_attr();
         let mut color_attrib = glh::VertexAttrib::new_color_attr();
         let mut texture_attrib = glh::VertexAttrib::new_texture_attr();
@@ -59,21 +59,26 @@ impl Geometry {
             let mut i = 0;
 
             while i < num_of_vertices {
+
                 colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
-                texure_vertices.append(&mut vec![
-                    vertices[i] / width as f32,
-                    vertices[i + 1] / height as f32,
-                ]); // normalize vertex coords
+
+                if texture_coords  {
+                    texure_vertices.append(&mut vec![
+                        vertices[i] / width as f32,
+                        vertices[i + 1] / height as f32,
+                    ]); // normalize vertex coords
+                }
+                
                 i += 3;
             }
         }
-
+        println!("texture vertices: {:?}", texure_vertices);
         pos_attrib.data = vertices;
         color_attrib.data = colors;
         texture_attrib.data = texure_vertices;
 
         Geometry {
-            attribs: vec![pos_attrib, color_attrib],
+            attribs: vec![pos_attrib, color_attrib, texture_attrib],
             indices: Vec::new(),
         }
     }

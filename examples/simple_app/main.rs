@@ -16,7 +16,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
 
     let gl = &app.gl;
 
-    let geo = glh::geo::Geometry::circle(0.0, 0.0, 10.0);
+    let geo = glh::geo::Geometry::circle(0.0, 0.0, 10.0, false);
     let shader = glh::StockShader::new().build(gl);
     let vao = glh::Vao::new_from_attrib(gl, &geo.attribs, &shader).unwrap();
 

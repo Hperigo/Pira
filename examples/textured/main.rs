@@ -77,8 +77,8 @@ fn m_update(app: &mut app::App, data: &mut FrameData, _ui : &egui::CtxRef) {
         glh::StockShader::uniform_name_perspective_matrix(),
         &glm::ortho(
             0.0,
-            app.settings.window_size.0 as f32 * frame_buffer_scale,
-            app.settings.window_size.0 as f32 * frame_buffer_scale,
+            app.input_state.window_size.0 as f32 * frame_buffer_scale,
+            app.input_state.window_size.0 as f32 * frame_buffer_scale,
             0.0,
             -1.0,
             1.0,

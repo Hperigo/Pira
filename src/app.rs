@@ -212,7 +212,6 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
 
     let mut egui = egui_glow::EguiGlow::new(&window, &gl);
     
-    println!("creating app...");
     let window_size = (settings.window_size.0 * window.window().scale_factor() as i32, settings.window_size.1 * window.window().scale_factor() as i32);
     let window_pos = window.window().inner_position().unwrap().into();
 
@@ -239,12 +238,7 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
             let (_needs_repaint, shapes) =  egui.egui_ctx.run(raw_input, |egui_ctx| {
                 builder.update_fn.unwrap()(&mut app, &mut data, egui_ctx);
             });
-
                 
-            // egui.begin_frame(window.window());
-            // builder.update_fn.unwrap()(&mut app, &mut data,  &egui.egui_ctx);
-            // let (_needs_repain, shapes) = egui.end_frame(window.window());
-
             // draw things behind egui here
             egui.paint(&app.context, &app.gl, shapes);
 
@@ -283,7 +277,6 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
                     app.input_state.window_size.0 = logical_size.width as i32 * scale_factor as i32;
                     app.input_state.window_size.1 = logical_size.height as i32 * scale_factor as i32;
 
-                    println!("scale factor: {} size: {:?}", scale_factor, app.input_state.window_size);
                     *control_flow = glutin::event_loop::ControlFlow::Wait;
                 }
 

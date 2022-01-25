@@ -95,7 +95,10 @@ impl Vao {
         // merge buffers
         // TODO: we dont need to flatten the data into a single array, a better aproach would be to just buffer with an offset
         for a in attribs {
-            data.append(&mut a.data.clone());
+            if a.data.len() > 0 {
+                data.append(&mut a.data.clone());
+            }
+            
         }
 
         let num_of_vertices = attribs[0].data.len() / attribs[0].size as usize;
@@ -108,7 +111,11 @@ impl Vao {
             
             let mut current_offset: usize = 0;
             for a in attribs {
+                if a.data.len() == 0 {
+                    continue;
+                }
                 let name = a.name;
+                println!("name: {}", name);
                 let loc = gl
                     .get_attrib_location(
                         shader

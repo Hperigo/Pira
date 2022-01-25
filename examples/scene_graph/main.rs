@@ -41,7 +41,7 @@ fn setup_fn(app : &mut piralib::app::App) -> FrameData {
     ts.set_parent(&cc, bb, false);
 
 
-    let geo_rect = piralib::gl_helper::geo::Geometry::rect(-100.0, -100.0, 200.0, 200.0);
+    let geo_rect = piralib::gl_helper::geo::Geometry::rect(-100.0, -100.0, 200.0, 200.0, false);
     let shader = glh::stock_shader::StockShader::new().color().build(&app.gl);
     let vao = glh::Vao::new_from_attrib(&app.gl, &geo_rect.attribs, &shader).unwrap();
 
@@ -63,7 +63,7 @@ fn event_fn( _app : &mut app::App, _data : &mut FrameData, event : &event::Windo
         }
     }
 
-    if let event::WindowEvent::CursorMoved{ position, .. } = event {
+    if let event::WindowEvent::CursorMoved{ position : _, .. } = event {
     }
 
     if let event::WindowEvent::KeyboardInput { .. } = event {
