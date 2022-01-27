@@ -183,9 +183,10 @@ fn m_update(
     let mut tip_color = &mut _data.tip_color;
 
     *time = *time + 1f32;
+    let scale_factor = 2.0; //app.get_dpi_factor();
 
-    mouse_pos[0] = app.input_state.mouse_pos.0; //mouse_pos[0] + ((app.input_state.mouse_pos.0 * 1.0) - mouse_pos[0]) * 1.0;
-    mouse_pos[1] = app.input_state.mouse_pos.1; //mouse_pos[1] + ((app.input_state.mouse_pos.1 * 1.0) - mouse_pos[1]) * 1.0;
+    mouse_pos[0] = app.input_state.mouse_pos.0 * (scale_factor); //mouse_pos[0] + ((app.input_state.mouse_pos.0 * 1.0) - mouse_pos[0]) * 1.0;
+    mouse_pos[1] = app.input_state.mouse_pos.1 * (scale_factor); //mouse_pos[1] + ((app.input_state.mouse_pos.1 * 1.0) - mouse_pos[1]) * 1.0;
 
     #[cfg(not(target_arch="wasm32"))]
     egui::SidePanel::new(egui::panel::Side::Left, "panel").show(ui, |ui| {
@@ -197,7 +198,7 @@ fn m_update(
         //ui.color_edit_button_rgb(&mut tip_color);
     });
 
-    let scale_factor = app.get_dpi_factor();
+
     unsafe{
         gl.disable(glow::FRAMEBUFFER_SRGB);
         gl.clear_color(base_color[0], base_color[1], base_color[2], 1.0);
@@ -215,8 +216,8 @@ fn m_update(
         glh::StockShader::uniform_name_perspective_matrix(),
         &glm::ortho(
             0.0,
-            app.input_state.window_size.0 as f32 * scale_factor, // beacuse of mac dpi we need to scale it down
-            app.input_state.window_size.1 as f32 * scale_factor,
+            app.input_state.window_size.0 as f32 * (1.0 / scale_factor), // beacuse of mac dpi we need to scale it down
+            app.input_state.window_size.1 as f32 * (1.0 / scale_factor),
             0.0,
             -1.0,
             1.0,

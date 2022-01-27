@@ -19,3 +19,6 @@ pub extern crate glutin;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub use glutin::event as event;
+
+#[cfg(target_arch = "wasm32")]
+pub use winit::event as event;

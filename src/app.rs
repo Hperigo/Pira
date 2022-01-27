@@ -1,9 +1,11 @@
-use glutin::PossiblyCurrent;
 #[cfg(target_arch = "wasm32")]
 use winit::event;
 
 #[cfg(not(target_arch = "wasm32"))]
 use glutin::event;
+
+#[cfg(not(target_arch = "wasm32"))]
+use glutin::PossiblyCurrent;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub use egui::CtxRef;
@@ -67,6 +69,7 @@ pub struct InputState {
     pub mouse_pos: (f32, f32),
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub struct App {
     pub gl: glow::Context,
     pub context : glutin::ContextWrapper<PossiblyCurrent, glutin::window::Window >,
@@ -75,9 +78,26 @@ pub struct App {
     pub input_state: InputState,
 }
 
+#[cfg(target_arch = "wasm32")]
+pub struct App {
+    pub gl: glow::Context,
+    pub context : winit::window::Window,
+
+    pub frame_number: u64,
+    pub input_state: InputState,
+}
+
+
 impl App {
+
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn get_dpi_factor(&self) -> f32 {
-        self.context. window().scale_factor() as f32
+        self.context.window().scale_factor() as f32
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn get_dpi_factor(&self) -> f32 {
+        self.context.scale_factor() as f32
     }
 }
 
@@ -117,7 +137,7 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
 
     let mut app = App {
         gl,
-        settings,
+        context : window,
         frame_number: 0,
         input_state: InputState {
             mouse_pos: (0.0, 0.0),
@@ -173,7 +193,7 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
                 // }
             },
             Event::MainEventsCleared => {
-                window.request_redraw();
+                app.context.request_redraw();
             },
             _ => {
             },
