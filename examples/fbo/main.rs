@@ -2,6 +2,7 @@ extern crate piralib;
 use glow::*;
 use nalgebra_glm as glm;
 use piralib::app;
+use piralib::egui::CtxRef;
 use piralib::gl_helper as glh;
 use piralib::gl_helper::Bindable;
 use piralib::gl_helper::Geometry;
@@ -76,7 +77,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
 fn m_update(
     app: &mut app::App,
     _data: &mut FrameData,
-    _ui: &egui::CtxRef,
+    _ui: &CtxRef,
 ) {
     let frame_buffer_scale = app.get_dpi_factor();
 
@@ -92,7 +93,8 @@ fn m_update(
     } = _data;
 
     let gl = &app.gl;
-
+    
+    #[cfg(not(target_arch="wasm32"))]
     egui::Window::new("hello").show(_ui, |ui| {
         ui.columns(4, |ui_label| {
             ui_label[0].label("quad_pos");

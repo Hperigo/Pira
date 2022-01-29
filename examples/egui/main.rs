@@ -2,6 +2,9 @@ extern crate piralib;
 use piralib::app;
 
 use piralib::gl_helper as glh;
+
+use piralib::egui::CtxRef;
+
 struct FrameData {
     clear_color: [f32; 3],
 }
@@ -12,7 +15,7 @@ fn m_setup(_app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(app: &mut app::App, _data: &mut FrameData, ui: &egui::CtxRef) {
+fn m_update(app: &mut app::App, _data: &mut FrameData, ui: &CtxRef) {
     let gl = &app.gl;
 
     glh::clear(
@@ -30,6 +33,7 @@ fn m_update(app: &mut app::App, _data: &mut FrameData, ui: &egui::CtxRef) {
         app.input_state.window_size.1 * app.get_dpi_factor() as i32,
     );
 
+    #[cfg(not(target_arch = "wasm32"))]
     egui::SidePanel::new(egui::panel::Side::Left, "panel").show(ui, |ui| {
         ui.heading("Hello World!");
         ui.color_edit_button_rgb(&mut _data.clear_color);

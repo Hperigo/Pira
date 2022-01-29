@@ -115,9 +115,9 @@ fn m_setup(app: &mut app::App) -> FrameData {
     let random_range = 1.0;
 
     #[cfg(target_arch="wasm32")]
-    let max_x = 550 / 2;
+    let max_x = 550 / 1;
     #[cfg(target_arch="wasm32")]
-    let max_y = 190 / 2;
+    let max_y = 190 / 1;
 
     #[cfg(not(target_arch="wasm32"))]
     let max_x = 550;
@@ -182,11 +182,11 @@ fn m_update(
     let mut base_color = &mut _data.base_color;
     let mut tip_color = &mut _data.tip_color;
 
-    *time = *time + 1f32;
-    let scale_factor = 2.0; //app.get_dpi_factor();
+    *time = *time +  0.1f32;
+    let scale_factor = 1.4; //app.get_dpi_factor();
 
-    mouse_pos[0] = app.input_state.mouse_pos.0 * (scale_factor); //mouse_pos[0] + ((app.input_state.mouse_pos.0 * 1.0) - mouse_pos[0]) * 1.0;
-    mouse_pos[1] = app.input_state.mouse_pos.1 * (scale_factor); //mouse_pos[1] + ((app.input_state.mouse_pos.1 * 1.0) - mouse_pos[1]) * 1.0;
+    mouse_pos[0] = app.input_state.mouse_pos.0 * (4.0); //mouse_pos[0] + ((app.input_state.mouse_pos.0 * 1.0) - mouse_pos[0]) * 1.0;
+    mouse_pos[1] = app.input_state.mouse_pos.1 * (4.0); //mouse_pos[1] + ((app.input_state.mouse_pos.1 * 1.0) - mouse_pos[1]) * 1.0;
 
     #[cfg(not(target_arch="wasm32"))]
     egui::SidePanel::new(egui::panel::Side::Left, "panel").show(ui, |ui| {
