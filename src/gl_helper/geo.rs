@@ -82,4 +82,43 @@ impl Geometry {
             indices: Vec::new(),
         }
     }
+
+    pub fn axis( size : f32 ) -> Geometry{ 
+        let mut pos_attrib = glh::VertexAttrib::new_position_attr();
+        let mut color_attrib = glh::VertexAttrib::new_color_attr();
+
+        // build vertex data ----
+        let mut vertices: Vec<f32> = Vec::new();
+        let mut color: Vec<f32> = Vec::new();
+
+        // X axis 
+        vertices.append( &mut vec![0.0, 0.0, 0.0] );
+        vertices.append( &mut vec![size, 0.0, 0.0] );
+
+        color.append( &mut vec![1.0, 0.0, 0.0, 1.0] );
+        color.append( &mut vec![1.0, 0.0, 0.0, 1.0] );
+
+        // Y axis
+        vertices.append( &mut vec![0.0, 0.0, 0.0] );
+        vertices.append( &mut vec![0.0, size, 0.0] );
+ 
+        color.append( &mut vec![0.0, 1.0, 0.0, 1.0] );
+        color.append( &mut vec![0.0, 1.0, 0.0, 1.0] );
+
+        // Z axis
+        vertices.append( &mut vec![0.0, 0.0, 0.0] );
+        vertices.append( &mut vec![0.0, 0.0, size] );       
+ 
+        color.append( &mut vec![0.0, 0.0, 1.0, 1.0] );
+        color.append( &mut vec![0.0, 0.0, 1.0, 1.0] );
+
+        color_attrib.data = color;
+        pos_attrib.data = vertices;
+        let attribs = vec![pos_attrib, color_attrib];
+
+        Geometry {
+            attribs,
+            indices: Vec::new(),
+        }
+    }
 }

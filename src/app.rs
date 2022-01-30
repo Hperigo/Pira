@@ -206,6 +206,7 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
+    use glow::HasContext;
     use glutin::{event::VirtualKeyCode};
 
     let settings = builder.settings;
@@ -259,10 +260,16 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
             });
                 
             // draw things behind egui here
+            unsafe{
+                app.gl.enable( glow::FRAMEBUFFER_SRGB );
+            }
             egui.paint(&app.context, &app.gl, shapes);
+            
+            unsafe{
+                app.gl.disable( glow::FRAMEBUFFER_SRGB );
+            }
 
             // draw things on top of egui here
-        
             app.context.swap_buffers().unwrap();
             app.context.window().request_redraw();
         };
