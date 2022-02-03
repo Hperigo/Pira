@@ -35,7 +35,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     color_attrib.data = colors;
 
     let attribs = vec![pos_attrib, color_attrib];
-    let vao = glh::Vao::new_from_attrib_indexed(&app.gl, &attribs, &indices, &shader)
+    let vao = glh::Vao::new_from_attrib_indexed(&app.gl, &attribs, &indices, glow::TRIANGLES, &shader)
         .expect("unable to create main vao");
 
     FrameData {
@@ -83,7 +83,7 @@ fn m_update(
         &model_view,
     );
 
-    vao.draw(&app.gl, glow::TRIANGLES);
+    vao.draw(&app.gl);
 
     shader.unbind(&app.gl);
 }

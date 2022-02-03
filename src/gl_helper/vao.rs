@@ -18,6 +18,7 @@ pub struct VertexAttrib {
     pub stride: i32,
     pub data: Vec<f32>,
     pub per_instance: bool, // alias to attrib divisor
+
 }
 
 impl VertexAttrib {
@@ -63,6 +64,7 @@ pub struct Vao {
     vbo_handle: Vbo,
     num_of_vertices: usize,
     index_buffer: Option<Vbo>,
+    draw_mode : u32,
 }
 
 impl Vao {
@@ -70,9 +72,10 @@ impl Vao {
         gl: &glow::Context,
         attribs: &[VertexAttrib],
         indices: &[u32],
+        mode : u32,
         shader: &GlslProg,
     ) -> Option<Vao> {
-        let mut vao = Vao::new_from_attrib(gl, attribs, shader).unwrap();
+        let mut vao = Vao::new_from_attrib(gl, attribs, mode, shader).unwrap();
         let index_vbo = Vbo::new(gl,indices, glow::ELEMENT_ARRAY_BUFFER);
 
         vao.bind(gl);
@@ -88,6 +91,7 @@ impl Vao {
     pub fn new_from_attrib(
         gl: &glow::Context,
         attribs: &[VertexAttrib],
+        mode : u32,
         shader: &GlslProg,
     ) -> Option<Vao> {
         let mut data = Vec::<f32>::new();
@@ -148,6 +152,7 @@ impl Vao {
 
         // return
         let vao = Vao {
+            draw_mode : mode,
             handle: Some(vao_handle),
             vbo_handle: data_vbo,
             num_of_vertices,
@@ -155,6 +160,14 @@ impl Vao {
         };
 
         Some(vao)
+    }
+
+    pub fn set_draw_mode(&mut self, mode : u32 ){
+        self.draw_mode = mode;
+    }
+
+    pub fn get_draw_mode(&mut self) -> u32 {
+        self.draw_mode
     }
 
     pub fn get_handle(&self) -> Option<glow::VertexArray> {
@@ -202,28 +215,28 @@ impl Vao {
         }
     }
 
-    pub fn draw_instanced(&self, gl: &glow::Context, primitive: u32, instance_count: i32) {
+    pub fn draw_instanced(&self, gl: &glow::Context, instance_count: i32) {
         unsafe {
             self.bind(gl);
             //gl::DrawArraysInstanced(primitive, 0, self.num_of_vertices as i32, instance_count);
-            gl.draw_arrays_instanced(primitive, 0, self.num_of_vertices as i32, instance_count);
+            gl.draw_arrays_instanced(self.draw_mode, 0, self.num_of_vertices as i32, instance_count);
             self.unbind(gl);
         }
     }
 
-    pub fn draw(&self, gl: &glow::Context, primitive: u32) {
+    pub fn draw(&self, gl: &glow::Context) {
         self.bind(gl);
         match &self.index_buffer {
             Some(element_buffer) => unsafe {
                 gl.draw_elements(
-                    primitive,
+                    self.draw_mode,
                     element_buffer.len() as i32,
                     glow::UNSIGNED_INT,
                     0,
                 );
             },
             None => unsafe {
-                gl.draw_arrays(primitive, 0, self.num_of_vertices as i32);
+                gl.draw_arrays(self.draw_mode, 0, self.num_of_vertices as i32);
             },
         }
         self.unbind(gl);

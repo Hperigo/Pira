@@ -53,7 +53,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     let shader = glh::StockShader::new().color().build(&app.gl);
 
     let attribs = vec![pos_attrib, color_attrib];
-    let vao = glh::Vao::new_from_attrib(&app.gl, &attribs, &shader).unwrap();
+    let vao = glh::Vao::new_from_attrib(&app.gl, &attribs,  glow::TRIANGLES, &shader).unwrap();
 
     // Particles -------
     let particles: Vec<Particle> = Vec::new();
@@ -126,7 +126,7 @@ fn m_update(
             glh::StockShader::uniform_name_color(),
             &[red, green, blue, 1.0],
         );
-        vao.draw(gl, glow::TRIANGLES);
+        vao.draw(gl);
     }
 
     shader.unbind(gl);

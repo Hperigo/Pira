@@ -18,7 +18,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
 
     let geo = glh::geo::Geometry::circle(0.0, 0.0, 10.0, false);
     let shader = glh::StockShader::new().build(gl);
-    let vao = glh::Vao::new_from_attrib(gl, &geo.attribs, &shader).unwrap();
+    let vao = glh::Vao::new_from_attrib(gl, &geo.attribs, glow::TRIANGLE_FAN, &shader).unwrap();
 
     FrameData {
         vao,
@@ -69,7 +69,7 @@ fn m_update(
     circle_shader.set_uniform_mat4( gl, glh::StockShader::uniform_name_model_matrix(), &model_view );
     circle_shader.set_uniform_4f( gl, glh::StockShader::uniform_name_color(), &[1.0, 1.0, 1.0, 1.0] );
 
-    circle_vao.draw(gl, glow::TRIANGLE_FAN);
+    circle_vao.draw(gl);
     
     circle_shader.unbind(gl);
 }

@@ -43,7 +43,7 @@ fn setup_fn(app : &mut piralib::app::App) -> FrameData {
 
     let geo_rect = piralib::gl_helper::geo::Geometry::rect(-100.0, -100.0, 200.0, 200.0, false);
     let shader = glh::stock_shader::StockShader::new().color().build(&app.gl);
-    let vao = glh::Vao::new_from_attrib(&app.gl, &geo_rect.attribs, &shader).unwrap();
+    let vao = glh::Vao::new_from_attrib(&app.gl, &geo_rect.attribs, glow::TRIANGLES, &shader).unwrap();
 
 
     FrameData {
@@ -114,13 +114,13 @@ fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piral
         shader.set_model_matrix(gl, &model_matrix);
 
         shader.set_color(gl, &[1.0, 1.0, 0.0, 1.0]);
-        vao.draw(gl, glow::TRIANGLES);
+        vao.draw(gl);
 
         let pos = transforms_arena.get_world_position(*id);
         shader.set_transform(gl, &pos, &glm::vec3(0.0, 0.0, 0.0), &glm::vec3(0.05, 0.05, 0.05 ));
 
         shader.set_color(gl, &[0.0, 0.0, 1.0, 1.0]);
-        vao.draw(gl, glow::TRIANGLES);
+        vao.draw(gl);
 
         shader.unbind(gl);
     }

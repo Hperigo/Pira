@@ -99,6 +99,10 @@ impl App {
     pub fn get_dpi_factor(&self) -> f32 {
         self.context.scale_factor() as f32
     }
+
+    pub fn get_window_size(&self) -> [f32; 2]{
+        [self.input_state.window_size.0 as f32, self.input_state.window_size.1 as f32]
+    }
 }
 
 

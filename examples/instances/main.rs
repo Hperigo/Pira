@@ -154,7 +154,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
         frag_shader_string.as_str(),
     );
     let attribs = vec![pos_attrib, color_attrib, instance_positions_attrib];
-    let vao = glh::Vao::new_from_attrib(gl, &attribs, &shader).unwrap();
+    let vao = glh::Vao::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap();
 
     FrameData {
         vao,
@@ -246,7 +246,7 @@ fn m_update(
         &model_view,
     );
 
-    vao.draw_instanced(gl, glow::TRIANGLES, _data.number_of_instances);
+    vao.draw_instanced(gl, _data.number_of_instances);
 
     shader.unbind(gl);
 

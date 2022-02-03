@@ -41,7 +41,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
         let shader =  stock_shader.build(gl);
 
         (
-            glh::Vao::new_from_attrib(gl, &geometry.attribs, &shader).unwrap(),
+            glh::Vao::new_from_attrib(gl, &geometry.attribs, glow::TRIANGLES, &shader).unwrap(),
             shader,
         )
     };
@@ -54,7 +54,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
         let shader =  stock_shader.build(gl);
 
         (
-            glh::Vao::new_from_attrib(gl, &circle.attribs, &shader).unwrap(),
+            glh::Vao::new_from_attrib(gl, &circle.attribs, glow::TRIANGLE_FAN, &shader).unwrap(),
             shader,
         )
     };
@@ -143,7 +143,7 @@ fn m_update(
     circle_shader.set_uniform_4f( gl, glh::StockShader::uniform_name_color(), &[1.0, 1.0, 1.0, 1.0]);
     circle_shader.set_color(gl, &[1.0, 0.0, 0.0, 1.0]);
 
-    circle_vao.draw(gl, glow::TRIANGLE_FAN);
+    circle_vao.draw(gl);
     //vao.draw(gl, glow::TRIANGLES);
     circle_shader.unbind(gl);
     fbo.unbind(gl);
@@ -176,7 +176,7 @@ fn m_update(
 
 
     fbo.bind_texture(gl);
-    vao.draw(gl, glow::TRIANGLES);
+    vao.draw(gl);
     fbo.unbind_texture(gl);
 
     shader.unbind(gl);

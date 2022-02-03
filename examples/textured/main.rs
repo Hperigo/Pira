@@ -51,7 +51,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     texture_attrib.data = texure_vertices;
     let shader = glh::StockShader::new().texture(false).build(gl);
     let attribs = vec![pos_attrib, texture_attrib];
-    let vao = glh::Vao::new_from_attrib(gl, &attribs, &shader).unwrap();
+    let vao = glh::Vao::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap();
 
     FrameData {
         vao,
@@ -106,7 +106,7 @@ fn m_update(app: &mut app::App, data: &mut FrameData, _ui : &egui::CtxRef) {
         &[1.0, 1.0, 1.0, 1.0],
     );
 
-    vao.draw(gl, glow::TRIANGLES);
+    vao.draw(gl);
 }
 
 fn main() {
