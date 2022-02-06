@@ -18,9 +18,6 @@ pub mod fbo;
 pub use self::fbo::Fbo;
 pub use self::fbo::FboSettings;
 
-pub mod geo;
-pub use self::geo::Geometry;
-
 use glow::*;
 
 pub trait Bindable {

@@ -5,8 +5,9 @@ use piralib::app;
 use piralib::egui::CtxRef;
 use piralib::gl_helper as glh;
 use piralib::gl_helper::Bindable;
-use piralib::gl_helper::Geometry;
 
+use piralib::utils::geo::Geometry;
+use piralib::utils::geo;
 struct FrameData {
     vao: glh::Vao,
     shader: glh::GlslProg,
@@ -35,26 +36,26 @@ fn m_setup(app: &mut app::App) -> FrameData {
     // create QUAD ====
     let (vao, shader) = {
         
-        let geometry = Geometry::rect(0.0, 0.0, fbo.get_width() as f32, fbo.get_height() as f32, true);
-        let stock_shader = glh::StockShader::new().texture(true).color();
+        let geometry = geo::Rect::new(0.0, 0.0, fbo.get_width() as f32, fbo.get_height() as f32).texture_coords().get_vertex_attribs();
+        let stock_shader = glh::StockShader::new().texture(true);
 
         let shader =  stock_shader.build(gl);
 
         (
-            glh::Vao::new_from_attrib(gl, &geometry.attribs, glow::TRIANGLES, &shader).unwrap(),
+            glh::Vao::new_from_attrib(gl, &geometry, glow::TRIANGLES, &shader).unwrap(),
             shader,
         )
     };
 
     // create geomtry that is drawn inside the fbo ====
     let (circle_vao, circle_shader) = {
-        let circle = Geometry::circle(0.0, 0.0, 100.0, false); // Geometry::rect(0.0, 0.0, 200.0, 200.0,false); //glh::Geometry::circle(0.0, 0.0, 500.0);
-        let stock_shader = glh::StockShader::new().color();
+        let mut circle = geo::Circle::new(0.0, 0.0, 100.0); // Geometry::rect(0.0, 0.0, 200.0, 200.0,false); //geometry::circle(0.0, 0.0, 500.0);
+        let stock_shader = glh::StockShader::new();
 
         let shader =  stock_shader.build(gl);
 
         (
-            glh::Vao::new_from_attrib(gl, &circle.attribs, glow::TRIANGLE_FAN, &shader).unwrap(),
+            glh::Vao::new_from_attrib(gl, &circle.get_vertex_attribs(), glow::TRIANGLE_FAN, &shader).unwrap(),
             shader,
         )
     };

@@ -37,7 +37,7 @@ fn m_update(app: &mut app::App, _data: &mut FrameData, _egui : &egui::CtxRef) {
     _data.shader.set_view_matrix(gl, &glm::Mat4::identity());
     _data.shader.set_model_matrix(gl, &glm::Mat4::identity());
     _data.shader.set_color(gl, &[1.0, 0.0, 0.3, 1.0]);
-    _data.vao.draw(gl, glow::TRIANGLES);
+    _data.vao.draw(gl);
 
     _data.shader.unbind(gl);
 }

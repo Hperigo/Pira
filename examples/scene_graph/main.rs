@@ -6,6 +6,8 @@ use piralib::utils::transform_system::*;
 use piralib::event;
 use piralib::app;
 
+use piralib::utils::geo;
+use piralib::utils::geo::Geometry;
  struct FrameData {
     transforms_arena :  TransformSystem, //Arena<Transform>,
     node_a : NodeId,
@@ -41,9 +43,9 @@ fn setup_fn(app : &mut piralib::app::App) -> FrameData {
     ts.set_parent(cc, bb, false);
 
 
-    let geo_rect = piralib::gl_helper::geo::Geometry::rect(-100.0, -100.0, 200.0, 200.0, false);
-    let shader = glh::stock_shader::StockShader::new().color().build(&app.gl);
-    let vao = glh::Vao::new_from_attrib(&app.gl, &geo_rect.attribs, glow::TRIANGLES, &shader).unwrap();
+    let mut geo_rect = geo::Rect::new(-100.0, -100.0, 200.0, 200.0); //Geometry::rect(-100.0, -100.0, 200.0, 200.0, false);
+    let shader = glh::stock_shader::StockShader::new().build(&app.gl);
+    let vao = glh::Vao::new_from_attrib(&app.gl, &geo_rect.get_vertex_attribs(), glow::TRIANGLES, &shader).unwrap();
 
 
     FrameData {

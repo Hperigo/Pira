@@ -7,12 +7,14 @@ use piralib::nalgebra_glm as glm;
 use piralib::app;
 
 use piralib::event;
-
+use piralib::utils::geo::{Rect, Axis, Cuboid, Geometry};
 use piralib::utils::camera::{OrbitCamera, Camera};
 
 struct FrameData {
     shader : glh::GlslProg,
     vao : glh::Vao,
+
+    rect_vao : glh::Vao,
 
     cube_shader : glh::GlslProg,
     cube_vao : glh::Vao,
@@ -23,13 +25,26 @@ fn m_setup(app: &mut app::App) -> FrameData {
 
     let gl = &app.gl;
 
-    let geo =  glh::geo::Geometry::axis(2.0); //glh::geo::Geometry::circle(0.0, 0.0, 1.0, false);
+    let axis_attribs =  Axis::new(2.0).vertex_color().get_vertex_attribs(); //geo::Geometry::axis(2.0); //geo::Geometry::circle(0.0, 0.0, 1.0, false);
     let shader = glh::StockShader::new().color().build(gl);
-    let vao = glh::Vao::new_from_attrib(gl, &geo.attribs, glow::LINES, &shader).unwrap();
+    let vao = glh::Vao::new_from_attrib(gl, &axis_attribs, glow::LINES, &shader).unwrap();
 
-    let geo =  glh::geo::Geometry::cube(0.5); //glh::geo::Geometry::circle(0.0, 0.0, 1.0, false);
+    let rect_vao = {
+        let attribs =  Rect::new(2.0, 2.0, 3.0 , 3.0).vertex_color(| rect, color_vertices , index|{
+            let vertices = &rect.data.attribs.get( &glh::StockShader::attrib_name_position().to_string() ).unwrap().data;
+                let color_index =  index * 4;
+                let position_index = index * 3;
+                color_vertices[color_index] = (vertices[position_index] -rect.x) / rect.width as f32;
+                color_vertices[color_index + 1] = (vertices[position_index + 1] -rect.y) / rect.height as f32;
+                color_vertices[color_index + 2] = 0.0;
+                color_vertices[color_index + 3] = 1.0;
+            }).get_vertex_attribs();
+        glh::Vao::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap()
+    };
+
+    let geo_attribs =  Cuboid::new_with_uniform_size(0.5).get_vertex_attribs(); //geo::Geometry::circle(0.0, 0.0, 1.0, false);
     let cube_shader = glh::StockShader::new().build(gl);
-    let cube_vao = glh::Vao::new_from_attrib(gl, &geo.attribs, glow::TRIANGLES, &shader).unwrap();
+    let cube_vao = glh::Vao::new_from_attrib(gl, &geo_attribs, glow::TRIANGLES, &shader).unwrap();
 
     let aspect_ratio = app.input_state.window_size.0 as f32 / app.input_state.window_size.1 as f32;
 
@@ -39,6 +54,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
         cube_vao,
         cube_shader,
         vao,
+        rect_vao,
         shader,
         camera,
     }
@@ -47,8 +63,6 @@ fn m_setup(app: &mut app::App) -> FrameData {
 fn m_event( _app : &mut app::App, _data : &mut FrameData, event : &event::WindowEvent ){
 
     _data.camera.handle_event(event, _app);
-    // if let event::WindowEvent::KeyboardInput { .. } = event {
-    // }
 }
 
 fn m_update(
@@ -59,6 +73,8 @@ fn m_update(
     let gl = &app.gl;
     let axis_shader = &data.shader;
     let axis_vao = &data.vao;
+
+    let rect_vao = &data.rect_vao;
 
     let cube_shader = &data.cube_shader;
     let cube_vao = &data.cube_vao;
@@ -76,7 +92,7 @@ fn m_update(
     //camera.transforms.set_rotation( &target_id, glm::vec3( 0.0, app.frame_number as f32 * 0.001,  0.0) );
 
     let persp_matrix = camera.get_perspective_matrix();
-    let view_matrix = camera.get_view_matrix();
+    let view_matrix = camera.get_view_matrix(); 
 
 
     glh::clear(gl,0.8, 0.8, 0.8, 1.0);
@@ -109,6 +125,9 @@ fn m_update(
     axis_shader.set_uniform_mat4( gl, glh::StockShader::uniform_name_model_matrix(), &target_t );
     axis_vao.draw(gl);
     
+    axis_shader.set_uniform_mat4( gl, glh::StockShader::uniform_name_model_matrix(), &model_view );
+    rect_vao.draw(gl);
+
     axis_shader.unbind(gl);
 
     unsafe{

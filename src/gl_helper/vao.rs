@@ -22,36 +22,50 @@ pub struct VertexAttrib {
 }
 
 impl VertexAttrib {
-    pub fn new_position_attr() -> VertexAttrib {
+
+
+    pub fn new_position_attr() -> Self {
+        Self::new_position_attr_with_data(Vec::new())
+    }
+
+    pub fn new_position_attr_with_data( data : Vec<f32> ) -> Self {
         let position_attr = VertexAttrib {
             name: StockShader::attrib_name_position(),
             size: 3,
             stride: 0,
-            data: Vec::<f32>::new(),
+            data,
             per_instance: false,
         };
 
         position_attr
     }
 
-    pub fn new_color_attr() -> VertexAttrib {
-        let color_attrib = VertexAttrib {
+    pub fn new_color_attr() -> Self {
+        Self::new_color_attr_with_data( Vec::new() )
+    }
+
+    pub fn new_color_attr_with_data(data : Vec<f32>) -> Self {
+        let color_attrib = Self {
             name: StockShader::attrib_name_color(),
             size: 4,
             stride: 0,
-            data: Vec::<f32>::new(),
+            data,
             per_instance: false,
         };
 
         color_attrib
     }
 
-    pub fn new_texture_attr() -> VertexAttrib {
-        let texture_attrib = VertexAttrib {
+    pub fn new_texture_attr() -> Self {
+        Self::new_texture_attr_with_data(Vec::new())
+    }
+
+    pub fn new_texture_attr_with_data( data : Vec<f32> ) -> Self {
+        let texture_attrib = Self {
             name: StockShader::attrib_name_texture_coords(),
             size: 2,
             stride: 0,
-            data: Vec::<f32>::new(),
+            data,
             per_instance: false,
         };
 

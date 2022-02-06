@@ -72,7 +72,6 @@ impl Geometry {
                 i += 3;
             }
         }
-        println!("texture vertices: {:?}", texure_vertices);
         pos_attrib.data = vertices;
         color_attrib.data = colors;
         texture_attrib.data = texure_vertices;
@@ -180,3 +179,5 @@ impl Geometry {
         }
     }
 }
+
+
