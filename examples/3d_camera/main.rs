@@ -24,10 +24,7 @@ struct FrameData {
 fn m_setup(app: &mut app::App) -> FrameData {
 
     let gl = &app.gl;
-
-    let axis_attribs =  Axis::new(2.0).vertex_color().get_vertex_attribs(); //geo::Geometry::axis(2.0); //geo::Geometry::circle(0.0, 0.0, 1.0, false);
-    let shader = glh::StockShader::new().color().build(gl);
-    let vao = glh::Vao::new_from_attrib(gl, &axis_attribs, glow::LINES, &shader).unwrap();
+    let (vao, shader) = Axis::new(2.0).vertex_color().get_vao_and_shader(gl);
 
     let rect_vao = {
         let attribs =  Rect::new(2.0, 2.0, 3.0 , 3.0).vertex_color(| rect, color_vertices , index|{
@@ -42,13 +39,10 @@ fn m_setup(app: &mut app::App) -> FrameData {
         glh::Vao::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap()
     };
 
-    let geo_attribs =  Cuboid::new_with_uniform_size(0.5).get_vertex_attribs(); //geo::Geometry::circle(0.0, 0.0, 1.0, false);
-    let cube_shader = glh::StockShader::new().build(gl);
-    let cube_vao = glh::Vao::new_from_attrib(gl, &geo_attribs, glow::TRIANGLES, &shader).unwrap();
-
+    let (cube_vao, cube_shader) =  Cuboid::new_with_uniform_size(0.5).get_vao_and_shader(gl); //glh::Vao::new_from_attrib(gl, &geo_attribs, glow::TRIANGLES, &shader).unwrap();
+    
     let aspect_ratio = app.input_state.window_size.0 as f32 / app.input_state.window_size.1 as f32;
-
-    let camera = OrbitCamera::new( aspect_ratio, 45.0, 0.0001, 1000.0 );
+    let camera = OrbitCamera::new( aspect_ratio, 45.0, 0.01, 1000.0 );
     
     FrameData {
         cube_vao,

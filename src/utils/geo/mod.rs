@@ -46,6 +46,33 @@ impl GeometryData {
 
 pub trait Geometry {
     fn get_vertex_attribs(&mut self) -> Vec<glh::VertexAttrib>;
+    fn get_vao_and_shader(&mut self, gl : &glow::Context) -> (glh::Vao, glh::GlslProg);
+}
+
+fn gen_vao_and_shader(gl : &glow::Context, mode : u32, indices : Option<Vec<u32>>, attribs_map : &mut HashMap<String, glh::VertexAttrib> ) -> (glh::Vao, glh::GlslProg) {
+
+    let mut shader_factory = glh::StockShader::new();
+
+    if attribs_map.contains_key( glh::StockShader::attrib_name_color() ) {
+        shader_factory.color();
+    }
+
+    if attribs_map.contains_key( glh::StockShader::attrib_name_texture_coords() ) {
+        shader_factory.texture(true);
+    }
+
+    let shader = shader_factory.build(gl);
+    let attribs_vec = collect_vertex_attribs(attribs_map);
+    let vao = {
+        if indices.is_some() {
+          glh::Vao::new_from_attrib_indexed(gl, &attribs_vec, &indices.unwrap(), mode, &shader).unwrap()
+        }
+        else{
+         glh::Vao::new_from_attrib(gl, &attribs_vec, mode, &shader).unwrap()
+        }
+    };
+
+    (vao, shader)
 }
 
 fn collect_vertex_attribs( attribs_map : &mut HashMap<String, glh::VertexAttrib> ) -> Vec<glh::VertexAttrib> {

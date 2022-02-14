@@ -84,4 +84,9 @@ impl Geometry for Cuboid {
     fn get_vertex_attribs(&mut self) -> Vec<glh::VertexAttrib> {
         super::collect_vertex_attribs(&mut self.data.attribs)
     }
+
+    
+    fn get_vao_and_shader(&mut self, gl : &glow::Context) -> (glh::Vao, glh::GlslProg){
+        gen_vao_and_shader(gl, glow::TRIANGLES, None, &mut self.data.attribs)
+    }
 }
