@@ -8,7 +8,7 @@ use glutin::event;
 use glutin::PossiblyCurrent;
 
 #[cfg(not(target_arch = "wasm32"))]
-pub use egui::CtxRef;
+pub use egui::Context;
 
 #[cfg(not(target_arch = "wasm32"))]
 use egui_glow;
@@ -21,7 +21,7 @@ pub mod egui {
 
 pub type Event<'a, T> = event::Event<'a, T>;
 type SetupFn<T> = fn(&mut App) -> T;
-type UpdateFn<T> = fn(&mut App, &mut T, ui : &egui::CtxRef);
+type UpdateFn<T> = fn(&App, &mut T, ui : &egui::Context); //&egui::Context);
 type EventFn<T> = fn(&mut App, &mut T, &event::WindowEvent);
 
 #[derive(Clone, Copy)]
@@ -137,7 +137,7 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
     .build(&event_loop)
     .unwrap();
 
-    let mut egui  = egui::CtxRef::default();
+    let mut egui  = egui::Context::default();
 
     let mut app = App {
         gl,
@@ -234,7 +234,7 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
         (gl, window, event_loop)
     };
 
-    let mut egui = egui_glow::EguiGlow::new(&window, &gl);
+    let mut egui = egui_glow::EguiGlow::new(&window.window(), &gl);
     
     let window_size = (settings.window_size.0 * window.window().scale_factor() as i32, settings.window_size.1 * window.window().scale_factor() as i32);
     let window_pos = window.window().inner_position().unwrap().into();
@@ -258,16 +258,18 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
             app.frame_number += 1;
 
             // For future versions of egui we need to use this
-            let raw_input = egui.egui_winit.take_egui_input(app.context.window());
-            let (_needs_repaint, shapes) =  egui.egui_ctx.run(raw_input, |egui_ctx| {
-                builder.update_fn.unwrap()(&mut app, &mut data, egui_ctx);
+            //let raw_input = egui.egui_winit.take_egui_input(app.context.window());
+            let window = app.context.window().clone();
+            let _ =  egui.run(window, |egui_ctx| {
+                builder.update_fn.unwrap()(&app, &mut data, egui_ctx );
             });
                 
             // draw things behind egui here
             unsafe{
                 app.gl.enable( glow::FRAMEBUFFER_SRGB );
             }
-            egui.paint(&app.context, &app.gl, shapes);
+            
+            egui.paint(app.context.window(), &app.gl);
             
             unsafe{
                 app.gl.disable( glow::FRAMEBUFFER_SRGB );

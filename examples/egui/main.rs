@@ -3,7 +3,6 @@ use piralib::app;
 
 use piralib::gl_helper as glh;
 
-use piralib::egui::CtxRef;
 
 struct FrameData {
     clear_color: [f32; 3],
@@ -15,7 +14,7 @@ fn m_setup(_app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(app: &mut app::App, _data: &mut FrameData, ui: &CtxRef) {
+fn m_update(app: &app::App, _data: &mut FrameData, ui: &egui::Context) {
     let gl = &app.gl;
 
     glh::clear(

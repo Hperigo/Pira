@@ -2,7 +2,6 @@ extern crate piralib;
 use glow::*;
 use nalgebra_glm as glm;
 use piralib::app;
-use piralib::egui::CtxRef;
 use piralib::gl_helper as glh;
 use piralib::gl_helper::Bindable;
 
@@ -76,9 +75,9 @@ fn m_setup(app: &mut app::App) -> FrameData {
 }
 
 fn m_update(
-    app: &mut app::App,
+    app: &app::App,
     _data: &mut FrameData,
-    _ui: &CtxRef,
+    _ui: &egui::Context,
 ) {
     let frame_buffer_scale = app.get_dpi_factor();
 

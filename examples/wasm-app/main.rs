@@ -18,7 +18,7 @@ fn m_setup(_app: &mut app::App) -> FrameData {
     FrameData { shader, vao }
 }
 
-fn m_update(app: &mut app::App, _data: &mut FrameData, _egui : &egui::CtxRef) {
+fn m_update(app: &app::App, _data: &mut FrameData, _egui : &egui::Context) {
     let gl = &app.gl;
     unsafe {
         app.gl.clear(glow::COLOR_BUFFER_BIT);

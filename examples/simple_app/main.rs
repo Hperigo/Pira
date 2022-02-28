@@ -6,6 +6,7 @@ use piralib::nalgebra_glm as glm;
 use piralib::app;
 
 use piralib::event;
+use piralib::utils::geo::Circle;
 use piralib::utils::geo::Geometry;
 
 struct FrameData {
@@ -17,9 +18,9 @@ fn m_setup(app: &mut app::App) -> FrameData {
 
     let gl = &app.gl;
 
-    let geo = Geometry::circle(0.0, 0.0, 10.0, false);
+    let attribs = Circle::new(0.0, 0.0, 10.0).get_vertex_attribs(); //(0.0, 0.0, 10.0, false);
     let shader = glh::StockShader::new().build(gl);
-    let vao = glh::Vao::new_from_attrib(gl, &geo.attribs, glow::TRIANGLE_FAN, &shader).unwrap();
+    let vao = glh::Vao::new_from_attrib(gl, &attribs, glow::TRIANGLE_FAN, &shader).unwrap();
 
     FrameData {
         vao,
@@ -42,9 +43,9 @@ fn m_event( _app : &mut app::App, _data : &mut FrameData, event : &event::Window
 }
 
 fn m_update(
-    app: &mut app::App,
+    app: &app::App,
     data: &mut FrameData,
-    _ui: &egui::CtxRef,
+    _ui: &egui::Context,
 ) {
     let gl = &app.gl;
     let circle_shader = &data.shader;

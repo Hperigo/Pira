@@ -168,9 +168,9 @@ fn m_setup(app: &mut app::App) -> FrameData {
 }
 
 fn m_update(
-    app: &mut app::App,
+    app: &app::App,
     _data: &mut FrameData,
-    ui: &piralib::egui::CtxRef,
+    ui: &piralib::egui::Context,
 ) {
     let time = &mut _data.time;
     let gl = &app.gl;

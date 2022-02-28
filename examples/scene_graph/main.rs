@@ -82,7 +82,7 @@ fn event_fn( _app : &mut app::App, _data : &mut FrameData, event : &event::Windo
 }
 
 
-fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piralib::egui::CtxRef){
+fn update_fn(app : &mut piralib::app::App, data : &mut FrameData, _egui : &piralib::egui::Context){
 
 
     let gl = &app.gl;

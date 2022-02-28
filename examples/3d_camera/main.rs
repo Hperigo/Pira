@@ -60,9 +60,9 @@ fn m_event( _app : &mut app::App, _data : &mut FrameData, event : &event::Window
 }
 
 fn m_update(
-    app: &mut app::App,
+    app: &app::App,
     data: &mut FrameData,
-    _ui: &egui::CtxRef,
+    _ui: &egui::Context,
 ) {
     let gl = &app.gl;
     let axis_shader = &data.shader;
