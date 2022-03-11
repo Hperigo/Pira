@@ -17,7 +17,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
 
     let img = image::open("assets/uv_image.png").unwrap().to_rgba8();
     println!("Image width: {:?} height: {:?}", img.width(), img.height());
-    let texture = glh::Texture::new_from_image_rgbau8(gl, &img);
+    let texture = glh::Texture::new_from_image_rgbau8(gl, &img, glh::texture::TextureSettings::default());
 
     let mut pos_attrib = glh::VertexAttrib::new_position_attr();
     let mut color_attrib = glh::VertexAttrib::new_color_attr();

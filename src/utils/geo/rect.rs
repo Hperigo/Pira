@@ -75,4 +75,8 @@ impl Geometry for Rect {
     fn get_vao_and_shader(&mut self, gl : &glow::Context) -> (glh::Vao, glh::GlslProg){
         gen_vao_and_shader(gl, glow::LINES, None, &mut self.data.attribs)
     }
+
+    fn get_vao(&mut self, gl : &glow::Context, glsl_prog : &glh::GlslProg) -> glh::Vao {
+        glh::Vao::new_from_attrib(gl, &self.get_vertex_attribs(),glow::LINES, glsl_prog).unwrap()
+    }
 }

@@ -121,7 +121,7 @@ fn m_update(
     
     axis_shader.set_uniform_mat4( gl, glh::StockShader::uniform_name_model_matrix(), &model_view );
     rect_vao.draw(gl);
-
+    
     axis_shader.unbind(gl);
 
     unsafe{

@@ -201,4 +201,7 @@ impl StockShader {
     pub fn attrib_name_texture_coords() -> &'static str {
          "inTexture"
     }
+    pub fn attrib_name_normal() -> &'static str {
+        "inNormal"
+   }
 }

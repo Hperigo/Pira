@@ -4,7 +4,12 @@ use image::EncodableLayout;
 
 use super::Bindable;
 
+#[derive(Clone, Copy)]
 pub struct TextureSettings {
+    pub data_type : u32,
+    pub internal_format : i32,
+    pub format : u32,
+
     pub mag_filter: u32,
     pub min_filter: u32,
 
@@ -15,6 +20,9 @@ pub struct TextureSettings {
 impl TextureSettings {
     pub fn default() -> Self {
         Self {
+            data_type : glow::UNSIGNED_BYTE,
+            internal_format : glow::RGBA8 as i32,
+            format : glow::RGBA,
             mag_filter: glow::LINEAR,
             min_filter: glow::LINEAR,
 
@@ -29,23 +37,23 @@ pub struct Texture {
 }
 
 impl Texture {
-    //TODO: add options ( mag_filter, image type... )
-    pub fn new_from_image_rgbau8(gl: &glow::Context, img: &image::RgbaImage) -> Self {
+
+    pub fn new_from_image_rgbau8(gl: &glow::Context, img: &image::RgbaImage, settings : TextureSettings) -> Self {
         Self::new_from_data(
             gl,
-            img.as_bytes(),
+            Some(img.as_bytes()),
             img.width() as i32,
             img.height() as i32,
-            glow::RGBA,
+            settings,
         )
     }
 
     pub fn new_from_data(
         gl: &glow::Context,
-        data: &[u8],
+        data: Option<&[u8]>,
         width: i32,
         height: i32,
-        format: u32,
+        settings : TextureSettings,
     ) -> Self {
         let texture_handle;
         unsafe {
@@ -69,13 +77,13 @@ impl Texture {
             gl.tex_image_2d(
                 glow::TEXTURE_2D,
                 0,
-                glow::RGBA as i32,
+                settings.internal_format,
                 width,
                 height,
                 0,
-                format,
-                glow::UNSIGNED_BYTE,
-                Some(data),
+                settings.format,
+                settings.data_type,
+                data,
             );
 
             gl.bind_texture(glow::TEXTURE_2D, None);

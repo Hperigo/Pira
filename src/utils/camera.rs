@@ -206,6 +206,15 @@ impl OrbitCamera {
     pub fn get_target_world_matrix(&self) -> glm::Mat4 {
         self.transforms.get_world_matrix(self.target)
     }
+
+
+    pub fn get_eye_position( &self ) -> glm::Vec3 {
+        self.transforms.get_world_position( self.eye )
+    }
+
+    pub fn get_target_position( &self ) -> glm::Vec3 {
+        self.transforms.get_world_position( self.target )
+    }
 }
 
 

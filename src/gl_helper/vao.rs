@@ -71,6 +71,22 @@ impl VertexAttrib {
 
         texture_attrib
     }
+
+    pub fn new_normal_attr() -> Self {
+        Self::new_texture_attr_with_data(Vec::new())
+    }
+
+    pub fn new_normal_attr_with_data( data : Vec<f32> ) -> Self {
+        let texture_attrib = Self {
+            name: StockShader::attrib_name_normal(),
+            size: 3,
+            stride: 0,
+            data,
+            per_instance: false,
+        };
+
+        texture_attrib
+    }
 }
 
 pub struct Vao {
@@ -133,12 +149,11 @@ impl Vao {
                     continue;
                 }
                 let name = a.name;
-                println!("name: {}", name);
                 let loc = gl
                     .get_attrib_location(
                         shader
                             .get_handle()
-                            .expect("provided shader for attrib is None!"),
+                            .expect("provided GlslProg is NONE, did it compiled properly? "),
                         name,
                     )
                     .expect(format!("unable to find attribute with name: {}", name).as_str());

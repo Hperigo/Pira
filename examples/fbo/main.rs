@@ -5,6 +5,7 @@ use piralib::app;
 use piralib::gl_helper as glh;
 use piralib::gl_helper::Bindable;
 
+use piralib::gl_helper::texture::TextureSettings;
 use piralib::utils::geo::Geometry;
 use piralib::utils::geo;
 struct FrameData {
@@ -29,7 +30,9 @@ fn m_setup(app: &mut app::App) -> FrameData {
             width: 1920 / 2,
             height: 1080 / 2,
             depth: true,
+            initialize_default_texture : true,
         },
+        TextureSettings::default(),
     );
 
     // create QUAD ====

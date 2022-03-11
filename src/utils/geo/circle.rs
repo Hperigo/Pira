@@ -10,12 +10,6 @@ pub struct Circle{
 
 impl Circle {
     pub fn new(x : f32, y : f32, radius : f32 ) -> Circle {
-        /*
-            [0]--------[1]
-             |			|
-             |			|
-            [2]--------[3]
-        */
 
         let mut vertices: Vec<f32> = Vec::new();
         vertices.append(&mut vec![x, y, 0.0]);
@@ -75,5 +69,9 @@ impl Geometry for Circle {
     
     fn get_vao_and_shader(&mut self, gl : &glow::Context) -> (glh::Vao, glh::GlslProg){
         gen_vao_and_shader(gl, glow::TRIANGLE_FAN, None, &mut self.data.attribs)
+    }
+
+    fn get_vao(&mut self, gl : &glow::Context, glsl_prog : &glh::GlslProg) -> glh::Vao {
+        glh::Vao::new_from_attrib(gl, &self.get_vertex_attribs(),glow::TRIANGLE_FAN, glsl_prog).unwrap()
     }
 }

@@ -59,7 +59,6 @@ fn m_setup(app: &mut app::App) -> FrameData {
         vec3 rotatedPoint =  rotation * vec3(pos * (fur_length + 0.5)) + vec3(instancePosition, 0.0);
 
         gl_Position = uPerspectiveMatrix * uViewMatrix * uModelMatrix * vec4(rotatedPoint, 1.0);
-        
         vColor = inColor;
     }}   
     ", shader_version);

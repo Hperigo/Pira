@@ -20,6 +20,9 @@ pub use axis::Axis;
 pub mod cuboid;
 pub use cuboid::Cuboid;
 
+pub mod sphere;
+pub use sphere::Sphere;
+
 #[derive(Default)]
 pub struct GeometryData{
     pub indices : Option<Vec<u32>>,
@@ -47,9 +50,10 @@ impl GeometryData {
 pub trait Geometry {
     fn get_vertex_attribs(&mut self) -> Vec<glh::VertexAttrib>;
     fn get_vao_and_shader(&mut self, gl : &glow::Context) -> (glh::Vao, glh::GlslProg);
+    fn get_vao(&mut self, gl : &glow::Context, glsl_prog : &glh::GlslProg) -> glh::Vao;
 }
 
-fn gen_vao_and_shader(gl : &glow::Context, mode : u32, indices : Option<Vec<u32>>, attribs_map : &mut HashMap<String, glh::VertexAttrib> ) -> (glh::Vao, glh::GlslProg) {
+fn gen_vao_and_shader(gl : &glow::Context, mode : u32, indices : Option<&Vec<u32>>, attribs_map : &mut HashMap<String, glh::VertexAttrib> ) -> (glh::Vao, glh::GlslProg) {
 
     let mut shader_factory = glh::StockShader::new();
 
