@@ -1,14 +1,14 @@
 extern crate image;
-use glow::{self, HasContext};
+use glow::{self, HasContext, PixelUnpackData};
 use image::EncodableLayout;
 
 use super::Bindable;
 
 #[derive(Clone, Copy)]
 pub struct TextureSettings {
-    pub data_type : u32,
-    pub internal_format : i32,
-    pub format : u32,
+    pub data_type: u32,
+    pub internal_format: i32,
+    pub format: u32,
 
     pub mag_filter: u32,
     pub min_filter: u32,
@@ -20,9 +20,9 @@ pub struct TextureSettings {
 impl TextureSettings {
     pub fn default() -> Self {
         Self {
-            data_type : glow::UNSIGNED_BYTE,
-            internal_format : glow::RGBA8 as i32,
-            format : glow::RGBA,
+            data_type: glow::UNSIGNED_BYTE,
+            internal_format: glow::RGBA8 as i32,
+            format: glow::RGBA,
             mag_filter: glow::LINEAR,
             min_filter: glow::LINEAR,
 
@@ -34,11 +34,17 @@ impl TextureSettings {
 
 pub struct Texture {
     pub handle: Option<glow::Texture>,
+    pub width: i32,
+    pub height: i32,
+    pub settings: TextureSettings,
 }
 
 impl Texture {
-
-    pub fn new_from_image_rgbau8(gl: &glow::Context, img: &image::RgbaImage, settings : TextureSettings) -> Self {
+    pub fn new_from_image_rgbau8(
+        gl: &glow::Context,
+        img: &image::RgbaImage,
+        settings: TextureSettings,
+    ) -> Self {
         Self::new_from_data(
             gl,
             Some(img.as_bytes()),
@@ -53,7 +59,7 @@ impl Texture {
         data: Option<&[u8]>,
         width: i32,
         height: i32,
-        settings : TextureSettings,
+        settings: TextureSettings,
     ) -> Self {
         let texture_handle;
         unsafe {
@@ -91,7 +97,28 @@ impl Texture {
 
         Texture {
             handle: Some(texture_handle),
+            width,
+            height,
+            settings,
         }
+    }
+
+    pub fn update(&self, gl: &glow::Context, data: &[u8]) {
+        self.bind(gl);
+        unsafe {
+            gl.tex_sub_image_2d(
+                glow::TEXTURE_2D,
+                0,
+                0,
+                0,
+                self.width,
+                self.height,
+                self.settings.format,
+                self.settings.data_type,
+                glow::PixelUnpackData::Slice(data),
+            )
+        }
+        self.unbind(gl);
     }
 }
 

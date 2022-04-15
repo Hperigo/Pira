@@ -1,7 +1,13 @@
 extern crate piralib;
+use image::EncodableLayout;
+use image::ImageBuffer;
+use image::Rgba;
+use piralib::event::ElementState;
+use piralib::event::KeyboardInput;
 use piralib::gl_helper as glh;
 
 use piralib::app;
+use piralib::event;
 
 use image;
 use nalgebra_glm as glm;
@@ -10,6 +16,9 @@ struct FrameData {
     vao: glh::Vao,
     shader: glh::GlslProg,
     texture: glh::Texture,
+
+    current_index: usize,
+    images: [ImageBuffer<Rgba<u8>, Vec<u8>>; 2],
 }
 
 fn m_setup(app: &mut app::App) -> FrameData {
@@ -17,7 +26,23 @@ fn m_setup(app: &mut app::App) -> FrameData {
 
     let img = image::open("assets/uv_image.png").unwrap().to_rgba8();
     println!("Image width: {:?} height: {:?}", img.width(), img.height());
-    let texture = glh::Texture::new_from_image_rgbau8(gl, &img, glh::texture::TextureSettings::default());
+    let texture =
+        glh::Texture::new_from_image_rgbau8(gl, &img, glh::texture::TextureSettings::default());
+
+    let mut img2 = image::RgbaImage::new(img.width(), img.height());
+
+    for x in 0..img2.width() {
+        for y in 0..img2.height() {
+            let dtx = x as f32 / img2.width() as f32;
+            let dty = y as f32 / img2.height() as f32;
+
+            img2.put_pixel(
+                x,
+                y,
+                image::Rgba([(250.0 * dtx) as u8, (250.0 * dty) as u8, 0, 255]),
+            );
+        }
+    }
 
     let mut pos_attrib = glh::VertexAttrib::new_position_attr();
     let mut color_attrib = glh::VertexAttrib::new_color_attr();
@@ -57,10 +82,28 @@ fn m_setup(app: &mut app::App) -> FrameData {
         vao,
         shader,
         texture,
+
+        current_index: 0,
+        images: [img, img2],
     }
 }
 
-fn m_update(app: &app::App, data: &mut FrameData, _ui : &egui::Context) {
+fn m_event(_app: &mut app::App, _data: &mut FrameData, event: &event::WindowEvent) {
+    if let event::WindowEvent::MouseInput { state, .. } = event {
+        if matches!(state, event::ElementState::Pressed) {}
+    }
+
+    if let event::WindowEvent::KeyboardInput { input, .. } = event {
+        if matches!(input.state, ElementState::Released) {
+            _data.current_index = (_data.current_index + 1) % 2;
+            _data
+                .texture
+                .update(&_app.gl, _data.images[_data.current_index].as_bytes());
+        }
+    }
+}
+
+fn m_update(app: &app::App, data: &mut FrameData, _ui: &egui::Context) {
     let gl = &app.gl;
     let shader = &data.shader;
     let vao = &data.vao;
@@ -117,5 +160,6 @@ fn main() {
         },
         m_setup,
     )
+    .event(m_event)
     .run(m_update);
 }
