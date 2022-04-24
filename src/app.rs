@@ -16,12 +16,12 @@ use egui_glow;
 #[cfg(target_arch = "wasm32")]
 pub mod egui {
     #[derive(Default)]
-    pub struct CtxRef{}    
+    pub struct CtxRef {}
 }
 
 pub type Event<'a, T> = event::Event<'a, T>;
 type SetupFn<T> = fn(&mut App) -> T;
-type UpdateFn<T> = fn(&App, &mut T, ui : &egui::Context); //&egui::Context);
+type UpdateFn<T> = fn(&App, &mut T, ui: &egui::Context); //&egui::Context);
 type EventFn<T> = fn(&mut App, &mut T, &event::WindowEvent);
 
 #[derive(Clone, Copy)]
@@ -42,7 +42,7 @@ impl<T> AppBuilder<T> {
             settings,
             setup_fn,
             update_fn: None,
-            event_fn : None,
+            event_fn: None,
         }
     }
 
@@ -63,16 +63,16 @@ impl<T> AppBuilder<T> {
 }
 
 pub struct InputState {
-    pub window_size : (i32, i32),
-    pub window_pos :  (i32, i32),
-    
+    pub window_size: (i32, i32),
+    pub window_pos: (i32, i32),
+
     pub mouse_pos: (f32, f32),
 }
 
 #[cfg(not(target_arch = "wasm32"))]
 pub struct App {
     pub gl: glow::Context,
-    pub context : glutin::ContextWrapper<PossiblyCurrent, glutin::window::Window >,
+    pub context: glutin::ContextWrapper<PossiblyCurrent, glutin::window::Window>,
 
     pub frame_number: u64,
     pub input_state: InputState,
@@ -81,15 +81,13 @@ pub struct App {
 #[cfg(target_arch = "wasm32")]
 pub struct App {
     pub gl: glow::Context,
-    pub context : winit::window::Window,
+    pub context: winit::window::Window,
 
     pub frame_number: u64,
     pub input_state: InputState,
 }
 
-
 impl App {
-
     #[cfg(not(target_arch = "wasm32"))]
     pub fn get_dpi_factor(&self) -> f32 {
         self.context.window().scale_factor() as f32
@@ -100,20 +98,21 @@ impl App {
         self.context.scale_factor() as f32
     }
 
-    pub fn get_window_size(&self) -> [f32; 2]{
-        [self.input_state.window_size.0 as f32, self.input_state.window_size.1 as f32]
+    pub fn get_window_size(&self) -> [f32; 2] {
+        [
+            self.input_state.window_size.0 as f32,
+            self.input_state.window_size.1 as f32,
+        ]
     }
 }
-
 
 #[cfg(target_arch = "wasm32")]
 fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
     let event_loop = winit::event_loop::EventLoop::new();
     let settings = builder.settings.clone();
 
-
     use wasm_bindgen::JsCast;
-    use winit::{platform::web::WindowBuilderExtWebSys};
+    use winit::platform::web::WindowBuilderExtWebSys;
     let canvas = web_sys::window()
         .unwrap()
         .document()
@@ -132,21 +131,21 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
     let gl = glow::Context::from_webgl2_context(webgl2_context);
 
     let window = winit::window::WindowBuilder::new()
-    .with_title("A fantastic window!")
-    .with_canvas(Some(canvas))
-    .build(&event_loop)
-    .unwrap();
+        .with_title("A fantastic window!")
+        .with_canvas(Some(canvas))
+        .build(&event_loop)
+        .unwrap();
 
-    let mut egui  = egui::Context::default();
+    let mut egui = egui::Context::default();
 
     let mut app = App {
         gl,
-        context : window,
+        context: window,
         frame_number: 0,
         input_state: InputState {
             mouse_pos: (0.0, 0.0),
-            window_size : settings.window_size,
-            window_pos :(0, 0),
+            window_size: settings.window_size,
+            window_pos: (0, 0),
         },
     };
 
@@ -155,13 +154,10 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
     event_loop.run(move |event, _, control_flow| {
-        
         match event {
-            
             Event::WindowEvent { event, .. } => {
                 // use winit::event::WindowEvent;
                 // let raw_input = egui::RawInput::default();
-
 
                 // let (_needs_repaint, shapes) = egui.run(raw_input , |egui_ctx| {
 
@@ -171,36 +167,40 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
                     builder.event_fn.unwrap()(&mut app, &mut data, &event);
                 }
 
-                if matches!(event, event::WindowEvent::CloseRequested | event::WindowEvent::Destroyed) {
+                if matches!(
+                    event,
+                    event::WindowEvent::CloseRequested | event::WindowEvent::Destroyed
+                ) {
                     *control_flow = winit::event_loop::ControlFlow::Exit;
                 }
 
                 if let event::WindowEvent::CursorMoved { position, .. } = event {
-                        let scale_factor = 0.5;
+                    let scale_factor = 0.5;
                     app.input_state.mouse_pos = (
                         position.x as f32 * scale_factor,
                         position.y as f32 * scale_factor,
                     );
                 }
 
-
                 if let winit::event::WindowEvent::Resized(physical_size) = event {
-                    unsafe{web_sys::console::log_1(&"resized!".into());}
+                    unsafe {
+                        web_sys::console::log_1(&"resized!".into());
+                    }
                     *control_flow = winit::event_loop::ControlFlow::Wait;
-                    app.input_state.window_size = (physical_size.width as i32, physical_size.height as i32);
+                    app.input_state.window_size =
+                        (physical_size.width as i32, physical_size.height as i32);
                 }
-            },
-            
-            Event::DeviceEvent { event ,..} => {
+            }
+
+            Event::DeviceEvent { event, .. } => {
                 // if let DeviceEvent::MouseMotion{position, ..} = event {
                 //     app.input_state.mouse_pos
                 // }
-            },
+            }
             Event::MainEventsCleared => {
                 app.context.request_redraw();
-            },
-            _ => {
-            },
+            }
+            _ => {}
         }
         app.frame_number = app.frame_number + 1;
         builder.update_fn.unwrap()(&mut app, &mut data, &egui);
@@ -211,7 +211,7 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
 #[cfg(not(target_arch = "wasm32"))]
 fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
     use glow::HasContext;
-    use glutin::{event::VirtualKeyCode};
+    use glutin::event::VirtualKeyCode;
 
     let settings = builder.settings;
     let (gl, window, event_loop) = unsafe {
@@ -235,14 +235,17 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
     };
 
     let mut egui = egui_glow::EguiGlow::new(&window.window(), &gl);
-    
-    let window_size = (settings.window_size.0 * window.window().scale_factor() as i32, settings.window_size.1 * window.window().scale_factor() as i32);
+
+    let window_size = (
+        settings.window_size.0 * window.window().scale_factor() as i32,
+        settings.window_size.1 * window.window().scale_factor() as i32,
+    );
     let window_pos = window.window().inner_position().unwrap().into();
 
     let mut app = App {
         gl,
         frame_number: 0,
-        context : window,
+        context: window,
         input_state: InputState {
             window_size,
             window_pos,
@@ -253,26 +256,26 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
     let mut data = (builder.setup_fn)(&mut app);
 
     event_loop.run(move |event, _, control_flow| {
-
         let mut redraw = || {
             app.frame_number += 1;
 
             // For future versions of egui we need to use this
             //let raw_input = egui.egui_winit.take_egui_input(app.context.window());
             let window = app.context.window().clone();
-            let _ =  egui.run(window, |egui_ctx| {
-                builder.update_fn.unwrap()(&app, &mut data, egui_ctx );
+
+            let _ = egui.run(window, |egui_ctx| {
+                builder.update_fn.unwrap()(&app, &mut data, egui_ctx);
             });
-                
+
             // draw things behind egui here
-            unsafe{
-                app.gl.enable( glow::FRAMEBUFFER_SRGB );
+            unsafe {
+                app.gl.enable(glow::FRAMEBUFFER_SRGB);
             }
-            
+
             egui.paint(app.context.window(), &app.gl);
-            
-            unsafe{
-                app.gl.disable( glow::FRAMEBUFFER_SRGB );
+
+            unsafe {
+                app.gl.disable(glow::FRAMEBUFFER_SRGB);
             }
 
             // draw things on top of egui here
@@ -281,10 +284,10 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
         };
 
         match event {
-            glutin::event::Event::RedrawRequested(_)  => {
-                redraw() ;
+            glutin::event::Event::RedrawRequested(_) => {
+                redraw();
                 *control_flow = glutin::event_loop::ControlFlow::Poll;
-            },
+            }
             glutin::event::Event::MainEventsCleared => {
                 app.context.window().request_redraw();
             }
@@ -307,20 +310,18 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
                     let scale_factor = app.context.window().scale_factor();
                     let logical_size = physical_size;
                     app.input_state.window_size.0 = logical_size.width as i32 * scale_factor as i32;
-                    app.input_state.window_size.1 = logical_size.height as i32 * scale_factor as i32;
+                    app.input_state.window_size.1 =
+                        logical_size.height as i32 * scale_factor as i32;
 
                     *control_flow = glutin::event_loop::ControlFlow::Wait;
                 }
 
-                if let  glutin::event::WindowEvent::Moved( _position ) = event {
+                if let glutin::event::WindowEvent::Moved(_position) = event {
                     *control_flow = glutin::event_loop::ControlFlow::Wait;
                 }
 
                 if let glutin::event::WindowEvent::CursorMoved { position, .. } = event {
-                    app.input_state.mouse_pos = (
-                        position.x as f32,
-                        position.y as f32,
-                    );
+                    app.input_state.mouse_pos = (position.x as f32, position.y as f32);
                 }
 
                 if let glutin::event::WindowEvent::KeyboardInput { input, .. } = event {
