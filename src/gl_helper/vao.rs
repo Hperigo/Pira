@@ -4,7 +4,6 @@ use crate::gl_helper::Vbo;
 use glow;
 use glow::HasContext;
 
-
 /*
 TODO: add traits to Vertex Attribs and use a templated version of it
     get_data_sclice();
@@ -18,17 +17,14 @@ pub struct VertexAttrib {
     pub stride: i32,
     pub data: Vec<f32>,
     pub per_instance: bool, // alias to attrib divisor
-
 }
 
 impl VertexAttrib {
-
-
     pub fn new_position_attr() -> Self {
         Self::new_position_attr_with_data(Vec::new())
     }
 
-    pub fn new_position_attr_with_data( data : Vec<f32> ) -> Self {
+    pub fn new_position_attr_with_data(data: Vec<f32>) -> Self {
         let position_attr = VertexAttrib {
             name: StockShader::attrib_name_position(),
             size: 3,
@@ -36,15 +32,14 @@ impl VertexAttrib {
             data,
             per_instance: false,
         };
-
         position_attr
     }
 
     pub fn new_color_attr() -> Self {
-        Self::new_color_attr_with_data( Vec::new() )
+        Self::new_color_attr_with_data(Vec::new())
     }
 
-    pub fn new_color_attr_with_data(data : Vec<f32>) -> Self {
+    pub fn new_color_attr_with_data(data: Vec<f32>) -> Self {
         let color_attrib = Self {
             name: StockShader::attrib_name_color(),
             size: 4,
@@ -60,7 +55,7 @@ impl VertexAttrib {
         Self::new_texture_attr_with_data(Vec::new())
     }
 
-    pub fn new_texture_attr_with_data( data : Vec<f32> ) -> Self {
+    pub fn new_texture_attr_with_data(data: Vec<f32>) -> Self {
         let texture_attrib = Self {
             name: StockShader::attrib_name_texture_coords(),
             size: 2,
@@ -76,7 +71,7 @@ impl VertexAttrib {
         Self::new_texture_attr_with_data(Vec::new())
     }
 
-    pub fn new_normal_attr_with_data( data : Vec<f32> ) -> Self {
+    pub fn new_normal_attr_with_data(data: Vec<f32>) -> Self {
         let texture_attrib = Self {
             name: StockShader::attrib_name_normal(),
             size: 3,
@@ -94,7 +89,7 @@ pub struct Vao {
     vbo_handle: Vbo,
     num_of_vertices: usize,
     index_buffer: Option<Vbo>,
-    draw_mode : u32,
+    draw_mode: u32,
 }
 
 impl Vao {
@@ -102,11 +97,11 @@ impl Vao {
         gl: &glow::Context,
         attribs: &[VertexAttrib],
         indices: &[u32],
-        mode : u32,
+        mode: u32,
         shader: &GlslProg,
     ) -> Option<Vao> {
         let mut vao = Vao::new_from_attrib(gl, attribs, mode, shader).unwrap();
-        let index_vbo = Vbo::new(gl,indices, glow::ELEMENT_ARRAY_BUFFER);
+        let index_vbo = Vbo::new(gl, indices, glow::ELEMENT_ARRAY_BUFFER);
 
         vao.bind(gl);
         index_vbo.bind(gl);
@@ -121,7 +116,7 @@ impl Vao {
     pub fn new_from_attrib(
         gl: &glow::Context,
         attribs: &[VertexAttrib],
-        mode : u32,
+        mode: u32,
         shader: &GlslProg,
     ) -> Option<Vao> {
         let mut data = Vec::<f32>::new();
@@ -132,7 +127,6 @@ impl Vao {
             if a.data.len() > 0 {
                 data.append(&mut a.data.clone());
             }
-            
         }
 
         let num_of_vertices = attribs[0].data.len() / attribs[0].size as usize;
@@ -142,7 +136,7 @@ impl Vao {
         unsafe {
             gl.bind_vertex_array(Some(vao_handle));
             gl.bind_buffer(data_vbo.get_gl_type(), data_vbo.get_handle());
-            
+
             let mut current_offset: usize = 0;
             for a in attribs {
                 if a.data.len() == 0 {
@@ -181,7 +175,7 @@ impl Vao {
 
         // return
         let vao = Vao {
-            draw_mode : mode,
+            draw_mode: mode,
             handle: Some(vao_handle),
             vbo_handle: data_vbo,
             num_of_vertices,
@@ -191,7 +185,7 @@ impl Vao {
         Some(vao)
     }
 
-    pub fn set_draw_mode(&mut self, mode : u32 ){
+    pub fn set_draw_mode(&mut self, mode: u32) {
         self.draw_mode = mode;
     }
 
@@ -248,7 +242,12 @@ impl Vao {
         unsafe {
             self.bind(gl);
             //gl::DrawArraysInstanced(primitive, 0, self.num_of_vertices as i32, instance_count);
-            gl.draw_arrays_instanced(self.draw_mode, 0, self.num_of_vertices as i32, instance_count);
+            gl.draw_arrays_instanced(
+                self.draw_mode,
+                0,
+                self.num_of_vertices as i32,
+                instance_count,
+            );
             self.unbind(gl);
         }
     }
@@ -272,9 +271,8 @@ impl Vao {
     }
 
     pub fn delete(&mut self, gl: &glow::Context) {
-
         self.vbo_handle.delete(gl);
-        unsafe { 
+        unsafe {
             gl.delete_vertex_array(self.handle.unwrap());
         };
         self.handle = None;

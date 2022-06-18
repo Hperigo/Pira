@@ -233,7 +233,6 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
         let gl = glow::Context::from_loader_function(|s| window.get_proc_address(s) as *const _);
         (gl, window, event_loop)
     };
-
     let mut egui = egui_glow::EguiGlow::new(&window.window(), &gl);
 
     let window_size = (
