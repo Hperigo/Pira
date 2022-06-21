@@ -4,6 +4,8 @@ use crate::gl_helper::Vbo;
 use glow;
 use glow::HasContext;
 
+use super::vao_sliced;
+
 /*
 TODO: add traits to Vertex Attribs and use a templated version of it
     get_data_sclice();
@@ -81,6 +83,23 @@ impl VertexAttrib {
         };
 
         texture_attrib
+    }
+
+    pub fn to_vertex_attrib_slice<'a>(&'a self) -> vao_sliced::VertexAttribSlice<'a> {
+        let data: &[u8] = unsafe {
+            core::slice::from_raw_parts(
+                self.data.as_ptr() as *const u8,
+                self.data.len() * core::mem::size_of::<f32>(),
+            )
+        };
+
+        vao_sliced::VertexAttribSlice {
+            name: self.name,
+            size: self.size,
+            stride: self.stride,
+            data,
+            per_instance: self.per_instance,
+        }
     }
 }
 

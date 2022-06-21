@@ -7,7 +7,7 @@ use glow::*;
 
 struct FrameData {
     program: glh::GlslProg,
-    vao: glh::Vao,
+    vao: glh::VaoSliced,
 }
 
 fn m_setup(app: &mut app::App) -> FrameData {
@@ -34,9 +34,23 @@ fn m_setup(app: &mut app::App) -> FrameData {
     pos_attrib.data = vertices;
     color_attrib.data = colors;
 
-    let attribs = vec![pos_attrib, color_attrib];
-    let vao = glh::Vao::new_from_attrib_indexed(&app.gl, &attribs, &indices, glow::TRIANGLES, &shader)
-        .expect("unable to create main vao");
+    let attribs = [
+        pos_attrib.to_vertex_attrib_slice(),
+        color_attrib.to_vertex_attrib_slice(),
+    ];
+
+    // let vao =
+    //     glh::Vao::new_from_attrib_indexed(&app.gl, &attribs, &indices, glow::TRIANGLES, &shader)
+    //         .expect("unable to create main vao");
+
+    let vao = glh::vao_sliced::VaoSliced::new_from_attrib_indexed(
+        &app.gl,
+        &attribs[0..2],
+        &indices,
+        glow::TRIANGLES,
+        &shader,
+    )
+    .expect("unable to create main vao");
 
     FrameData {
         program: shader,
@@ -44,11 +58,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(
-    app: &app::App,
-    _data: &mut FrameData,
-    _ui: &piralib::egui::Context,
-) {
+fn m_update(app: &app::App, _data: &mut FrameData, _ui: &piralib::egui::Context) {
     glh::clear(&app.gl, 1.0, 0.0, 0.5, 1.0);
     unsafe {
         app.gl.disable(glow::CULL_FACE);

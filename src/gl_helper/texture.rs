@@ -1,5 +1,5 @@
 extern crate image;
-use glow::{self, HasContext, PixelUnpackData};
+use glow::{self, HasContext};
 use image::EncodableLayout;
 
 use super::Bindable;

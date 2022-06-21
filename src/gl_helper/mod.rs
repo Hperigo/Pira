@@ -5,6 +5,10 @@ pub mod vao;
 pub use self::vao::Vao;
 pub use self::vao::VertexAttrib;
 
+pub mod vao_sliced;
+pub use self::vao_sliced::VaoSliced;
+pub use self::vao_sliced::VertexAttribSlice;
+
 pub mod stock_shader;
 pub use self::stock_shader::StockShader;
 

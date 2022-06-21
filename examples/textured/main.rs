@@ -3,7 +3,6 @@ use image::EncodableLayout;
 use image::ImageBuffer;
 use image::Rgba;
 use piralib::event::ElementState;
-use piralib::event::KeyboardInput;
 use piralib::gl_helper as glh;
 
 use piralib::app;
