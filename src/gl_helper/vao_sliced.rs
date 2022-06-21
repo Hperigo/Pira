@@ -5,6 +5,8 @@ use glow::HasContext;
 
 use std::collections::hash_map::HashMap;
 
+use super::StockShader;
+
 /*
 TODO: add traits to Vertex Attribs and use a templated version of it
     get_data_sclice();
@@ -18,6 +20,26 @@ pub struct VertexAttribSlice<'a> {
     pub stride: i32,
     pub data: &'a [u8],
     pub per_instance: bool, // alias to attrib divisor
+}
+
+impl<'a> VertexAttribSlice<'a> {
+    pub fn new_position_attr_with_data(data: &Vec<f32>) -> Self {
+        let data: &[u8] = unsafe {
+            core::slice::from_raw_parts(
+                data.as_ptr() as *const u8,
+                data.len() * core::mem::size_of::<f32>(),
+            )
+        };
+
+        let position_attr = VertexAttribSlice {
+            name: StockShader::attrib_name_position(),
+            size: 3,
+            stride: 0,
+            data,
+            per_instance: false,
+        };
+        position_attr
+    }
 }
 
 pub struct VaoSliced {

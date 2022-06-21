@@ -13,16 +13,12 @@ use piralib::egui;
 
 struct FrameData {
     shader: glh::GlslProg,
-    vao: glh::Vao,
+    vao: glh::VaoSliced,
 }
 
 fn m_setup(app: &mut app::App) -> FrameData {
     let gl = &app.gl;
-
-    let attribs = Circle::new(0.0, 0.0, 10.0).get_vertex_attribs(); //(0.0, 0.0, 10.0, false);
-    let shader = glh::StockShader::new().build(gl);
-    let vao = glh::Vao::new_from_attrib(gl, &attribs, glow::TRIANGLE_FAN, &shader).unwrap();
-
+    let (vao, shader) = Circle::new(0.0, 0.0, 10.0).get_vao_and_shader(gl);
     FrameData { vao, shader }
 }
 

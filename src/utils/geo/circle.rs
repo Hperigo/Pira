@@ -1,16 +1,15 @@
 use super::*;
 use crate::gl_helper as glh;
 
-pub struct Circle{ 
-   pub data : GeometryData,
-   pub radius : f32,
-   pub x : f32,
-   pub y : f32,
+pub struct Circle {
+    pub data: GeometryData,
+    pub radius: f32,
+    pub x: f32,
+    pub y: f32,
 }
 
 impl Circle {
-    pub fn new(x : f32, y : f32, radius : f32 ) -> Circle {
-
+    pub fn new(x: f32, y: f32, radius: f32) -> Circle {
         let mut vertices: Vec<f32> = Vec::new();
         vertices.append(&mut vec![x, y, 0.0]);
 
@@ -22,56 +21,83 @@ impl Circle {
             vertices.append(&mut vec![xx + x, yy + y, 0.0]);
         }
 
-
         let number_of_vertices = vertices.len();
-        let attrib = glh::VertexAttrib::new_position_attr_with_data(vertices);
+        // let attrib = glh::VertexAttrib::new_position_attr_with_data(vertices);
 
         let mut attribs = HashMap::new();
-        attribs.insert( glh::StockShader::attrib_name_position().to_string(), attrib );
+        attribs.insert(
+            glh::StockShader::attrib_name_position().to_string(),
+            vertices,
+        );
 
-        Circle{
-            data : GeometryData{
+        Circle {
+            data: GeometryData {
                 number_of_vertices,
-                attribs : attribs,
+                attribs: attribs,
                 ..Default::default()
             },
             radius,
-            x,y
+            x,
+            y,
         }
     }
 
     pub fn texture_coords<'a>(&'a mut self) -> &'a mut Self {
+        let data = GeometryData::gen_func(
+            self,
+            self.data.number_of_vertices,
+            2,
+            |circle, color_vertices, index| {
+                let vertices = &circle
+                    .data
+                    .attribs
+                    .get(&glh::StockShader::attrib_name_position().to_string())
+                    .unwrap();
 
-        let data = GeometryData::gen_func(self, self.data.number_of_vertices, 2, | circle, color_vertices , index|{
-            let vertices = &circle.data.attribs.get( &glh::StockShader::attrib_name_position().to_string() ).unwrap().data;
-                let color_index =  index * 4;
+                let color_index = index * 4;
                 let position_index = index * 3;
-                color_vertices[color_index] = (vertices[position_index] - circle.x) / (circle.radius * 2.0);
-                color_vertices[color_index + 1] = (vertices[position_index + 1] - circle.y) / (circle.radius * 2.0);
-        });
+                color_vertices[color_index] =
+                    (vertices[position_index] - circle.x) / (circle.radius * 2.0);
+                color_vertices[color_index + 1] =
+                    (vertices[position_index + 1] - circle.y) / (circle.radius * 2.0);
+            },
+        );
 
-        self.data.attribs.insert( glh::StockShader::attrib_name_texture_coords().to_string(),  glh::VertexAttrib::new_texture_attr_with_data(data));
+        self.data.attribs.insert(
+            glh::StockShader::attrib_name_texture_coords().to_string(),
+            data,
+        );
         self
     }
 
-    pub fn vertex_color<'a, T>(&'a mut self, generator : T )-> &'a mut Self where T : Fn(&Self, &mut Vec<f32>, usize) {
-       let data = GeometryData::gen_func(self, self.data.number_of_vertices, 4, generator);
-       self.data.attribs.insert( glh::StockShader::attrib_name_color().to_string(),  glh::VertexAttrib::new_color_attr_with_data(data) );
-       self
+    pub fn vertex_color<'a, T>(&'a mut self, generator: T) -> &'a mut Self
+    where
+        T: Fn(&Self, &mut Vec<f32>, usize),
+    {
+        let data = GeometryData::gen_func(self, self.data.number_of_vertices, 4, generator);
+        self.data
+            .attribs
+            .insert(glh::StockShader::attrib_name_color().to_string(), data);
+        self
     }
 }
 
 impl Geometry for Circle {
-    fn get_vertex_attribs(&mut self) -> Vec<glh::VertexAttrib> {
-        super::collect_vertex_attribs(&mut self.data.attribs)
+    // fn get_vertex_attribs(&mut self) -> Vec<glh::VertexAttrib> {
+    //     super::collect_vertex_attribs(&mut self.data.attribs)
+    // }
+
+    fn get_vao_and_shader(&mut self, gl: &glow::Context) -> (glh::VaoSliced, glh::GlslProg) {
+        gen_vao_and_shader(gl, glow::TRIANGLE_FAN, &mut self.data.attribs, None)
     }
 
-    
-    fn get_vao_and_shader(&mut self, gl : &glow::Context) -> (glh::Vao, glh::GlslProg){
-        gen_vao_and_shader(gl, glow::TRIANGLE_FAN, None, &mut self.data.attribs)
-    }
-
-    fn get_vao(&mut self, gl : &glow::Context, glsl_prog : &glh::GlslProg) -> glh::Vao {
-        glh::Vao::new_from_attrib(gl, &self.get_vertex_attribs(),glow::TRIANGLE_FAN, glsl_prog).unwrap()
-    }
+    // fn get_vao(&mut self, gl: &glow::Context, glsl_prog: &glh::GlslProg) -> glh::Vao {
+    //     glh::Vao::new_from_attrib(
+    //         gl,
+    //         &self.get_vertex_attribs(),
+    //         glow::TRIANGLE_FAN,
+    //         glsl_prog,
+    //     )
+    //     .unwrap()
+    // }
 }
