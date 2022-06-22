@@ -19,7 +19,7 @@ pub struct Particle {
 
 struct FrameData {
     particles: Vec<Particle>,
-    vao: glh::VaoSliced,
+    vao: glh::Vao,
     shader: glh::GlslProg,
 }
 
@@ -51,10 +51,10 @@ fn m_setup(app: &mut app::App) -> FrameData {
     let shader = glh::StockShader::new().color().build(&app.gl);
 
     let attribs = vec![
-        glh::VertexAttribSlice::new_position_attr_with_data(&vertices),
-        glh::VertexAttribSlice::new_color_attr_with_data(&colors),
+        glh::VertexAttrib::new_position_attr_with_data(&vertices),
+        glh::VertexAttrib::new_color_attr_with_data(&colors),
     ];
-    let vao = glh::VaoSliced::new_from_attrib(&app.gl, &attribs, glow::TRIANGLES, &shader).unwrap();
+    let vao = glh::Vao::new_from_attrib(&app.gl, &attribs, glow::TRIANGLES, &shader).unwrap();
 
     // Particles -------
     let particles: Vec<Particle> = Vec::new();

@@ -12,7 +12,7 @@ use piralib::egui;
 
 struct FrameData {
     shader: glh::GlslProg,
-    vao: glh::VaoSliced,
+    vao: glh::Vao,
 }
 
 fn m_setup(app: &mut app::App) -> FrameData {

@@ -15,7 +15,7 @@ struct FrameData {
     node_c: NodeId,
 
     shader: glh::GlslProg,
-    vao: glh::VaoSliced,
+    vao: glh::Vao,
 }
 
 fn setup_fn(app: &mut piralib::app::App) -> FrameData {

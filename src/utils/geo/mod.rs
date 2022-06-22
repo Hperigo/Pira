@@ -1,4 +1,4 @@
-use crate::gl_helper::{self as glh, VertexAttribSlice};
+use crate::gl_helper::{self as glh, VertexAttrib};
 use std::collections::HashMap;
 // TODO: replace geometry with this struct
 // Trait geometry with some standard functions, like:
@@ -57,7 +57,7 @@ impl GeometryData {
 
 pub trait Geometry {
     //fn get_vertex_attribs(&mut self) -> Vec<glh::VertexAttrib>;
-    fn get_vao_and_shader(&mut self, gl: &glow::Context) -> (glh::VaoSliced, glh::GlslProg);
+    fn get_vao_and_shader(&mut self, gl: &glow::Context) -> (glh::Vao, glh::GlslProg);
     //fn get_vao(&mut self, gl: &glow::Context, glsl_prog: &glh::GlslProg) -> glh::Vao;
 }
 
@@ -66,7 +66,7 @@ fn gen_vao_and_shader(
     mode: u32,
     attribs_map: &mut HashMap<String, Vec<f32>>,
     indices: Option<&Vec<u32>>,
-) -> (glh::VaoSliced, glh::GlslProg) {
+) -> (glh::Vao, glh::GlslProg) {
     let mut shader_factory = glh::StockShader::new();
     let mut attribs_vec = Vec::new();
 
@@ -74,7 +74,7 @@ fn gen_vao_and_shader(
         .get(glh::StockShader::attrib_name_position())
         .unwrap();
 
-    let attrib_pos = VertexAttribSlice::new_position_attr_with_data(pos_data);
+    let attrib_pos = VertexAttrib::new_position_attr_with_data(pos_data);
     attribs_vec.push(attrib_pos);
 
     if attribs_map.contains_key(glh::StockShader::attrib_name_color()) {
@@ -84,7 +84,7 @@ fn gen_vao_and_shader(
             .get(glh::StockShader::attrib_name_color())
             .unwrap();
 
-        let attrib_color = VertexAttribSlice::new_color_attr_with_data(color_data);
+        let attrib_color = VertexAttrib::new_color_attr_with_data(color_data);
         attribs_vec.push(attrib_color);
     }
 
@@ -95,7 +95,7 @@ fn gen_vao_and_shader(
             .get(glh::StockShader::attrib_name_texture_coords())
             .unwrap();
 
-        let attrib = VertexAttribSlice::new_texture_attr_with_data(data);
+        let attrib = VertexAttrib::new_texture_attr_with_data(data);
         attribs_vec.push(attrib);
     }
 
@@ -104,16 +104,10 @@ fn gen_vao_and_shader(
         if indices.is_some() {
             // glh::Vao::new_from_attrib_indexed(gl, &attribs_vec, &indices.unwrap(), mode, &shader)
             //     .unwrap()
-            glh::VaoSliced::new_from_attrib_indexed(
-                gl,
-                &attribs_vec,
-                &indices.unwrap(),
-                mode,
-                &shader,
-            )
-            .unwrap()
+            glh::Vao::new_from_attrib_indexed(gl, &attribs_vec, &indices.unwrap(), mode, &shader)
+                .unwrap()
         } else {
-            glh::VaoSliced::new_from_attrib(gl, &attribs_vec, mode, &shader).unwrap()
+            glh::Vao::new_from_attrib(gl, &attribs_vec, mode, &shader).unwrap()
         }
     };
 

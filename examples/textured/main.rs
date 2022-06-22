@@ -12,7 +12,7 @@ use image;
 use nalgebra_glm as glm;
 
 struct FrameData {
-    vao: glh::VaoSliced,
+    vao: glh::Vao,
     shader: glh::GlslProg,
     texture: glh::Texture,
 
@@ -68,10 +68,10 @@ fn m_setup(app: &mut app::App) -> FrameData {
 
     let shader = glh::StockShader::new().texture(false).build(gl);
     let attribs = vec![
-        glh::VertexAttribSlice::new_position_attr_with_data(&vertices),
-        glh::VertexAttribSlice::new_texture_attr_with_data(&texture_vertices),
+        glh::VertexAttrib::new_position_attr_with_data(&vertices),
+        glh::VertexAttrib::new_texture_attr_with_data(&texture_vertices),
     ];
-    let vao = glh::VaoSliced::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap();
+    let vao = glh::Vao::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap();
 
     FrameData {
         vao,

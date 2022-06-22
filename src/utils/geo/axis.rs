@@ -57,7 +57,7 @@ impl Axis {
         self
     }
 
-    // pub fn get_vertex_attribs(&mut self) -> Vec<glh::VertexAttribSlice> {
+    // pub fn get_vertex_attribs(&mut self) -> Vec<glh::VertexAttrib> {
     //     //Note: we do this so we dont actually clone the data from the attrib hashmap, this would be easier if Vao also accepeted a hash map...
     //     let mut attribs = Vec::new();
     //     let keys: Vec<String> = self.data.attribs.keys().cloned().collect();
@@ -74,7 +74,7 @@ impl Geometry for Axis {
     //     super::collect_vertex_attribs(&mut self.data.attribs)
     // }
 
-    fn get_vao_and_shader(&mut self, gl: &glow::Context) -> (glh::VaoSliced, glh::GlslProg) {
+    fn get_vao_and_shader(&mut self, gl: &glow::Context) -> (glh::Vao, glh::GlslProg) {
         gen_vao_and_shader(gl, glow::LINES, &mut self.data.attribs, None)
     }
 

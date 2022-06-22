@@ -87,7 +87,7 @@ impl Geometry for Circle {
     //     super::collect_vertex_attribs(&mut self.data.attribs)
     // }
 
-    fn get_vao_and_shader(&mut self, gl: &glow::Context) -> (glh::VaoSliced, glh::GlslProg) {
+    fn get_vao_and_shader(&mut self, gl: &glow::Context) -> (glh::Vao, glh::GlslProg) {
         gen_vao_and_shader(gl, glow::TRIANGLE_FAN, &mut self.data.attribs, None)
     }
 

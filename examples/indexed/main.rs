@@ -7,7 +7,7 @@ use glow::*;
 
 struct FrameData {
     program: glh::GlslProg,
-    vao: glh::VaoSliced,
+    vao: glh::Vao,
 }
 
 fn m_setup(app: &mut app::App) -> FrameData {
@@ -35,16 +35,16 @@ fn m_setup(app: &mut app::App) -> FrameData {
     // color_attrib.data = colors;
 
     let attribs = [
-        glh::VertexAttribSlice::new_position_attr_with_data(&vertices),
+        glh::VertexAttrib::new_position_attr_with_data(&vertices),
         //color_attrib.to_vertex_attrib_slice(),
-        glh::VertexAttribSlice::new_color_attr_with_data(&colors),
+        glh::VertexAttrib::new_color_attr_with_data(&colors),
     ];
 
     // let vao =
     //     glh::Vao::new_from_attrib_indexed(&app.gl, &attribs, &indices, glow::TRIANGLES, &shader)
     //         .expect("unable to create main vao");
 
-    let vao = glh::vao_sliced::VaoSliced::new_from_attrib_indexed(
+    let vao = glh::vao::Vao::new_from_attrib_indexed(
         &app.gl,
         &attribs[0..2],
         &indices,

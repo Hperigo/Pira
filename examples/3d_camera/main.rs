@@ -12,12 +12,12 @@ use piralib::utils::geo::{Axis, Cuboid, Geometry, Rect};
 
 struct FrameData {
     shader: glh::GlslProg,
-    vao: glh::VaoSliced,
+    vao: glh::Vao,
 
-    rect_vao: glh::VaoSliced,
+    rect_vao: glh::Vao,
 
     cube_shader: glh::GlslProg,
-    cube_vao: glh::VaoSliced,
+    cube_vao: glh::Vao,
     camera: OrbitCamera,
 }
 

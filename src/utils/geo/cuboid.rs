@@ -87,7 +87,7 @@ impl Geometry for Cuboid {
     // }
 
     
-    fn get_vao_and_shader(&mut self, gl : &glow::Context) -> (glh::VaoSliced, glh::GlslProg){
+    fn get_vao_and_shader(&mut self, gl : &glow::Context) -> (glh::Vao, glh::GlslProg){
         gen_vao_and_shader(gl, glow::TRIANGLES, &mut self.data.attribs, None)
     }
 

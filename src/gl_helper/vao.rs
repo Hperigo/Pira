@@ -1,10 +1,11 @@
 use crate::gl_helper::GlslProg;
-use crate::gl_helper::StockShader;
 use crate::gl_helper::Vbo;
 use glow;
 use glow::HasContext;
 
-use super::vao_sliced;
+use std::collections::hash_map::HashMap;
+
+use super::StockShader;
 
 /*
 TODO: add traits to Vertex Attribs and use a templated version of it
@@ -12,21 +13,47 @@ TODO: add traits to Vertex Attribs and use a templated version of it
     get_stride();
     get_size();
 */
-#[derive(Debug)]
-pub struct VertexAttrib {
+
+pub struct VertexAttrib<'a> {
     pub name: &'static str,
     pub size: i32,
     pub stride: i32,
-    pub data: Vec<f32>,
+    pub data: &'a [u8],
     pub per_instance: bool, // alias to attrib divisor
 }
 
-impl VertexAttrib {
-    pub fn new_position_attr() -> Self {
-        Self::new_position_attr_with_data(Vec::new())
+impl<'a> VertexAttrib<'a> {
+    pub fn new<T>(
+        name: &'static str,
+        number_of_elements_per_component: i32,
+        stride: i32,
+        data: &Vec<T>,
+        per_instance: bool,
+    ) -> Self {
+        let data: &[u8] = unsafe {
+            core::slice::from_raw_parts(
+                data.as_ptr() as *const u8,
+                data.len() * core::mem::size_of::<T>(),
+            )
+        };
+
+        VertexAttrib {
+            name,
+            size: number_of_elements_per_component,
+            stride,
+            data,
+            per_instance,
+        }
     }
 
-    pub fn new_position_attr_with_data(data: Vec<f32>) -> Self {
+    pub fn new_position_attr_with_data(data: &Vec<f32>) -> Self {
+        let data: &[u8] = unsafe {
+            core::slice::from_raw_parts(
+                data.as_ptr() as *const u8,
+                data.len() * core::mem::size_of::<f32>(),
+            )
+        };
+
         let position_attr = VertexAttrib {
             name: StockShader::attrib_name_position(),
             size: 3,
@@ -37,11 +64,14 @@ impl VertexAttrib {
         position_attr
     }
 
-    pub fn new_color_attr() -> Self {
-        Self::new_color_attr_with_data(Vec::new())
-    }
+    pub fn new_color_attr_with_data(data: &Vec<f32>) -> Self {
+        let data: &[u8] = unsafe {
+            core::slice::from_raw_parts(
+                data.as_ptr() as *const u8,
+                data.len() * core::mem::size_of::<f32>(),
+            )
+        };
 
-    pub fn new_color_attr_with_data(data: Vec<f32>) -> Self {
         let color_attrib = Self {
             name: StockShader::attrib_name_color(),
             size: 4,
@@ -53,11 +83,14 @@ impl VertexAttrib {
         color_attrib
     }
 
-    pub fn new_texture_attr() -> Self {
-        Self::new_texture_attr_with_data(Vec::new())
-    }
+    pub fn new_texture_attr_with_data(data: &Vec<f32>) -> Self {
+        let data: &[u8] = unsafe {
+            core::slice::from_raw_parts(
+                data.as_ptr() as *const u8,
+                data.len() * core::mem::size_of::<f32>(),
+            )
+        };
 
-    pub fn new_texture_attr_with_data(data: Vec<f32>) -> Self {
         let texture_attrib = Self {
             name: StockShader::attrib_name_texture_coords(),
             size: 2,
@@ -68,44 +101,11 @@ impl VertexAttrib {
 
         texture_attrib
     }
-
-    pub fn new_normal_attr() -> Self {
-        Self::new_texture_attr_with_data(Vec::new())
-    }
-
-    pub fn new_normal_attr_with_data(data: Vec<f32>) -> Self {
-        let texture_attrib = Self {
-            name: StockShader::attrib_name_normal(),
-            size: 3,
-            stride: 0,
-            data,
-            per_instance: false,
-        };
-
-        texture_attrib
-    }
-
-    pub fn to_vertex_attrib_slice<'a>(&'a self) -> vao_sliced::VertexAttribSlice<'a> {
-        let data: &[u8] = unsafe {
-            core::slice::from_raw_parts(
-                self.data.as_ptr() as *const u8,
-                self.data.len() * core::mem::size_of::<f32>(),
-            )
-        };
-
-        vao_sliced::VertexAttribSlice {
-            name: self.name,
-            size: self.size,
-            stride: self.stride,
-            data,
-            per_instance: self.per_instance,
-        }
-    }
 }
 
 pub struct Vao {
     handle: Option<glow::VertexArray>,
-    vbo_handle: Vbo,
+    vbos: HashMap<&'static str, Vbo>,
     num_of_vertices: usize,
     index_buffer: Option<Vbo>,
     draw_mode: u32,
@@ -119,7 +119,7 @@ impl Vao {
         mode: u32,
         shader: &GlslProg,
     ) -> Option<Vao> {
-        let mut vao = Vao::new_from_attrib(gl, attribs, mode, shader).unwrap();
+        let mut vao = Self::new_from_attrib(gl, attribs, mode, shader).unwrap();
         let index_vbo = Vbo::new(gl, indices, glow::ELEMENT_ARRAY_BUFFER);
 
         vao.bind(gl);
@@ -137,31 +137,25 @@ impl Vao {
         attribs: &[VertexAttrib],
         mode: u32,
         shader: &GlslProg,
-    ) -> Option<Vao> {
-        let mut data = Vec::<f32>::new();
-
-        // merge buffers
-        // TODO: we dont need to flatten the data into a single array, a better aproach would be to just buffer with an offset
-        for a in attribs {
-            if a.data.len() > 0 {
-                data.append(&mut a.data.clone());
-            }
-        }
-
+    ) -> Option<Self> {
         let num_of_vertices = attribs[0].data.len() / attribs[0].size as usize;
         let vao_handle = unsafe { gl.create_vertex_array().unwrap() };
-        let data_vbo = Vbo::new(gl, &data, glow::ARRAY_BUFFER);
+
+        let mut attrib_map: HashMap<&'static str, Vbo> = HashMap::new();
 
         unsafe {
             gl.bind_vertex_array(Some(vao_handle));
-            gl.bind_buffer(data_vbo.get_gl_type(), data_vbo.get_handle());
+        };
 
-            let mut current_offset: usize = 0;
-            for a in attribs {
-                if a.data.len() == 0 {
-                    continue;
-                }
-                let name = a.name;
+        for i in 0..attribs.len() {
+            let attrib = &attribs[i];
+            let name = attrib.name;
+
+            let data_vbo =
+                Vbo::new_from_raw_parts(gl, attrib.data, num_of_vertices, glow::ARRAY_BUFFER);
+
+            unsafe {
+                gl.bind_buffer(data_vbo.get_gl_type(), data_vbo.get_handle());
                 let loc = gl
                     .get_attrib_location(
                         shader
@@ -171,36 +165,42 @@ impl Vao {
                     )
                     .expect(format!("unable to find attribute with name: {}", name).as_str());
 
-                let loc = loc;
                 gl.enable_vertex_attrib_array(loc);
+
+                println!("attrib name: {} - size: {}", attrib.name, attrib.data.len());
+
                 gl.vertex_attrib_pointer_f32(
                     loc,
-                    a.size,
+                    attrib.size,
                     glow::FLOAT,
                     false,
-                    a.stride,
-                    current_offset as i32,
+                    attrib.stride,
+                    0,
                 );
 
-                let attrib_divisor: u32 = if a.per_instance { 1 } else { 0 };
+                let attrib_divisor: u32 = if attrib.per_instance { 1 } else { 0 };
 
                 gl.vertex_attrib_divisor(loc, attrib_divisor);
-                current_offset += a.data.len() * std::mem::size_of::<f32>();
+
+                // end
+                gl.bind_buffer(data_vbo.get_gl_type(), None);
             }
 
-            data_vbo.unbind(gl);
+            attrib_map.insert(name, data_vbo);
+        }
+
+        unsafe {
             gl.bind_vertex_array(None);
         }
 
         // return
-        let vao = Vao {
+        let vao = Self {
             draw_mode: mode,
             handle: Some(vao_handle),
-            vbo_handle: data_vbo,
+            vbos: attrib_map,
             num_of_vertices,
             index_buffer: None,
         };
-
         Some(vao)
     }
 
@@ -214,33 +214,6 @@ impl Vao {
 
     pub fn get_handle(&self) -> Option<glow::VertexArray> {
         self.handle
-    }
-
-    pub fn buffer_sub_data(&self, gl: &glow::Context, data: &[f32], size: i32) {
-        unsafe {
-            gl.bind_vertex_array(self.get_handle());
-            gl.bind_buffer(glow::ARRAY_BUFFER, self.vbo_handle.get_handle());
-
-            let data_u8: &[u8] = core::slice::from_raw_parts(
-                data.as_ptr() as *const u8,
-                data.len() * core::mem::size_of::<f32>(),
-            );
-
-            gl.buffer_sub_data_u8_slice(glow::ARRAY_BUFFER, 0, data_u8);
-
-            gl.enable_vertex_attrib_array(0);
-            gl.vertex_attrib_pointer_f32(
-                0,
-                size,
-                glow::FLOAT,
-                false,
-                3 * std::mem::size_of::<f32>() as i32,
-                0,
-            );
-
-            gl.bind_buffer(glow::ARRAY_BUFFER, None);
-            gl.bind_vertex_array(None);
-        }
     }
 
     pub fn bind(&self, gl: &glow::Context) {
@@ -290,7 +263,10 @@ impl Vao {
     }
 
     pub fn delete(&mut self, gl: &glow::Context) {
-        self.vbo_handle.delete(gl);
+        for (_, val) in &mut self.vbos {
+            val.delete(gl);
+        }
+
         unsafe {
             gl.delete_vertex_array(self.handle.unwrap());
         };

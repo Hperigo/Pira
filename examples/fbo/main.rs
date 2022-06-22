@@ -9,10 +9,10 @@ use piralib::gl_helper::texture::TextureSettings;
 use piralib::utils::geo;
 use piralib::utils::geo::Geometry;
 struct FrameData {
-    vao: glh::VaoSliced,
+    vao: glh::Vao,
     shader: glh::GlslProg,
 
-    circle_vao: glh::VaoSliced,
+    circle_vao: glh::Vao,
     circle_shader: glh::GlslProg,
 
     quad_pos: glm::Vec3,

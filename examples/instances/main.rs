@@ -6,7 +6,7 @@ use piralib::gl_helper as glh;
 use rand::Rng;
 
 struct FrameData {
-    vao: glh::VaoSliced,
+    vao: glh::Vao,
     shader: glh::GlslProg,
     time: f32,
     number_of_instances: i32,
@@ -134,7 +134,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     println!("number of instances: {}", number_of_instances);
 
     let instance_positions_attrib =
-        glh::VertexAttribSlice::new("instancePosition", 2, 0, &instance_positions, true);
+        glh::VertexAttrib::new("instancePosition", 2, 0, &instance_positions, true);
 
     let shader = glh::GlslProg::new(
         gl,
@@ -142,12 +142,12 @@ fn m_setup(app: &mut app::App) -> FrameData {
         frag_shader_string.as_str(),
     );
     let attribs = vec![
-        glh::VertexAttribSlice::new_position_attr_with_data(&vertices),
-        glh::VertexAttribSlice::new_color_attr_with_data(&colors),
+        glh::VertexAttrib::new_position_attr_with_data(&vertices),
+        glh::VertexAttrib::new_color_attr_with_data(&colors),
         instance_positions_attrib,
     ];
 
-    let vao = glh::VaoSliced::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap();
+    let vao = glh::Vao::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap();
 
     FrameData {
         vao,
