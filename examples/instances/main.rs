@@ -6,7 +6,7 @@ use piralib::gl_helper as glh;
 use rand::Rng;
 
 struct FrameData {
-    vao: glh::Vao,
+    vao: glh::VaoSliced,
     shader: glh::GlslProg,
     time: f32,
     number_of_instances: i32,
@@ -82,8 +82,6 @@ fn m_setup(app: &mut app::App) -> FrameData {
         shader_version
     );
 
-    let mut pos_attrib = glh::VertexAttrib::new_position_attr();
-
     // build vertex data ----
     let fur_width = 10.0;
 
@@ -96,7 +94,6 @@ fn m_setup(app: &mut app::App) -> FrameData {
     vertices.append(&mut vec![fur_width, 30.0, 0.0]);
     vertices.append(&mut vec![fur_width, 0.0, 0.0]);
 
-    let mut color_attrib = glh::VertexAttrib::new_color_attr();
     let mut colors: Vec<f32> = Vec::new();
     colors.append(&mut vec![0.0, 0.1, 0.1, 1.0]);
     colors.append(&mut vec![1.0, 0.9, 0.1, 1.0]);
@@ -113,14 +110,14 @@ fn m_setup(app: &mut app::App) -> FrameData {
 
     let random_range = 1.0;
 
-    #[cfg(target_arch="wasm32")]
+    #[cfg(target_arch = "wasm32")]
     let max_x = 550 / 1;
-    #[cfg(target_arch="wasm32")]
+    #[cfg(target_arch = "wasm32")]
     let max_y = 190 / 1;
 
-    #[cfg(not(target_arch="wasm32"))]
+    #[cfg(not(target_arch = "wasm32"))]
     let max_x = 550;
-    #[cfg(not(target_arch="wasm32"))]
+    #[cfg(not(target_arch = "wasm32"))]
     let max_y = 190;
 
     // let max_x = 550 / 2;
@@ -136,24 +133,21 @@ fn m_setup(app: &mut app::App) -> FrameData {
     let number_of_instances = instance_positions.len() as i32 / 2;
     println!("number of instances: {}", number_of_instances);
 
-    let instance_positions_attrib = glh::VertexAttrib {
-        name: "instancePosition",
-        size: 2,
-        stride: 0,
-        data: instance_positions,
-        per_instance: true,
-    };
-
-    pos_attrib.data = vertices;
-    color_attrib.data = colors;
+    let instance_positions_attrib =
+        glh::VertexAttribSlice::new("instancePosition", 2, 0, &instance_positions, true);
 
     let shader = glh::GlslProg::new(
         gl,
         vertex_shader_string.as_str(),
         frag_shader_string.as_str(),
     );
-    let attribs = vec![pos_attrib, color_attrib, instance_positions_attrib];
-    let vao = glh::Vao::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap();
+    let attribs = vec![
+        glh::VertexAttribSlice::new_position_attr_with_data(&vertices),
+        glh::VertexAttribSlice::new_color_attr_with_data(&colors),
+        instance_positions_attrib,
+    ];
+
+    let vao = glh::VaoSliced::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap();
 
     FrameData {
         vao,
@@ -166,11 +160,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(
-    app: &app::App,
-    _data: &mut FrameData,
-    ui: &piralib::egui::Context,
-) {
+fn m_update(app: &app::App, _data: &mut FrameData, ui: &piralib::egui::Context) {
     let time = &mut _data.time;
     let gl = &app.gl;
     let shader = &_data.shader;
@@ -181,31 +171,35 @@ fn m_update(
     let mut base_color = &mut _data.base_color;
     let mut tip_color = &mut _data.tip_color;
 
-    *time = *time +  0.1f32;
+    *time = *time + 0.1f32;
     let scale_factor = 1.4; //app.get_dpi_factor();
 
     mouse_pos[0] = app.input_state.mouse_pos.0 * (4.0); //mouse_pos[0] + ((app.input_state.mouse_pos.0 * 1.0) - mouse_pos[0]) * 1.0;
     mouse_pos[1] = app.input_state.mouse_pos.1 * (4.0); //mouse_pos[1] + ((app.input_state.mouse_pos.1 * 1.0) - mouse_pos[1]) * 1.0;
 
-    #[cfg(not(target_arch="wasm32"))]
+    #[cfg(not(target_arch = "wasm32"))]
     egui::SidePanel::new(egui::panel::Side::Left, "panel").show(ui, |ui| {
         ui.label("base color");
         ui.color_edit_button_rgb(&mut base_color);
-        
+
         ui.label("tip color");
         ui.color_edit_button_rgb(&mut tip_color);
         //ui.color_edit_button_rgb(&mut tip_color);
     });
 
-
-    unsafe{
+    unsafe {
         gl.disable(glow::FRAMEBUFFER_SRGB);
         gl.clear_color(base_color[0], base_color[1], base_color[2], 1.0);
         gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
         gl.enable(glow::DEPTH_TEST);
         gl.enable(glow::BLEND);
         gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
-        gl.viewport(0, 0, app.input_state.window_size.0 * scale_factor as i32, app.input_state.window_size.1  * scale_factor as i32);
+        gl.viewport(
+            0,
+            0,
+            app.input_state.window_size.0 * scale_factor as i32,
+            app.input_state.window_size.1 * scale_factor as i32,
+        );
     }
 
     shader.bind(gl);
@@ -249,14 +243,12 @@ fn m_update(
 
     shader.unbind(gl);
 
-
-    unsafe{
-        gl.disable( glow::DEPTH_TEST );
+    unsafe {
+        gl.disable(glow::DEPTH_TEST);
     }
 }
 
 fn main() {
-
     app::AppBuilder::new(
         app::AppSettings {
             window_size: (1920, 1080),

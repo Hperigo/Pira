@@ -27,7 +27,6 @@ impl Vbo {
         let vbo = unsafe {
             let buffer = gl.create_buffer().unwrap();
             gl.bind_buffer(gl_type, Some(buffer));
-
             gl.buffer_data_u8_slice(gl_type, data, glow::STATIC_DRAW);
             gl.bind_buffer(gl_type, None);
 

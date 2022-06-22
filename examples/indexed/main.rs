@@ -29,14 +29,15 @@ fn m_setup(app: &mut app::App) -> FrameData {
     indices.append(&mut vec![0, 1, 2]);
     indices.append(&mut vec![0, 2, 3]);
 
-    let mut pos_attrib = glh::VertexAttrib::new_position_attr();
-    let mut color_attrib = glh::VertexAttrib::new_color_attr();
-    pos_attrib.data = vertices;
-    color_attrib.data = colors;
+    // let mut pos_attrib = glh::VertexAttrib::new_position_attr();
+    // let mut color_attrib = glh::VertexAttrib::new_color_attr();
+    // pos_attrib.data = vertices;
+    // color_attrib.data = colors;
 
     let attribs = [
-        pos_attrib.to_vertex_attrib_slice(),
-        color_attrib.to_vertex_attrib_slice(),
+        glh::VertexAttribSlice::new_position_attr_with_data(&vertices),
+        //color_attrib.to_vertex_attrib_slice(),
+        glh::VertexAttribSlice::new_color_attr_with_data(&colors),
     ];
 
     // let vao =

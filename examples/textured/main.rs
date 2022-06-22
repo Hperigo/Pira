@@ -12,7 +12,7 @@ use image;
 use nalgebra_glm as glm;
 
 struct FrameData {
-    vao: glh::Vao,
+    vao: glh::VaoSliced,
     shader: glh::GlslProg,
     texture: glh::Texture,
 
@@ -43,10 +43,6 @@ fn m_setup(app: &mut app::App) -> FrameData {
         }
     }
 
-    let mut pos_attrib = glh::VertexAttrib::new_position_attr();
-    let mut color_attrib = glh::VertexAttrib::new_color_attr();
-    let mut texture_attrib = glh::VertexAttrib::new_texture_attr();
-
     // build vertex data ----
     let mut vertices: Vec<f32> = Vec::new();
     vertices.append(&mut vec![0.0, 0.0, 0.0]);
@@ -58,24 +54,24 @@ fn m_setup(app: &mut app::App) -> FrameData {
     vertices.append(&mut vec![1024.0, 0.0, 0.0]);
 
     let mut colors: Vec<f32> = Vec::new();
-    let mut texure_vertices: Vec<f32> = Vec::new();
+    let mut texture_vertices: Vec<f32> = Vec::new();
     {
         let num_of_vertices = vertices.len();
         let mut i = 0;
 
         while i < num_of_vertices {
             colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
-            texure_vertices.append(&mut vec![vertices[i] / 1024.0, vertices[i + 1] / 1024.0]); // normalize vertex coords
+            texture_vertices.append(&mut vec![vertices[i] / 1024.0, vertices[i + 1] / 1024.0]); // normalize vertex coords
             i = i + 3;
         }
     }
 
-    pos_attrib.data = vertices;
-    color_attrib.data = colors;
-    texture_attrib.data = texure_vertices;
     let shader = glh::StockShader::new().texture(false).build(gl);
-    let attribs = vec![pos_attrib, texture_attrib];
-    let vao = glh::Vao::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap();
+    let attribs = vec![
+        glh::VertexAttribSlice::new_position_attr_with_data(&vertices),
+        glh::VertexAttribSlice::new_texture_attr_with_data(&texture_vertices),
+    ];
+    let vao = glh::VaoSliced::new_from_attrib(gl, &attribs, glow::TRIANGLES, &shader).unwrap();
 
     FrameData {
         vao,

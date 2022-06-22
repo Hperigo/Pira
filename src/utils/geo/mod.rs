@@ -75,46 +75,29 @@ fn gen_vao_and_shader(
         .unwrap();
 
     let attrib_pos = VertexAttribSlice::new_position_attr_with_data(pos_data);
-
     attribs_vec.push(attrib_pos);
 
-    // attribs_vec.push(
-    //     glh::vao::VertexAttrib::new_position_attr_with_data(
-    //         attribs_map
-    //             .get(glh::StockShader::attrib_name_position())
-    //             .unwrap()
-    //             .to_vec(),
-    //     )
-    //     .to_vertex_attrib_slice(),
-    // );
-
-    /*
     if attribs_map.contains_key(glh::StockShader::attrib_name_color()) {
         shader_factory.color();
-        attribs_vec.push(
-            glh::vao::VertexAttrib::new_position_attr_with_data(
-                attribs_map
-                    .get(glh::StockShader::attrib_name_color())
-                    .unwrap()
-                    .to_vec(),
-            )
-            .to_vertex_attrib_slice(),
-        );
+
+        let color_data = attribs_map
+            .get(glh::StockShader::attrib_name_color())
+            .unwrap();
+
+        let attrib_color = VertexAttribSlice::new_color_attr_with_data(color_data);
+        attribs_vec.push(attrib_color);
     }
 
     if attribs_map.contains_key(glh::StockShader::attrib_name_texture_coords()) {
         shader_factory.texture(true);
-        attribs_vec.push(
-            glh::vao::VertexAttrib::new_position_attr_with_data(
-                attribs_map
-                    .get(glh::StockShader::attrib_name_texture_coords())
-                    .unwrap()
-                    .to_vec(),
-            )
-            .to_vertex_attrib_slice(),
-        );
+
+        let data = attribs_map
+            .get(glh::StockShader::attrib_name_texture_coords())
+            .unwrap();
+
+        let attrib = VertexAttribSlice::new_texture_attr_with_data(data);
+        attribs_vec.push(attrib);
     }
-    */
 
     let shader = shader_factory.build(gl);
     let vao = {

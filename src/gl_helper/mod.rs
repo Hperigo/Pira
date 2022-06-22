@@ -1,9 +1,9 @@
 pub mod vbo;
 pub use self::vbo::Vbo;
 
-pub mod vao;
-pub use self::vao::Vao;
-pub use self::vao::VertexAttrib;
+// pub mod vao;
+// pub use self::vao::Vao;
+// pub use self::vao::VertexAttrib;
 
 pub mod vao_sliced;
 pub use self::vao_sliced::VaoSliced;

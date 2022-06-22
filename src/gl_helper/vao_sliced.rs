@@ -23,6 +23,29 @@ pub struct VertexAttribSlice<'a> {
 }
 
 impl<'a> VertexAttribSlice<'a> {
+    pub fn new<T>(
+        name: &'static str,
+        number_of_elements_per_component: i32,
+        stride: i32,
+        data: &Vec<T>,
+        per_instance: bool,
+    ) -> Self {
+        let data: &[u8] = unsafe {
+            core::slice::from_raw_parts(
+                data.as_ptr() as *const u8,
+                data.len() * core::mem::size_of::<T>(),
+            )
+        };
+
+        VertexAttribSlice {
+            name,
+            size: number_of_elements_per_component,
+            stride,
+            data,
+            per_instance,
+        }
+    }
+
     pub fn new_position_attr_with_data(data: &Vec<f32>) -> Self {
         let data: &[u8] = unsafe {
             core::slice::from_raw_parts(
@@ -39,6 +62,44 @@ impl<'a> VertexAttribSlice<'a> {
             per_instance: false,
         };
         position_attr
+    }
+
+    pub fn new_color_attr_with_data(data: &Vec<f32>) -> Self {
+        let data: &[u8] = unsafe {
+            core::slice::from_raw_parts(
+                data.as_ptr() as *const u8,
+                data.len() * core::mem::size_of::<f32>(),
+            )
+        };
+
+        let color_attrib = Self {
+            name: StockShader::attrib_name_color(),
+            size: 4,
+            stride: 0,
+            data,
+            per_instance: false,
+        };
+
+        color_attrib
+    }
+
+    pub fn new_texture_attr_with_data(data: &Vec<f32>) -> Self {
+        let data: &[u8] = unsafe {
+            core::slice::from_raw_parts(
+                data.as_ptr() as *const u8,
+                data.len() * core::mem::size_of::<f32>(),
+            )
+        };
+
+        let texture_attrib = Self {
+            name: StockShader::attrib_name_texture_coords(),
+            size: 2,
+            stride: 0,
+            data,
+            per_instance: false,
+        };
+
+        texture_attrib
     }
 }
 
@@ -105,6 +166,8 @@ impl VaoSliced {
                     .expect(format!("unable to find attribute with name: {}", name).as_str());
 
                 gl.enable_vertex_attrib_array(loc);
+
+                println!("attrib name: {} - size: {}", attrib.name, attrib.data.len());
 
                 gl.vertex_attrib_pointer_f32(
                     loc,

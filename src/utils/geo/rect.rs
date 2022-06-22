@@ -94,7 +94,7 @@ impl Geometry for Rect {
     // }
 
     fn get_vao_and_shader(&mut self, gl: &glow::Context) -> (glh::VaoSliced, glh::GlslProg) {
-        gen_vao_and_shader(gl, glow::LINES, &mut self.data.attribs, None)
+        gen_vao_and_shader(gl, glow::TRIANGLES, &mut self.data.attribs, None)
     }
 
     // fn get_vao(&mut self, gl: &glow::Context, glsl_prog: &glh::GlslProg) -> glh::Vao {

@@ -2,7 +2,6 @@ extern crate piralib;
 
 use piralib::app;
 use piralib::gl_helper as glh;
-use piralib::glow;
 use piralib::nalgebra_glm as glm;
 
 use piralib::event;

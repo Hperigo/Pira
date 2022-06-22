@@ -19,41 +19,42 @@ pub struct Particle {
 
 struct FrameData {
     particles: Vec<Particle>,
-    vao: glh::Vao,
+    vao: glh::VaoSliced,
     shader: glh::GlslProg,
 }
 
 fn m_setup(app: &mut app::App) -> FrameData {
-    let mut pos_attrib = glh::VertexAttrib::new_position_attr();
-    let mut color_attrib = glh::VertexAttrib::new_color_attr();
-    let mut texture_attrib = glh::VertexAttrib::new_texture_attr();
+    //    let mut pos_attrib = glh::VertexAttrib::new_position_attr();
+    //    let mut color_attrib = glh::VertexAttrib::new_color_attr();
+    //    let mut texture_attrib = glh::VertexAttrib::new_texture_attr();
 
     // build vertex data ----
-    {
-        let mut vertices: Vec<f32> = Vec::new();
-        vertices.append(&mut vec![-250.0, -250.0, 0.0]);
-        vertices.append(&mut vec![250.0, -250.0, 0.0]);
-        vertices.append(&mut vec![0.0, 350.0, 0.0]);
-        pos_attrib.data = vertices;
+    let mut vertices: Vec<f32> = Vec::new();
+    vertices.append(&mut vec![-250.0, -250.0, 0.0]);
+    vertices.append(&mut vec![250.0, -250.0, 0.0]);
+    vertices.append(&mut vec![0.0, 350.0, 0.0]);
+    //        pos_attrib.data = vertices;
 
-        let mut colors: Vec<f32> = Vec::new();
-        colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
-        colors.append(&mut vec![0.9, 0.8, 0.9, 1.0]);
-        colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
-        color_attrib.data = colors;
+    let mut colors: Vec<f32> = Vec::new();
+    colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
+    colors.append(&mut vec![0.9, 0.8, 0.9, 1.0]);
+    colors.append(&mut vec![1.0, 1.0, 1.0, 1.0]);
+    //        color_attrib.data = colors;
 
-        let mut texure_vertices: Vec<f32> = Vec::new();
-        texure_vertices.append(&mut vec![0.5, 0.5, 0.0]);
-        texure_vertices.append(&mut vec![0.5, 0.5, 1.0]);
-        texure_vertices.append(&mut vec![1.0, 1.0, 1.0]);
+    let mut texure_vertices: Vec<f32> = Vec::new();
+    texure_vertices.append(&mut vec![0.5, 0.5, 0.0]);
+    texure_vertices.append(&mut vec![0.5, 0.5, 1.0]);
+    texure_vertices.append(&mut vec![1.0, 1.0, 1.0]);
 
-        texture_attrib.data = texure_vertices;
-    }
+    //texture_attrib.data = texure_vertices;
 
     let shader = glh::StockShader::new().color().build(&app.gl);
 
-    let attribs = vec![pos_attrib, color_attrib];
-    let vao = glh::Vao::new_from_attrib(&app.gl, &attribs,  glow::TRIANGLES, &shader).unwrap();
+    let attribs = vec![
+        glh::VertexAttribSlice::new_position_attr_with_data(&vertices),
+        glh::VertexAttribSlice::new_color_attr_with_data(&colors),
+    ];
+    let vao = glh::VaoSliced::new_from_attrib(&app.gl, &attribs, glow::TRIANGLES, &shader).unwrap();
 
     // Particles -------
     let particles: Vec<Particle> = Vec::new();
@@ -65,11 +66,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(
-    app: &app::App,
-    _data: &mut FrameData,
-    _ui: &egui::Context,
-) {
+fn m_update(app: &app::App, _data: &mut FrameData, _ui: &egui::Context) {
     let gl = &app.gl;
     let shader = &_data.shader;
     let vao = &_data.vao;
@@ -140,11 +137,7 @@ fn m_update(
     let r: f32 = rng.gen_range(-std::f32::consts::PI..std::f32::consts::PI);
 
     _data.particles.push(Particle {
-        position: glm::vec3(
-            xpos as f32,
-            ypos as f32,
-            0.0,
-        ),
+        position: glm::vec3(xpos as f32, ypos as f32, 0.0),
         speed: glm::vec3(sx, sy, 0.0),
         scale: 0.1,
         rotation: r,

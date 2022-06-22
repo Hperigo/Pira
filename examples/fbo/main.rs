@@ -6,13 +6,13 @@ use piralib::gl_helper as glh;
 use piralib::gl_helper::Bindable;
 
 use piralib::gl_helper::texture::TextureSettings;
-use piralib::utils::geo::Geometry;
 use piralib::utils::geo;
+use piralib::utils::geo::Geometry;
 struct FrameData {
-    vao: glh::Vao,
+    vao: glh::VaoSliced,
     shader: glh::GlslProg,
 
-    circle_vao: glh::Vao,
+    circle_vao: glh::VaoSliced,
     circle_shader: glh::GlslProg,
 
     quad_pos: glm::Vec3,
@@ -30,37 +30,18 @@ fn m_setup(app: &mut app::App) -> FrameData {
             width: 1920 / 2,
             height: 1080 / 2,
             depth: true,
-            initialize_default_texture : true,
+            initialize_default_texture: true,
         },
         TextureSettings::default(),
     );
 
     // create QUAD ====
-    let (vao, shader) = {
-        
-        let geometry = geo::Rect::new(0.0, 0.0, fbo.get_width() as f32, fbo.get_height() as f32).texture_coords().get_vertex_attribs();
-        let stock_shader = glh::StockShader::new().texture(true);
-
-        let shader =  stock_shader.build(gl);
-
-        (
-            glh::Vao::new_from_attrib(gl, &geometry, glow::TRIANGLES, &shader).unwrap(),
-            shader,
-        )
-    };
+    let (vao, shader) = geo::Rect::new(0.0, 0.0, fbo.get_width() as f32, fbo.get_height() as f32)
+        .texture_coords()
+        .get_vao_and_shader(gl);
 
     // create geomtry that is drawn inside the fbo ====
-    let (circle_vao, circle_shader) = {
-        let mut circle = geo::Circle::new(0.0, 0.0, 100.0); // Geometry::rect(0.0, 0.0, 200.0, 200.0,false); //geometry::circle(0.0, 0.0, 500.0);
-        let stock_shader = glh::StockShader::new();
-
-        let shader =  stock_shader.build(gl);
-
-        (
-            glh::Vao::new_from_attrib(gl, &circle.get_vertex_attribs(), glow::TRIANGLE_FAN, &shader).unwrap(),
-            shader,
-        )
-    };
+    let (circle_vao, circle_shader) = geo::Circle::new(0.0, 0.0, 100.0).get_vao_and_shader(gl);
 
     FrameData {
         vao,
@@ -77,11 +58,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(
-    app: &app::App,
-    _data: &mut FrameData,
-    _ui: &egui::Context,
-) {
+fn m_update(app: &app::App, _data: &mut FrameData, _ui: &egui::Context) {
     let frame_buffer_scale = app.get_dpi_factor();
 
     let FrameData {
@@ -96,8 +73,8 @@ fn m_update(
     } = _data;
 
     let gl = &app.gl;
-    
-    #[cfg(not(target_arch="wasm32"))]
+
+    #[cfg(not(target_arch = "wasm32"))]
     egui::Window::new("hello").show(_ui, |ui| {
         ui.columns(4, |ui_label| {
             ui_label[0].label("quad_pos");
@@ -122,28 +99,32 @@ fn m_update(
     });
 
     fbo.bind(gl);
-     unsafe{
+    unsafe {
         gl.enable(glow::BLEND);
         gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
     }
-       
+
     // glh::set_viewport(gl, 0,0, app.input_state.window_size.0 * frame_buffer_scale as i32, app.input_state.window_size.1 * frame_buffer_scale as i32);
-    glh::set_viewport(gl, 0,0, fbo.get_width() * frame_buffer_scale as i32, fbo.get_height() * frame_buffer_scale as i32);
+    glh::set_viewport(
+        gl,
+        0,
+        0,
+        fbo.get_width() * frame_buffer_scale as i32,
+        fbo.get_height() * frame_buffer_scale as i32,
+    );
     glh::clear(gl, 0.0, 1.0, 0.0, 1.0);
 
     circle_shader.bind(gl);
-    circle_shader.set_orthographic_matrix(
-        gl,
-        [
-            fbo.get_width() as f32,
-            fbo.get_height() as f32,
-        ],
-    );
+    circle_shader.set_orthographic_matrix(gl, [fbo.get_width() as f32, fbo.get_height() as f32]);
 
     circle_shader.set_view_matrix(gl, &glm::Mat4::identity());
 
     circle_shader.set_transform(gl, &circle_pos, &glm::vec3(0.0, 0.0, 0.0), &circle_scale);
-    circle_shader.set_uniform_4f( gl, glh::StockShader::uniform_name_color(), &[1.0, 1.0, 1.0, 1.0]);
+    circle_shader.set_uniform_4f(
+        gl,
+        glh::StockShader::uniform_name_color(),
+        &[1.0, 1.0, 1.0, 1.0],
+    );
     circle_shader.set_color(gl, &[1.0, 0.0, 0.0, 1.0]);
 
     circle_vao.draw(gl);
@@ -152,13 +133,16 @@ fn m_update(
     fbo.unbind(gl);
 
     // DRAW FBO -------
-    glh::set_viewport(gl, 0,0, app.input_state.window_size.0 * frame_buffer_scale as i32, app.input_state.window_size.1 * frame_buffer_scale as i32);
+    glh::set_viewport(
+        gl,
+        0,
+        0,
+        app.input_state.window_size.0 * frame_buffer_scale as i32,
+        app.input_state.window_size.1 * frame_buffer_scale as i32,
+    );
     glh::clear(gl, 0.0, 0.0, 1.0, 1.0);
- 
-
 
     shader.bind(gl);
-
 
     shader.set_orthographic_matrix(
         gl,
@@ -172,11 +156,18 @@ fn m_update(
 
     let mut model_view = glm::Mat4::identity();
     model_view = glm::translate(&model_view, &quad_pos);
-    model_view = glm::scale(&model_view, &glm::vec3(0.5,0.5, 0.5));
-    
-    shader.set_uniform_mat4( gl, glh::StockShader::uniform_name_model_matrix(), &model_view );
-    shader.set_uniform_4f( gl, glh::StockShader::uniform_name_color(), &[1.0, 1.0, 1.0, 1.0]);
+    model_view = glm::scale(&model_view, &glm::vec3(0.5, 0.5, 0.5));
 
+    shader.set_uniform_mat4(
+        gl,
+        glh::StockShader::uniform_name_model_matrix(),
+        &model_view,
+    );
+    shader.set_uniform_4f(
+        gl,
+        glh::StockShader::uniform_name_color(),
+        &[1.0, 1.0, 1.0, 1.0],
+    );
 
     fbo.bind_texture(gl);
     vao.draw(gl);
