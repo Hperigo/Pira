@@ -159,7 +159,13 @@ impl Geometry for Sphere {
         )
     }
 
-    // fn get_vao(&mut self, gl : &glow::Context, glsl_prog : &glh::GlslProg) -> glh::Vao {
-    //     glh::Vao::new_from_attrib_indexed(gl, &self.get_vertex_attribs(), &self.data.indices.as_ref().unwrap(), glow::TRIANGLES, glsl_prog).unwrap()
-    // }
+    fn get_vao(&mut self, gl: &glow::Context, glsl_prog: &glh::GlslProg) -> glh::Vao {
+        gen_vao(
+            gl,
+            glow::TRIANGLES,
+            &mut self.data.attribs,
+            self.data.indices.as_ref(),
+            glsl_prog,
+        )
+    }
 }

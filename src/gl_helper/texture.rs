@@ -7,7 +7,7 @@ use super::Bindable;
 #[derive(Clone, Copy)]
 pub struct TextureSettings {
     pub data_type: u32,
-    pub internal_format: i32,
+    pub internal_format: u32,
     pub format: u32,
 
     pub mag_filter: u32,
@@ -15,13 +15,18 @@ pub struct TextureSettings {
 
     pub wrap_s: u32,
     pub wrap_r: u32,
+
+    pub target : u32,
 }
+
+
 
 impl TextureSettings {
     pub fn default() -> Self {
         Self {
+            target : glow::TEXTURE_2D,
             data_type: glow::UNSIGNED_BYTE,
-            internal_format: glow::RGBA8 as i32,
+            internal_format: glow::RGBA8,
             format: glow::RGBA,
             mag_filter: glow::LINEAR,
             min_filter: glow::LINEAR,
@@ -32,6 +37,7 @@ impl TextureSettings {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct Texture {
     pub handle: Option<glow::Texture>,
     pub width: i32,
@@ -64,26 +70,26 @@ impl Texture {
         let texture_handle;
         unsafe {
             texture_handle = gl.create_texture().expect("Could not create texture");
-            gl.bind_texture(glow::TEXTURE_2D, Some(texture_handle));
+            gl.bind_texture(settings.target, Some(texture_handle));
 
-            gl.tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_WRAP_S, glow::REPEAT as i32);
-            gl.tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_WRAP_R, glow::REPEAT as i32);
+            gl.tex_parameter_i32(settings.target, glow::TEXTURE_WRAP_S, settings.wrap_r as i32);
+            gl.tex_parameter_i32(settings.target, glow::TEXTURE_WRAP_R, settings.wrap_s as i32);
 
             gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
+                settings.target,
                 glow::TEXTURE_MAG_FILTER,
                 glow::LINEAR as i32,
             );
             gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
+                settings.target,
                 glow::TEXTURE_MIN_FILTER,
                 glow::LINEAR as i32,
             );
 
             gl.tex_image_2d(
-                glow::TEXTURE_2D,
+                settings.target,
                 0,
-                settings.internal_format,
+                settings.internal_format as i32,
                 width,
                 height,
                 0,
@@ -92,7 +98,9 @@ impl Texture {
                 data,
             );
 
-            gl.bind_texture(glow::TEXTURE_2D, None);
+            //gl.tex_image_2d( settings.target, 0, glow::RGB as i32, 2, 2, 0, glow::RGBA as u32, glow::UNSIGNED_BYTE, data );
+
+            gl.bind_texture(settings.target, None);
         }
 
         Texture {
@@ -107,7 +115,7 @@ impl Texture {
         self.bind(gl);
         unsafe {
             gl.tex_sub_image_2d(
-                glow::TEXTURE_2D,
+                self.settings.target,
                 0,
                 0,
                 0,
@@ -129,13 +137,13 @@ impl Bindable for Texture {
                 self.handle.is_some(),
                 "You are trying to bind a NONE texture"
             );
-            gl.bind_texture(glow::TEXTURE_2D, self.handle);
+            gl.bind_texture(self.settings.target, self.handle);
         }
     }
 
     fn unbind(&self, gl: &glow::Context) {
         unsafe {
-            gl.bind_texture(glow::TEXTURE_2D, None);
+            gl.bind_texture(self.settings.target, None);
         }
     }
 }

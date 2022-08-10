@@ -101,6 +101,25 @@ impl<'a> VertexAttrib<'a> {
 
         texture_attrib
     }
+
+    pub fn new_normal_attr_with_data(data: &Vec<f32>) -> Self {
+        let data: &[u8] = unsafe {
+            core::slice::from_raw_parts(
+                data.as_ptr() as *const u8,
+                data.len() * core::mem::size_of::<f32>(),
+            )
+        };
+
+        let texture_attrib = Self {
+            name: StockShader::attrib_name_normal(),
+            size: 3,
+            stride: 0,
+            data,
+            per_instance: false,
+        };
+
+        texture_attrib
+    }
 }
 
 pub struct Vao {
@@ -138,7 +157,8 @@ impl Vao {
         mode: u32,
         shader: &GlslProg,
     ) -> Option<Self> {
-        let num_of_vertices = attribs[0].data.len() / attribs[0].size as usize;
+        let num_of_vertices =
+            attribs[0].data.len() / (attribs[0].size as usize * core::mem::size_of::<f32>());
         let vao_handle = unsafe { gl.create_vertex_array().unwrap() };
 
         let mut attrib_map: HashMap<&'static str, Vbo> = HashMap::new();
@@ -151,11 +171,7 @@ impl Vao {
             let attrib = &attribs[i];
             let name = attrib.name;
 
-            let data_vbo =
-                Vbo::new_from_raw_parts(gl, attrib.data, num_of_vertices, glow::ARRAY_BUFFER);
-
             unsafe {
-                gl.bind_buffer(data_vbo.get_gl_type(), data_vbo.get_handle());
                 let loc = gl
                     .get_attrib_location(
                         shader
@@ -167,7 +183,9 @@ impl Vao {
 
                 gl.enable_vertex_attrib_array(loc);
 
-                println!("attrib name: {} - size: {}", attrib.name, attrib.data.len());
+                let data_vbo =
+                    Vbo::new_from_raw_parts(gl, attrib.data, num_of_vertices, glow::ARRAY_BUFFER);
+                gl.bind_buffer(data_vbo.get_gl_type(), data_vbo.get_handle());
 
                 gl.vertex_attrib_pointer_f32(
                     loc,
@@ -184,9 +202,8 @@ impl Vao {
 
                 // end
                 gl.bind_buffer(data_vbo.get_gl_type(), None);
-            }
-
-            attrib_map.insert(name, data_vbo);
+                attrib_map.insert(name, data_vbo);
+            };
         }
 
         unsafe {

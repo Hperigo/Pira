@@ -91,13 +91,7 @@ impl Geometry for Circle {
         gen_vao_and_shader(gl, glow::TRIANGLE_FAN, &mut self.data.attribs, None)
     }
 
-    // fn get_vao(&mut self, gl: &glow::Context, glsl_prog: &glh::GlslProg) -> glh::Vao {
-    //     glh::Vao::new_from_attrib(
-    //         gl,
-    //         &self.get_vertex_attribs(),
-    //         glow::TRIANGLE_FAN,
-    //         glsl_prog,
-    //     )
-    //     .unwrap()
-    // }
+    fn get_vao(&mut self, gl: &glow::Context, glsl_prog: &glh::GlslProg) -> glh::Vao {
+        gen_vao(gl, glow::TRIANGLES, &mut self.data.attribs, None, glsl_prog)
+    }
 }

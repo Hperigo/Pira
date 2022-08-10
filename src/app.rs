@@ -208,6 +208,31 @@ fn main_loop_wasm<T: 'static>(builder: AppBuilder<T>) {
     });
 }
 
+fn gl_debug_msg_callback(source: u32, error_type: u32, id: u32, severity: u32, message: &str) {
+    let error_type = match error_type {
+        glow::DEBUG_TYPE_ERROR => "DEBUG_TYPE_ERROR",
+        glow::DEBUG_TYPE_DEPRECATED_BEHAVIOR => "DEBUG_TYPE_DEPRECATED_BEHAVIOR",
+        glow::DEBUG_TYPE_UNDEFINED_BEHAVIOR => "DEBUG_TYPE_UNDEFINED_BEHAVIOR",
+        glow::DEBUG_TYPE_PORTABILITY => "DEBUG_TYPE_PORTABILITY",
+        glow::DEBUG_TYPE_PERFORMANCE => "DEBUG_TYPE_PERFORMANCE",
+        glow::DEBUG_TYPE_OTHER => "DEBUG_TYPE_OTHER",
+        _ => "error unkown",
+    };
+
+    let severity_str = match severity {
+        glow::DEBUG_SEVERITY_LOW => "LOW",
+        glow::DEBUG_SEVERITY_MEDIUM => "MEDIUM",
+        glow::DEBUG_SEVERITY_HIGH => "HIGH",
+        glow::DEBUG_SEVERITY_NOTIFICATION => "NOTIFICATION",
+        _ => "severity unkown",
+    };
+
+    println!(
+        "{} - {} source: {} id: {} \n\t{}",
+        error_type, severity_str, source, id, message
+    );
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
     use glow::HasContext;
@@ -231,6 +256,18 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
             .make_current()
             .unwrap();
         let gl = glow::Context::from_loader_function(|s| window.get_proc_address(s) as *const _);
+
+        if false {
+            gl.debug_message_callback(gl_debug_msg_callback);
+            gl.debug_message_control(
+                glow::DONT_CARE,
+                glow::DONT_CARE,
+                glow::DONT_CARE,
+                &[0],
+                true,
+            );
+        }
+
         (gl, window, event_loop)
     };
     let mut egui = egui_glow::EguiGlow::new(&window.window(), &gl);

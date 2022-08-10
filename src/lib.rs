@@ -7,6 +7,7 @@ pub mod gl_helper;
 pub mod utils;
 
 pub extern crate glow;
+pub extern crate image;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub extern crate egui;

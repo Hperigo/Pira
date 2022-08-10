@@ -1,8 +1,9 @@
 extern crate nalgebra_glm as glm;
+use crate::gl_helper as glh;
 use crate::gl_helper::Bindable;
 use glow::{self, HasContext};
-use crate::gl_helper as glh;
 
+#[derive(Clone, Copy)]
 pub struct GlslProg {
     handle: Option<glow::Program>,
 }
@@ -42,7 +43,7 @@ impl GlslProg {
     pub fn get_uniform_location(&self, gl: &glow::Context, name: &str) -> glow::UniformLocation {
         let loc = unsafe {
             gl.get_uniform_location(self.handle.unwrap(), name)
-                .expect(format!("no uniform named: {}", name).as_str())
+                .expect(format!("\n\n\tno uniform named: {}\n\n", name).as_str())
         };
         loc
     }
@@ -53,6 +54,10 @@ impl GlslProg {
             glh::StockShader::uniform_name_perspective_matrix(),
             &glm::ortho(0.0, size[0], size[1], 0.0, -1.0, 1.0),
         );
+    }
+
+    pub fn set_perspective_matrix(&self, gl: &glow::Context, mat: &glm::Mat4) {
+        self.set_uniform_mat4(gl, glh::StockShader::uniform_name_perspective_matrix(), mat);
     }
 
     pub fn set_view_matrix(&self, gl: &glow::Context, mat: &glm::Mat4) {
