@@ -6,6 +6,7 @@ use piralib::event::ElementState;
 use piralib::gl_helper as glh;
 
 use piralib::app;
+use piralib::egui;
 use piralib::event;
 
 use image;

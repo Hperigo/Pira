@@ -2,7 +2,7 @@ extern crate piralib;
 use nalgebra_glm as glm;
 use piralib::app;
 use piralib::gl_helper as glh;
-
+use piralib::egui;
 use glow::*;
 
 struct FrameData {
@@ -59,7 +59,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(app: &app::App, _data: &mut FrameData, _ui: &piralib::egui::Context) {
+fn m_update(app: &app::App, _data: &mut FrameData, _ui: &egui::Context) {
     glh::clear(&app.gl, 1.0, 0.0, 0.5, 1.0);
     unsafe {
         app.gl.disable(glow::CULL_FACE);

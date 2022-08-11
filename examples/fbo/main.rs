@@ -4,6 +4,7 @@ use nalgebra_glm as glm;
 use piralib::app;
 use piralib::gl_helper as glh;
 use piralib::gl_helper::Bindable;
+use piralib::egui;
 
 use piralib::gl_helper::texture::TextureSettings;
 use piralib::utils::geo;

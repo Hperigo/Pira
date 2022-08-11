@@ -2,6 +2,7 @@ extern crate piralib;
 use glow::*;
 use nalgebra_glm as glm;
 use piralib::app;
+use piralib::egui;
 use piralib::gl_helper as glh;
 use rand::Rng;
 
@@ -160,7 +161,7 @@ fn m_setup(app: &mut app::App) -> FrameData {
     }
 }
 
-fn m_update(app: &app::App, _data: &mut FrameData, ui: &piralib::egui::Context) {
+fn m_update(app: &app::App, _data: &mut FrameData, ui: &egui::Context) {
     let time = &mut _data.time;
     let gl = &app.gl;
     let shader = &_data.shader;

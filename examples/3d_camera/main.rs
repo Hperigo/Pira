@@ -5,6 +5,7 @@ use piralib::app;
 use piralib::gl_helper as glh;
 use piralib::glow;
 use piralib::nalgebra_glm as glm;
+use piralib::egui;
 
 use piralib::event;
 use piralib::utils::camera::{Camera, OrbitCamera};

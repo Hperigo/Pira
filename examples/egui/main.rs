@@ -1,8 +1,8 @@
 extern crate piralib;
 use piralib::app;
+use piralib::egui;
 
 use piralib::gl_helper as glh;
-
 
 struct FrameData {
     clear_color: [f32; 3],

@@ -7,8 +7,10 @@ use glutin::event;
 #[cfg(not(target_arch = "wasm32"))]
 use glutin::PossiblyCurrent;
 
-#[cfg(not(target_arch = "wasm32"))]
-pub use egui::Context;
+//#[cfg(not(target_arch = "wasm32"))]
+//pub use egui::Context;
+
+use egui_glow::egui_winit::egui;
 
 #[cfg(not(target_arch = "wasm32"))]
 use egui_glow;
@@ -19,7 +21,9 @@ pub mod egui {
     pub struct CtxRef {}
 }
 
-pub type Event<'a, T> = event::Event<'a, T>;
+
+
+type Event<'a, T> = event::Event<'a, T>;
 type SetupFn<T> = fn(&mut App) -> T;
 type UpdateFn<T> = fn(&App, &mut T, ui: &egui::Context); //&egui::Context);
 type EventFn<T> = fn(&mut App, &mut T, &event::WindowEvent);
@@ -71,7 +75,7 @@ pub struct InputState {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub struct App {
-    pub gl: glow::Context,
+    pub gl: std::sync::Arc<glow::Context>,
     pub context: glutin::ContextWrapper<PossiblyCurrent, glutin::window::Window>,
 
     pub frame_number: u64,
@@ -270,7 +274,9 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
 
         (gl, window, event_loop)
     };
-    let mut egui = egui_glow::EguiGlow::new(&window.window(), &gl);
+    let gl = std::sync::Arc::new(gl);
+
+    let mut egui = egui_glow::EguiGlow::new(&event_loop, gl.clone());
 
     let window_size = (
         settings.window_size.0 * window.window().scale_factor() as i32,
@@ -308,7 +314,7 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
                 app.gl.enable(glow::FRAMEBUFFER_SRGB);
             }
 
-            egui.paint(app.context.window(), &app.gl);
+            egui.paint(app.context.window());
 
             unsafe {
                 app.gl.disable(glow::FRAMEBUFFER_SRGB);
@@ -369,7 +375,7 @@ fn main_loop_glutin<T: 'static>(builder: AppBuilder<T>) {
                 //window.window().request_redraw(); // TODO: ask egui if the events warrants a repaint instead
             }
             glutin::event::Event::LoopDestroyed => {
-                egui.destroy(&app.gl);
+                egui.destroy();
             }
 
             _ => (),

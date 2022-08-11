@@ -5,6 +5,8 @@ use piralib::gl_helper as glh;
 use glow;
 use rand::*;
 
+use piralib::egui;
+
 use nalgebra_glm as glm;
 
 // create a simple particle object
