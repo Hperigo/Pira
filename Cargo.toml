@@ -10,10 +10,11 @@ edition = "2018"
 glow = "*"
 nalgebra-glm = "*"
 image = "*"
+egui = {version = "0.18.1" }
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
 glutin = { version = "*", optional = false }
-egui_glow = {version = "0.18.1", git="https://github.com/emilk/egui", branch="master", features=["winit"] }
+egui_glow = {version = "0.18.1", features=["winit"] }
 #epi = "0.17.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
