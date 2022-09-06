@@ -8,7 +8,11 @@ pub mod utils;
 
 pub extern crate glow;
 pub extern crate image;
-pub extern crate egui;
+pub extern crate egui_glow;
+
+
+pub use egui_glow::egui_winit::egui as egui;
+
 
 #[cfg(not(target_arch = "wasm32"))]
 pub extern crate glutin;

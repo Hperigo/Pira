@@ -10,10 +10,13 @@ use glutin::PossiblyCurrent;
 //#[cfg(not(target_arch = "wasm32"))]
 //pub use egui::Context;
 
+//use egui;
+
+use egui_glow;
 use egui;
 
-#[cfg(not(target_arch = "wasm32"))]
-use egui_glow;
+//use egui_glow::egui_winit::egui as egui;
+
 
 #[cfg(target_arch = "wasm32")]
 pub mod egui {

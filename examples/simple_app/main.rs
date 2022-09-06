@@ -22,15 +22,25 @@ fn m_setup(app: &mut app::App) -> FrameData {
 }
 
 fn m_event(_app: &mut app::App, _data: &mut FrameData, event: &event::WindowEvent) {
+ 
+    /*
     if let event::WindowEvent::MouseInput { state, .. } = event {
         if matches!(state, event::ElementState::Pressed) {}
     }
 
-    // if let event::WindowEvent::CursorMoved{ position, .. } = event {
-    // }
+    if let event::WindowEvent::CursorMoved{ position, .. } = event {
+    }
 
-    // if let event::WindowEvent::KeyboardInput { .. } = event {
-    // }
+    if let event::WindowEvent::KeyboardInput { input, .. } = event {
+      match input.state {
+          event::ElementState::Pressed => {
+          },                                                                                                                                 
+                                                                                                                                             
+          event::ElementState::Released => {                                                                                                 
+          }                                                                                                                                  
+      }                                                                                                                                      
+  }
+  */
 }
 
 fn m_update(app: &app::App, data: &mut FrameData, _ui: &egui::Context) {

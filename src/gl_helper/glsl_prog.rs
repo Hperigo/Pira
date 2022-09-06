@@ -22,8 +22,7 @@ impl GlslProg {
             let success = gl.get_program_link_status(program_id);
 
             if !success {
-                println!("Could not LINK shader: \n\n");
-                gl.get_program_info_log(program_id);
+                println!("Could not LINK shader: {}\n\n", gl.get_program_info_log(program_id));
                 return Self { handle: None };
             }
 
