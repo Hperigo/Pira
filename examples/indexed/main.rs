@@ -1,5 +1,4 @@
 extern crate piralib;
-use nalgebra_glm as glm;
 use piralib::app;
 use piralib::gl_helper as glh;
 use piralib::egui;
@@ -69,24 +68,15 @@ fn m_update(app: &app::App, _data: &mut FrameData, _ui: &egui::Context) {
     let vao = &_data.vao;
 
     shader.bind(&app.gl);
-    shader.set_uniform_mat4(
-        &app.gl,
-        glh::StockShader::uniform_name_perspective_matrix(),
-        &glm::ortho(
-            0.0, 1024.0, // beacuse of mac dpi we need to scale it down
-            768.0, 0.0, -1.0, 1.0,
-        ),
-    );
+
+    shader.set_orthographic_matrix(&app.gl, &[1024.0, 768.0]);
 
     shader.set_uniform_mat4(
         &app.gl,
         glh::StockShader::uniform_name_view_matrix(),
-        &glm::Mat4::identity(),
+        &glam::Mat4::IDENTITY,
     );
-
-    let mut model_view = glm::Mat4::identity();
-    model_view = glm::translate(&model_view, &glm::vec3(1024.0 / 2.0, 768.0 / 2.0, 0.0));
-    model_view = glm::scale(&model_view, &glm::vec3(100.0, 100.0, 0.0));
+    let model_view = glam::Mat4::from( glam::Affine3A::from_scale_rotation_translation(glam::vec3(100.0, 100.0, 100.0), glam::Quat::IDENTITY, glam::vec3(1024.0/2.0, 768.0/2.0, 0.0)));
 
     shader.set_uniform_mat4(
         &app.gl,

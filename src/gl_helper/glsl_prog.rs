@@ -1,4 +1,5 @@
-extern crate nalgebra_glm as glm;
+//extern crate nalgebra_glm as glm;
+extern  crate glam;
 use crate::gl_helper as glh;
 use crate::gl_helper::Bindable;
 use glow::{self, HasContext};
@@ -47,40 +48,45 @@ impl GlslProg {
         loc
     }
 
-    pub fn set_orthographic_matrix(&self, gl: &glow::Context, size: [f32; 2]) {
-        self.set_uniform_mat4(
+    pub fn set_orthographic_matrix(&self, gl: &glow::Context, size: &[f32; 2]) {
+
+        let mat = glam::Mat4::orthographic_rh_gl(0.0, size[0], size[1], 0.0, -1.0, 1.0 );
+        let mut slice :[f32; 16] = [0.0; 16];
+        mat.write_cols_to_slice(&mut slice);
+
+        self.set_uniform_mat4_slice(
             gl,
             glh::StockShader::uniform_name_perspective_matrix(),
-            &glm::ortho(0.0, size[0], size[1], 0.0, -1.0, 1.0),
+            &slice,
         );
     }
 
-    pub fn set_perspective_matrix(&self, gl: &glow::Context, mat: &glm::Mat4) {
+    pub fn set_perspective_matrix(&self, gl: &glow::Context, mat: &glam::Mat4) {
         self.set_uniform_mat4(gl, glh::StockShader::uniform_name_perspective_matrix(), mat);
     }
 
-    pub fn set_view_matrix(&self, gl: &glow::Context, mat: &glm::Mat4) {
+    pub fn set_view_matrix(&self, gl: &glow::Context, mat: &glam::Mat4) {
         self.set_uniform_mat4(gl, glh::StockShader::uniform_name_view_matrix(), mat);
     }
 
-    pub fn set_model_matrix(&self, gl: &glow::Context, mat: &glm::Mat4) {
+    pub fn set_model_matrix(&self, gl: &glow::Context, mat: &glam::Mat4) {
         self.set_uniform_mat4(gl, glh::StockShader::uniform_name_model_matrix(), mat);
     }
 
     pub fn set_transform(
         &self,
         gl: &glow::Context,
-        pos: &glm::Vec3,
-        _rot: &glm::Vec3,
-        scale: &glm::Vec3,
+        pos: glam::Vec3,
+        rot: glam::Quat,
+        scale: glam::Vec3
     ) {
-        let mut model_view = glm::Mat4::identity();
-        model_view = glm::translate(&model_view, pos);
-        model_view = glm::scale(&model_view, scale);
+        let t = glam::Affine3A::from_scale_rotation_translation(scale, rot, pos);
+        let mat4 = glam::Mat4::from(t);
+
         self.set_uniform_mat4(
             gl,
             glh::StockShader::uniform_name_model_matrix(),
-            &model_view,
+            &mat4,
         );
     }
 
@@ -88,10 +94,20 @@ impl GlslProg {
         self.set_uniform_4f(gl, glh::StockShader::uniform_name_color(), color);
     }
 
-    pub fn set_uniform_mat4(&self, gl: &glow::Context, name: &str, value: &glm::Mat4) {
+    
+    pub fn set_uniform_mat4(&self, gl: &glow::Context, name: &str, value: &glam::Mat4) {
+        let mut slice : [f32; 16] = [0.0; 16];
+        value.write_cols_to_slice(&mut slice);
         unsafe {
             let loc = self.get_uniform_location(gl, name);
-            gl.uniform_matrix_4_f32_slice(Some(&loc), false, value.as_slice());
+            gl.uniform_matrix_4_f32_slice(Some(&loc), false, &slice);
+        };
+    }
+
+    pub fn set_uniform_mat4_slice(&self, gl: &glow::Context, name: &str, value: &[f32; 16]) {
+        unsafe {
+            let loc = self.get_uniform_location(gl, name);
+            gl.uniform_matrix_4_f32_slice(Some(&loc), false, value);
         };
     }
 

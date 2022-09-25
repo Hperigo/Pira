@@ -25,8 +25,6 @@ pub mod egui {
 }
 
 
-
-type Event<'a, T> = event::Event<'a, T>;
 type SetupFn<T> = fn(&mut App) -> T;
 type UpdateFn<T> = fn(&App, &mut T, ui: &egui::Context); //&egui::Context);
 type EventFn<T> = fn(&mut App, &mut T, &event::WindowEvent);

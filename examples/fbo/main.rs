@@ -1,14 +1,17 @@
 extern crate piralib;
-use glow::*;
-use nalgebra_glm as glm;
+use glow::HasContext;
 use piralib::app;
 use piralib::gl_helper as glh;
-use piralib::gl_helper::Bindable;
 use piralib::egui;
 
 use piralib::gl_helper::texture::TextureSettings;
 use piralib::utils::geo;
 use piralib::utils::geo::Geometry;
+
+use piralib::gl_helper::Bindable;
+
+use glam;
+
 struct FrameData {
     vao: glh::Vao,
     shader: glh::GlslProg,
@@ -16,9 +19,9 @@ struct FrameData {
     circle_vao: glh::Vao,
     circle_shader: glh::GlslProg,
 
-    quad_pos: glm::Vec3,
-    circle_pos: glm::Vec3,
-    circle_scale: glm::Vec3,
+    quad_pos: glam::Vec3,
+    circle_pos: glam::Vec3,
+    circle_scale: glam::Vec3,
 
     fbo: glh::Fbo,
 }
@@ -51,10 +54,10 @@ fn m_setup(app: &mut app::App) -> FrameData {
         circle_vao,
         circle_shader,
 
-        quad_pos: glm::vec3(0.0, 0.0, 0.0),
+        quad_pos: glam::vec3(0.0, 0.0, 0.0),
 
-        circle_pos: glm::vec3(0.0, 0.0, 0.0),
-        circle_scale: glm::vec3(1.0, 1.0, 1.0),
+        circle_pos: glam::vec3(0.0, 250.0, 0.0),
+        circle_scale: glam::vec3(1.0, 1.0, 1.0),
         fbo,
     }
 }
@@ -110,26 +113,25 @@ fn m_update(app: &app::App, _data: &mut FrameData, _ui: &egui::Context) {
         gl,
         0,
         0,
-        fbo.get_width() * frame_buffer_scale as i32,
-        fbo.get_height() * frame_buffer_scale as i32,
+        fbo.get_width() as i32,
+        fbo.get_height() as i32,
     );
     glh::clear(gl, 0.0, 1.0, 0.0, 1.0);
 
     circle_shader.bind(gl);
-    circle_shader.set_orthographic_matrix(gl, [fbo.get_width() as f32, fbo.get_height() as f32]);
+    circle_shader.set_orthographic_matrix(gl, &[fbo.get_width() as f32, fbo.get_height() as f32]);
 
-    circle_shader.set_view_matrix(gl, &glm::Mat4::identity());
+    circle_shader.set_view_matrix(gl, &glam::Mat4::IDENTITY);
 
-    circle_shader.set_transform(gl, &circle_pos, &glm::vec3(0.0, 0.0, 0.0), &circle_scale);
+    circle_shader.set_transform(gl, *circle_pos, glam::Quat::IDENTITY, *circle_scale);
     circle_shader.set_uniform_4f(
         gl,
         glh::StockShader::uniform_name_color(),
         &[1.0, 1.0, 1.0, 1.0],
     );
     circle_shader.set_color(gl, &[1.0, 0.0, 0.0, 1.0]);
-
+    
     circle_vao.draw(gl);
-    //vao.draw(gl, glow::TRIANGLES);
     circle_shader.unbind(gl);
     fbo.unbind(gl);
 
@@ -138,31 +140,28 @@ fn m_update(app: &app::App, _data: &mut FrameData, _ui: &egui::Context) {
         gl,
         0,
         0,
-        app.input_state.window_size.0 * frame_buffer_scale as i32,
-        app.input_state.window_size.1 * frame_buffer_scale as i32,
+        app.input_state.window_size.0,
+        app.input_state.window_size.1,
     );
-    glh::clear(gl, 0.0, 0.0, 1.0, 1.0);
+    glh::clear(gl, 0.3, 0.3, 0.3, 1.0);
 
     shader.bind(gl);
 
     shader.set_orthographic_matrix(
         gl,
-        [
-            app.input_state.window_size.0 as f32 * frame_buffer_scale,
-            app.input_state.window_size.1 as f32 * frame_buffer_scale,
+        &[
+            app.input_state.window_size.0 as f32,
+            app.input_state.window_size.1 as f32,
         ],
     );
 
-    shader.set_view_matrix(gl, &glm::Mat4::identity());
-
-    let mut model_view = glm::Mat4::identity();
-    model_view = glm::translate(&model_view, &quad_pos);
-    model_view = glm::scale(&model_view, &glm::vec3(0.5, 0.5, 0.5));
+    shader.set_view_matrix(gl, &glam::Mat4::IDENTITY);
+    let model_view = glam::Affine3A::from_translation(*quad_pos); // glam::Mat4::from( glam::Affine3A::from_scale_rotation_translation( glam::vec3(1.5, 1.5, 1.5), glam::Quat::IDENTITY, *quad_pos) );
 
     shader.set_uniform_mat4(
         gl,
         glh::StockShader::uniform_name_model_matrix(),
-        &model_view,
+        &model_view.into(),
     );
     shader.set_uniform_4f(
         gl,

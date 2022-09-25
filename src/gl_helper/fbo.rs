@@ -1,4 +1,3 @@
-extern crate nalgebra_glm as glm;
 use crate::gl_helper::{Bindable, Texture, texture::TextureSettings};
 use glow::{self, HasContext};
 
@@ -10,8 +9,6 @@ pub struct FboSettings {
 
     pub initialize_default_texture : bool,
 }
-
-
 
 pub struct Fbo {
     pub fbo_handle: Option<glow::Framebuffer>,

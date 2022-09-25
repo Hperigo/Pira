@@ -1,10 +1,11 @@
 extern crate piralib;
 use glow::*;
-use nalgebra_glm as glm;
 use piralib::app;
 use piralib::egui;
 use piralib::gl_helper as glh;
 use rand::Rng;
+
+use glam;
 
 struct FrameData {
     vao: glh::Vao,
@@ -205,18 +206,7 @@ fn m_update(app: &app::App, _data: &mut FrameData, ui: &egui::Context) {
 
     shader.bind(gl);
 
-    shader.set_uniform_mat4(
-        gl,
-        glh::StockShader::uniform_name_perspective_matrix(),
-        &glm::ortho(
-            0.0,
-            app.input_state.window_size.0 as f32 * (1.0 / scale_factor), // beacuse of mac dpi we need to scale it down
-            app.input_state.window_size.1 as f32 * (1.0 / scale_factor),
-            0.0,
-            -1.0,
-            1.0,
-        ),
-    );
+    shader.set_orthographic_matrix(gl, &[app.input_state.window_size.0 as f32, app.input_state.window_size.1 as f32]);
 
     shader.set_uniform_1f(gl, "uTime", *time);
     shader.set_uniform_2f(gl, "uMousePos", &mouse_pos);
@@ -227,14 +217,12 @@ fn m_update(app: &app::App, _data: &mut FrameData, ui: &egui::Context) {
     shader.set_uniform_mat4(
         gl,
         glh::StockShader::uniform_name_view_matrix(),
-        &glm::Mat4::identity(),
+        &glam::Mat4::IDENTITY,
     );
 
-    let mut model_view = glm::Mat4::identity();
-    model_view = glm::translate(&model_view, &glm::vec3(0.0, 0.0, 0.0));
-    model_view = glm::scale(&model_view, &glm::vec3(0.5, 0.5, 0.5));
+    let model_view = glam::Mat4::from( glam::Affine3A::from_scale_rotation_translation(glam::vec3(0.5, 0.5, 0.5), glam::Quat::IDENTITY, glam::Vec3::ZERO ));
 
-    shader.set_uniform_mat4(
+     shader.set_uniform_mat4(
         gl,
         glh::StockShader::uniform_name_model_matrix(),
         &model_view,

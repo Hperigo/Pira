@@ -1,8 +1,9 @@
 extern crate piralib;
 
+use glam;
+
 use piralib::app;
 use piralib::gl_helper as glh;
-use piralib::nalgebra_glm as glm;
 
 use piralib::event;
 use piralib::utils::geo::Circle;
@@ -13,22 +14,25 @@ use piralib::egui;
 struct FrameData {
     shader: glh::GlslProg,
     vao: glh::Vao,
+
+    mouse_pos : glam::Vec3,
 }
 
 fn m_setup(app: &mut app::App) -> FrameData {
     let gl = &app.gl;
-    let (vao, shader) = Circle::new(0.0, 0.0, 10.0).get_vao_and_shader(gl);
-    FrameData { vao, shader }
+    let (vao, shader) = Circle::new(0.0, 0.0, 30.0).get_vao_and_shader(gl);
+    FrameData { vao, shader, mouse_pos : glam::Vec3::ZERO }
 }
 
-fn m_event(_app: &mut app::App, _data: &mut FrameData, event: &event::WindowEvent) {
+fn m_event(_app: &mut app::App, data: &mut FrameData, event: &event::WindowEvent) {
  
+    if let event::WindowEvent::CursorMoved{ position, .. } = event {
+        data.mouse_pos = glam::vec3(position.x as f32, position.y as f32, 0.0);
+    }
+
     /*
     if let event::WindowEvent::MouseInput { state, .. } = event {
         if matches!(state, event::ElementState::Pressed) {}
-    }
-
-    if let event::WindowEvent::CursorMoved{ position, .. } = event {
     }
 
     if let event::WindowEvent::KeyboardInput { input, .. } = event {
@@ -53,18 +57,15 @@ fn m_update(app: &app::App, data: &mut FrameData, _ui: &egui::Context) {
     circle_shader.bind(gl);
     circle_shader.set_orthographic_matrix(
         gl,
-        [
-            app.input_state.window_size.0 as f32 * 2.0,
-            app.input_state.window_size.1 as f32 * 2.0,
+        &[
+            app.input_state.window_size.0 as f32,
+            app.input_state.window_size.1 as f32,
         ],
     );
 
-    circle_shader.set_view_matrix(gl, &glm::Mat4::identity());
-
-    let mut model_view = glm::Mat4::identity();
-    model_view = glm::translate(&model_view, &glm::vec3(200.0, 200.0, 0.0));
-    model_view = glm::scale(&model_view, &glm::vec3(10.0, 10.0, 10.0));
-
+    circle_shader.set_view_matrix(gl, &glam::Mat4::IDENTITY);
+    let model_view = glam::Mat4::from(glam::Affine3A::from_scale_rotation_translation(glam::vec3(1.0, 1.0, 1.0), glam::Quat::IDENTITY,  data.mouse_pos ));
+    
     circle_shader.set_uniform_mat4(
         gl,
         glh::StockShader::uniform_name_model_matrix(),

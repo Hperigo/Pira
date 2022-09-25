@@ -8,48 +8,13 @@ edition = "2018"
 
 [dependencies]
 glow = "*"
-nalgebra-glm = "*"
+glam = "*"
 image = "*"
-
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
 glutin = { version = "0.28.0", optional = false }
 egui = {version = "0.18.1", features=["default_fonts"]}
 egui_glow = {version = "0.18.1", features=["winit", "default"] }
-#epi = "0.17.0"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-winit = {version = "*", features = ["web-sys"]}
-wasm-bindgen = { version = "0.2.79" }
-wasm-bindgen-futures = { version = "*" }
-js-sys = "*"
-console_error_panic_hook = "*"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies.web_sys]
-package = "web-sys"
-version = "*"
-features = [
-    'console',
-    "AddEventListenerOptions",
-    'CssStyleDeclaration',
-    'BeforeUnloadEvent',
-    'Document',
-    'DomRect',
-    'Element',
-    'Event',
-    'EventTarget',
-    'FocusEvent',
-    'HtmlCanvasElement',
-    'HtmlElement',
-    'KeyboardEvent',
-    'MediaQueryList',
-    'MediaQueryListEvent',
-    'MouseEvent',
-    'Node',
-    'PointerEvent',
-    'Window',
-    'WheelEvent'
-]
 
 [dev-dependencies]
 getrandom = { version = "*", features=["js"]}

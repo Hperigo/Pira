@@ -10,7 +10,7 @@ use piralib::egui;
 use piralib::event;
 
 use image;
-use nalgebra_glm as glm;
+use glam;
 
 struct FrameData {
     vao: glh::Vao,
@@ -110,29 +110,19 @@ fn m_update(app: &app::App, data: &mut FrameData, _ui: &egui::Context) {
     let _s_shader = glh::ScopedBind::new(gl, shader);
     let _s_tex = glh::ScopedBind::new(gl, texture);
 
-    let frame_buffer_scale = 1.0;
-    shader.set_uniform_mat4(
-        gl,
-        glh::StockShader::uniform_name_perspective_matrix(),
-        &glm::ortho(
-            0.0,
-            app.input_state.window_size.0 as f32 * frame_buffer_scale,
-            app.input_state.window_size.0 as f32 * frame_buffer_scale,
-            0.0,
-            -1.0,
-            1.0,
-        ),
-    );
+    shader.set_orthographic_matrix(gl, &[app.input_state.window_size.0 as f32, app.input_state.window_size.1 as f32] );
 
     shader.set_uniform_mat4(
         gl,
         glh::StockShader::uniform_name_view_matrix(),
-        &glm::Mat4::identity(),
+        &glam::Mat4::IDENTITY,
     );
 
-    let mut model_view = glm::Mat4::identity();
-    model_view = glm::translate(&model_view, &glm::vec3(0.0, 0.0, 0.0));
-    model_view = glm::scale(&model_view, &glm::vec3(0.5, 0.5, 0.5));
+    // let mut model_view = glm::Mat4::identity();
+    // model_view = glm::translate(&model_view, &glm::vec3(0.0, 0.0, 0.0));
+    // model_view = glm::scale(&model_view, &glm::vec3(0.5, 0.5, 0.5));
+
+    let model_view = glam::Mat4::from( glam::Affine3A::from_scale_rotation_translation(glam::vec3(0.5, 0.5, 0.5), glam::Quat::IDENTITY, glam::Vec3::ZERO));
 
     shader.set_uniform_mat4(
         gl,

@@ -1,5 +1,4 @@
 use crate::gl_helper::glsl_prog::GlslProg;
-extern crate nalgebra_glm as glm;
 
 use glow;
 use std::string::String;

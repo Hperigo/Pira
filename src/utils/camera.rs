@@ -1,17 +1,18 @@
 use crate::event;
 use glutin::dpi::PhysicalPosition;
 use crate::utils::transform_system;
-use nalgebra_glm as glm;
+//use nalgebra_glam as glam;
+use glam;
 use crate::app;
 
 pub trait Camera {
-    fn get_view_matrix(&self) -> glm::Mat4;
-    fn get_perspective_matrix(&self) -> glm::Mat4;
+    fn get_view_matrix(&self) -> glam::Mat4;
+    fn get_perspective_matrix(&self) -> glam::Mat4;
 }
 
 pub struct PerspCamera {
-    eye : glm::Vec3,
-    target : glm::Vec3,
+    eye : glam::Vec3,
+    target : glam::Vec3,
 
     fov : f32,
     near : f32,
@@ -23,8 +24,8 @@ pub struct PerspCamera {
 impl PerspCamera {
      pub fn new( aspect_ratio : f32, fov : f32, near : f32, far : f32 ) -> Self {
         Self {
-            eye : glm::vec3(0.0, 0.0, 0.0),
-            target : glm::vec3( 0.0, 0.0, 0.0 ),
+            eye : glam::vec3(0.0, 0.0, 0.0),
+            target : glam::vec3( 0.0, 0.0, 0.0 ),
             fov,
             near,
             far,
@@ -35,12 +36,14 @@ impl PerspCamera {
 
 impl Camera for PerspCamera{
 
-    fn get_view_matrix(&self) -> glm::Mat4 {
-        glm::look_at(&self.eye, &self.target, &glm::vec3(0.0, 1.0, 0.0))
+    fn get_view_matrix(&self) -> glam::Mat4 {
+        //glam::look_at(&self.eye, &self.target, &glam::vec3(0.0, 1.0, 0.0))
+        glam::Mat4::look_at_rh(self.eye, self.target, glam::vec3(0.0, 1.0, 0.0))
     }
 
-    fn get_perspective_matrix(&self) -> glm::Mat4 {
-        glm::perspective( self.aspect_ratio, self.fov, self.near, self.far)
+    fn get_perspective_matrix(&self) -> glam::Mat4 {
+        //glam::perspective( self.aspect_ratio, self.fov, self.near, self.far)
+        glam::Mat4::perspective_rh_gl(self.fov, self.aspect_ratio, self.near, self.far)
     }
 }
 
@@ -75,7 +78,7 @@ impl OrbitCamera {
         let (target, _) = transforms.new_transform();
 
         transforms.set_parent(eye, target, true);
-        transforms.set_position(eye, glm::vec3(0.0, 0.0, 10.0));
+        transforms.set_position(eye, glam::vec3(0.0, 0.0, 10.0));
         
         Self {
             eye,
@@ -125,11 +128,11 @@ impl OrbitCamera {
             let eye_transform = self.transforms.get_transform( self.eye );
 
             let mut original = eye_transform.position - target_transform.position;
-            original = glm::normalize( &original );
-            let mut  a_vec= glm::cross( &original, &glm::vec3(0.0, 1.0, 0.0));
-            a_vec = glm::normalize(&a_vec);
+            original = original.normalize(); //glam::normalize( &original );
+            let mut  a_vec=  original.cross( glam::vec3(0.0, 1.0, 0.0) ); //glam::cross( &original, &glam::vec3(0.0, 1.0, 0.0));
+            a_vec = a_vec.normalize(); //glam::normalize(&a_vec);
 
-            let mut b_vec = glm::cross( &a_vec, &original );
+            let mut b_vec = a_vec.cross( original );
             a_vec = a_vec * dx;
             b_vec = b_vec * dy;
 
@@ -198,21 +201,21 @@ impl OrbitCamera {
             
             let lat_r = self.lat.to_radians();
             let lon_r  = self.lon.to_radians();
-            let pos = glm::vec3( lat_r.cos() * lon_r.sin(), lat_r.sin(), lat_r.cos() * lon_r.cos() ) * self.distance;
+            let pos = glam::vec3( lat_r.cos() * lon_r.sin(), lat_r.sin(), lat_r.cos() * lon_r.cos() ) * self.distance;
             self.transforms.set_position(self.eye, pos);
     }
 
 
-    pub fn get_target_world_matrix(&self) -> glm::Mat4 {
+    pub fn get_target_world_matrix(&self) -> glam::Mat4 {
         self.transforms.get_world_matrix(self.target)
     }
 
 
-    pub fn get_eye_position( &self ) -> glm::Vec3 {
+    pub fn get_eye_position( &self ) -> glam::Vec3 {
         self.transforms.get_world_position( self.eye )
     }
 
-    pub fn get_target_position( &self ) -> glm::Vec3 {
+    pub fn get_target_position( &self ) -> glam::Vec3 {
         self.transforms.get_world_position( self.target )
     }
 }
@@ -220,15 +223,17 @@ impl OrbitCamera {
 
 impl Camera for OrbitCamera{
 
-    fn get_view_matrix(&self) -> glm::Mat4 {
+    fn get_view_matrix(&self) -> glam::Mat4 {
 
         let eye_pos = self.transforms.get_world_position(self.eye);
         let target_pos = self.transforms.get_world_position( self.target );
 
-        glm::look_at(&eye_pos, &target_pos, &glm::vec3(0.0, 1.0, 0.0))
+        //glam::look_at(&eye_pos, &target_pos, &glam::vec3(0.0, 1.0, 0.0))
+        glam::Mat4::look_at_rh(eye_pos, target_pos, glam::vec3(0.0, 1.0, 0.0))
     }
 
-    fn get_perspective_matrix(&self) -> glm::Mat4 {
-        glm::perspective( self.aspect_ratio, self.fov, self.near, self.far)
+    fn get_perspective_matrix(&self) -> glam::Mat4 {
+        //glam::perspective( self.aspect_ratio, self.fov, self.near, self.far)
+        glam::Mat4::perspective_rh_gl(self.fov, self.aspect_ratio, self.near, self.far)
     }
 }

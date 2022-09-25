@@ -4,7 +4,6 @@ use glow::HasContext;
 use piralib::app;
 use piralib::gl_helper as glh;
 use piralib::glow;
-use piralib::nalgebra_glm as glm;
 use piralib::egui;
 
 use piralib::event;
@@ -104,15 +103,14 @@ fn m_update(app: &app::App, data: &mut FrameData, _ui: &egui::Context) {
     );
     cube_shader.set_view_matrix(gl, &view_matrix);
 
-    let mut model_view = glm::Mat4::identity();
-    model_view = glm::translate(&model_view, &glm::vec3(0.0, 0.0, 0.0));
-    model_view = glm::scale(&model_view, &glm::vec3(1.0, 1.0, 1.0));
+    let model_view = glam::Mat4::IDENTITY;
 
     cube_shader.set_uniform_mat4(
         gl,
         glh::StockShader::uniform_name_model_matrix(),
         &model_view,
     );
+
     cube_shader.set_uniform_4f(
         gl,
         glh::StockShader::uniform_name_color(),

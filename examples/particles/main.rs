@@ -7,13 +7,15 @@ use rand::*;
 
 use piralib::egui;
 
-use nalgebra_glm as glm;
+//use nalgebra_glm as glm;
+use glam;
+
 
 // create a simple particle object
 #[derive(Clone, Copy)]
 pub struct Particle {
-    position: glm::Vec3,
-    speed: glm::Vec3,
+    position: glam::Vec3,
+    speed: glam::Vec3,
     scale: f32,
     rotation: f32,
     lifetime: f32,
@@ -83,23 +85,12 @@ fn m_update(app: &app::App, _data: &mut FrameData, _ui: &egui::Context) {
     );
 
     shader.bind(gl);
-    shader.set_uniform_mat4(
-        gl,
-        glh::StockShader::uniform_name_perspective_matrix(),
-        &glm::ortho(
-            0.0,
-            app.input_state.window_size.0 as f32,
-            app.input_state.window_size.1 as f32,
-            0.0,
-            -1.0,
-            1.0,
-        ),
-    );
-
+    shader.set_orthographic_matrix(gl, &[app.input_state.window_size.0 as f32, app.input_state.window_size.1 as f32]);
+ 
     shader.set_uniform_mat4(
         gl,
         glh::StockShader::uniform_name_view_matrix(),
-        &glm::Mat4::identity(),
+        &glam::Mat4::IDENTITY,
     );
 
     // update particles ----
@@ -110,10 +101,7 @@ fn m_update(app: &app::App, _data: &mut FrameData, _ui: &egui::Context) {
         p.position += p.speed;
         p.rotation += 0.01;
 
-        let mut mat = glm::Mat4::identity();
-        mat = glm::translate(&mat, &p.position);
-        mat = glm::rotate(&mat, p.rotation, &glm::vec3(0.0, 0.0, 1.0));
-        mat = glm::scale(&mat, &glm::vec3(p.scale, p.scale, 1.0));
+        let mat =  glam::Mat4::from( glam::Affine3A::from_scale_rotation_translation( glam::vec3(p.scale, p.scale, p.scale), glam::Quat::from_axis_angle(glam::vec3(0.0, 0.0, 1.0), p.rotation), p.position) );  //glm::Mat4::identity();
 
         shader.set_uniform_mat4(gl, glh::StockShader::uniform_name_model_matrix(), &mat);
 
@@ -139,8 +127,8 @@ fn m_update(app: &app::App, _data: &mut FrameData, _ui: &egui::Context) {
     let r: f32 = rng.gen_range(-std::f32::consts::PI..std::f32::consts::PI);
 
     _data.particles.push(Particle {
-        position: glm::vec3(xpos as f32, ypos as f32, 0.0),
-        speed: glm::vec3(sx, sy, 0.0),
+        position: glam::vec3(xpos as f32, ypos as f32, 0.0),
+        speed: glam::vec3(sx, sy, 0.0),
         scale: 0.1,
         rotation: r,
         lifetime: 0.0,
