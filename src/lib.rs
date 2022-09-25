@@ -1,7 +1,6 @@
 pub mod app;
 pub use self::app::App;
 
-pub extern crate nalgebra_glm;
 pub mod gl_helper;
 
 pub mod utils;
@@ -9,7 +8,7 @@ pub mod utils;
 pub extern crate glow;
 pub extern crate image;
 pub extern crate egui_glow;
-
+pub extern crate glam;
 
 pub use egui_glow::egui_winit::egui as egui;
 

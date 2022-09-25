@@ -63,7 +63,6 @@ fn m_setup(app: &mut app::App) -> FrameData {
 }
 
 fn m_update(app: &app::App, _data: &mut FrameData, _ui: &egui::Context) {
-    let frame_buffer_scale = app.get_dpi_factor();
 
     let FrameData {
         vao,
